@@ -12,6 +12,7 @@ def has_duplicate_values(list):
   return is_same
     
 if __name__ == '__main__':
-  list = [1, 2, 3, 4, 5]
+  list  = [1, 2, 3, 4, 5]
+  list2 = [1, 2, 3, 4, 5, 5]
   print(has_duplicate_values(list))
-  
+  print(has_duplicate_values(list2))
