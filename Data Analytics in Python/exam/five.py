@@ -20,3 +20,4 @@ plt.legend(['Midterm', 'Final'])
 
 plt.show()
 
+
