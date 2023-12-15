@@ -2,7 +2,7 @@
 import numpy as np
 
 if __name__ == '__main__':
-  arr = np.random.randint(20, 100, size=(4, 4))
+  arr = np.random.randint(20, 50 + 1, size=(4, 4))
 
   print("\nONE: \n\n", arr)
   print("\nTWO: \n\n", np.max(arr, axis = 0))
