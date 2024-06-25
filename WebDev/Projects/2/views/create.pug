@@ -1,39 +1,51 @@
-extends layout
+extends layouts/layout
 
 block content
-  h1 Add New Contact
-  form(action='/create' method='post')
-    label(for='firstName') First Name:
-    input(type='text' name='firstName' required)
-    br
-    label(for='lastName') Last Name:
-    input(type='text' name='lastName' required)
-    br
-    label(for='phoneNumber') Phone Number:
-    input(type='text' name='phoneNumber' required)
-    br
-    label(for='email') Email:
-    input(type='email' name='email' required)
-    br
-    label(for='street') Street:
-    input(type='text' name='street')
-    br
-    label(for='city') City:
-    input(type='text' name='city')
-    br
-    label(for='state') State:
-    input(type='text' name='state')
-    br
-    label(for='zip') Zip:
-    input(type='text' name='zip')
-    br
-    label(for='country') Country:
-    input(type='text' name='country')
-    br
-    label(for='contactByEmail') Contact by Email:
-    input(type='checkbox' name='contactByEmail')
-    br
-    label(for='contactByPhone') Contact by Phone:
-    input(type='checkbox' name='contactByPhone')
-    br
-    button(type='submit') Add Contact
+  h1 Create Contact
+  form(action="/create", method="post")
+    fieldset
+      legend Basic Info
+      section
+        label(for="first") First Name: 
+        input(name="first")
+      section
+        label(for="last") Last Name: 
+        input(name="last")
+      section
+        label(for="phone") Phone:
+        input(name="phone", type="tel")
+      section
+        label(for="email") Email:
+        input(name="email")
+    fieldset 
+      legend Address
+      section
+        label(for="Street") Street:
+        input(name="street")
+      section
+        label(for="city") City:
+        input(name="city")
+      section
+        label(for="state") State:
+        input(name="state")
+      section
+        label(for="zip") zip:
+        input(name="zip")
+      section
+        label(for="country") Country:
+        input(name="country")
+    fieldset 
+      legend Contact Preferences
+      section
+        input(type="checkbox", name="contact_by_phone")
+        label(for="contact_by_phone") Contact by phone
+      section
+        input(type="checkbox", name="contact_by_email")
+        label(for="contact_by_email") Contact by email
+      section
+        input(type="checkbox", name="contact_by_mail")
+        label(for="contact_by_mail") Contact by mail
+    button(type="submit") Add
+    a(href="/") Cancel
+
+      

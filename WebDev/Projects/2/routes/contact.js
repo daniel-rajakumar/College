@@ -4,23 +4,26 @@ const db = require('../db/contactDB');
 
 router.get('/create', (req, res) => {
   res.render('create');
+
 });
 
 router.post('/create', (req, res) => {
-  const {
-    firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country,
-    contactByEmail, contactByPhone
-  } = req.body;
-  db.run(`INSERT INTO Contacts (FirstName, LastName, PhoneNumber, EmailAddress, Street, City, State, Zip, Country, ContactByEmail, ContactByPhone)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country, contactByEmail ? 1 : 0, contactByPhone ? 1 : 0], (err) => {
-    if (err) {
-      return res.status(500).send(err.message);
-    }
-    res.redirect('/');
-  });
+  res.render('create');
+  // const {
+  //   firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country,
+  //   contactByEmail, contactByPhone
+  // } = req.body;
+  // db.run(`INSERT INTO Contacts (FirstName, LastName, PhoneNumber, EmailAddress, Street, City, State, Zip, Country, ContactByEmail, ContactByPhone)
+  //   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  //   [firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country, contactByEmail ? 1 : 0, contactByPhone ? 1 : 0], (err) => {
+  //   if (err) {
+  //     return res.status(500).send(err.message);
+  //   }
+  //   res.redirect('/');
+  // });
 });
 
+/** 
 router.get('/:id', (req, res) => {
   db.get('SELECT * FROM Contacts WHERE ID = ?', [req.params.id], (err, row) => {
     if (err || !row) {
@@ -68,3 +71,10 @@ router.post('/:id/delete', (req, res) => {
   db.run('DELETE FROM Contacts WHERE ID = ?', [req.params.id], (err) => {
     if (err) {
       return res.status
+      
+
+      */
+
+
+
+module.exports = router;
