@@ -4,7 +4,7 @@ const session = require('express-session');
 const path = require('path');
 const db = require('./db/contactDB');
 const indexRouter = require('./routes/index');
-// const authRouter = require('./routes/auth');
+const authRouter = require('./routes/auth');
 // const contactRouter = require('./routes/contact');
 
 const app = express();
@@ -22,8 +22,9 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-// app.use('/', authRouter);
+app.use('/', authRouter);
 // app.use('/', contactRouter);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

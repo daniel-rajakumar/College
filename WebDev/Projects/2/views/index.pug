@@ -1,10 +1,23 @@
-doctype html 
-html(lang='en')
-  head
-    title Hello, World!
-  body
-    h1 Hello, World!
-    p Welcome to my first Express app!
-    div.remark
-      p This is a simple Express app that uses Pug as the view engine.
-    
+extends layouts/layout
+
+block content
+  h1 Contact List
+  a(href='/create') Create a new contact
+  table
+    tr
+      th Name
+      th Phone
+      th Email
+      th Address
+      th Contact
+    each contact in contacts
+      tr
+        td= contact.name
+        td= contact.phone
+        td= contact.email
+        td= contact.address
+        td= contact.Contact
+        //- td
+        //-   a(href=`/${contact.id}`) View
+        //-   a(href=`/${contact.id}/edit`) Edit
+        //-   a(href=`/${contact.id}/delete`) Delete

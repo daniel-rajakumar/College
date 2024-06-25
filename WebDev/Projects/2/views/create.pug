@@ -1,0 +1,39 @@
+extends layout
+
+block content
+  h1 Add New Contact
+  form(action='/create' method='post')
+    label(for='firstName') First Name:
+    input(type='text' name='firstName' required)
+    br
+    label(for='lastName') Last Name:
+    input(type='text' name='lastName' required)
+    br
+    label(for='phoneNumber') Phone Number:
+    input(type='text' name='phoneNumber' required)
+    br
+    label(for='email') Email:
+    input(type='email' name='email' required)
+    br
+    label(for='street') Street:
+    input(type='text' name='street')
+    br
+    label(for='city') City:
+    input(type='text' name='city')
+    br
+    label(for='state') State:
+    input(type='text' name='state')
+    br
+    label(for='zip') Zip:
+    input(type='text' name='zip')
+    br
+    label(for='country') Country:
+    input(type='text' name='country')
+    br
+    label(for='contactByEmail') Contact by Email:
+    input(type='checkbox' name='contactByEmail')
+    br
+    label(for='contactByPhone') Contact by Phone:
+    input(type='checkbox' name='contactByPhone')
+    br
+    button(type='submit') Add Contact
