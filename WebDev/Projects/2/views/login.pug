@@ -3,9 +3,9 @@ extends layouts/layout
 block content 
   form(action="/login", method="post")
     label(for="text") Username
-    input(type="text", name='email')
+    input(name='email')
     label(for="password") Password
-    input(type='password', name="Password")
+    input(name="password", type="password")
     button(type="submit") Sign in
     a(href="/") Nevermind
     p Don't have an account yet?

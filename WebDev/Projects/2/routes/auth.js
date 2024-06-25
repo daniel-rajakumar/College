@@ -8,7 +8,9 @@ router.get('/login', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-  res.render('login', {});
+  res.render('login', { hide_login: true , message: "Did not do this yet..." });
+
+  const { email, password } = req.body;
 
   // const { username, password } = req.body;
   // db.get('SELECT * FROM Users WHERE Username = ?', [username], (err, user) => {
@@ -33,7 +35,32 @@ router.get('/signup', (req, res) => {
 });
 
 router.post('/signup', (req, res) => {
-  res.render('signup');
+  // res.render('signup', { hide_login: true , message: "Did not do this yet..." });
+
+  const { first, last, username, password, password2 } = req.body;
+
+  if (password !== password2) {
+    return res.render('signup', { hide_login: true, message: 'Passwords do not match' });
+  }
+
+
+  const user = db.findUserByUsername(username);
+
+
+  // if (user) {
+  //   return res.render('signup', { hide_login: true, message: "User already exists" });
+  // }
+
+  const salt = bcrypt.genSaltSync(10)
+  // console.log(salt);
+
+
+
+
+
+
+
+
   // const { firstName, lastName, username, password, confirmPassword } = req.body;
   // if (password !== confirmPassword) {
   //   return res.render('signup', { error: 'Passwords do not match' });
@@ -54,3 +81,18 @@ router.get('/logout', (req, res) => {
 });
 
 module.exports = router;
+
+
+
+
+const findUserByUsername = async (username) => {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT * FROM Users WHERE Username = ?', [username], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+};

@@ -1,46 +1,44 @@
-const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcryptjs');
+require('dotenv').config();
+const Database = require('dbcmps369');
 
-const db = new sqlite3.Database('./db/contact_list.db');
-
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS Users (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    FirstName TEXT,
-    LastName TEXT,
-    Username TEXT UNIQUE,
-    Password TEXT
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS Contacts (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    FirstName TEXT,
-    LastName TEXT,
-    PhoneNumber TEXT,
-    EmailAddress TEXT,
-    Street TEXT,
-    City TEXT,
-    State TEXT,
-    Zip TEXT,
-    Country TEXT,
-    ContactByEmail INTEGER,
-    ContactByPhone INTEGER
-  )`);
-});
-
-// Function to create initial user if it doesn't exist
-const createInitialUser = () => {
-  const username = 'cmps369';
-  const password = 'rcnj';
-  db.get('SELECT * FROM Users WHERE Username = ?', [username], (err, row) => {
-    if (!row) {
-      const hashedPassword = bcrypt.hashSync(password, 10);
-      db.run('INSERT INTO Users (FirstName, LastName, Username, Password) VALUES (?, ?, ?, ?)', 
-        ['Default', 'User', username, hashedPassword]);
+class GuessingDB {
+    constructor() {
+        this.db = new Database();
     }
-  });
-};
 
-createInitialUser();
+    async initialize() {
+        await this.db.connect();
 
-module.exports = db;
+        await this.db.schema('Contact', [
+            { name: 'id', type: 'INTEGER' },
+            { name: 'first', type: 'TEXT' },
+            { name: 'last', type: 'TEXT' },
+            { name: 'phone', type: 'INTEGER' },
+            { name: 'street', type: 'TEXT' },
+            { name: 'city', type: 'TEXT' },
+            { name: 'state', type: 'TEXT' },
+            { name: 'zip', type: 'TEXT' },
+            { name: 'country', type: 'TEXT' },
+            { name: 'contact_by_phone', type: 'INTEGER' },
+            { name: 'contact_by_email', type: 'INTEGER' },
+            { name: 'contact_by_mail', type: 'INTEGER' },
+        ], 'id');
+
+        await this.db.schema('Users', [
+            { name: 'id', type: 'INTEGER' },
+            { name: 'username', type: 'TEXT' },
+            { name: 'password', type: 'TEXT' }
+        ], 'id');
+
+    }
+
+    async findUserByUsername(username) {
+        const us = await this.db.read('Users', [{ column: 'username', value: username }]);
+        if (us.length > 0) return us[0];
+        else {
+            return undefined;
+        }
+    }
+}
+
+module.exports = GuessingDB;
