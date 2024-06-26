@@ -101,6 +101,31 @@ class ContactDB {
         }
     }
 
+    async updateContactById(first, last, phone, email, street, city, state, zip, country, contact_by_phone, contact_by_email, contract_by_mail, contact_by_mail) {
+        const us = await this.db.update('Contact', [
+            { column: 'id', value: email },
+            { column: 'first', value: first },
+            { column: 'last', value: last },
+            { column: 'phone', value: phone },
+            { column: 'email', value: email },
+            { column: 'street', value: street },
+            { column: 'city', value: city },
+            { column: 'state', value: state },
+            { column: 'zip', value: zip },
+            { column: 'country', value: country },
+            { column: 'contact_by_phone', value: contact_by_phone },
+            { column: 'contact_by_email', value: contact_by_email },
+            { column: 'contact_by_mail', value: contract_by_mail },
+        ],  [{ column: 'id', value: email }]);
+
+        console.log("us:::::", us)
+
+        if (us.length > 0) return us;
+        else {
+            return undefined;
+        }
+    }
+
     async readAllContacts() {
         const contacts = await this.db.readAll('Contact');
         return contacts;
