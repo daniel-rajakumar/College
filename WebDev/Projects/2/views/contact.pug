@@ -1,1 +1,45 @@
 extends layouts/layout
+
+block content 
+  h1 Contact Info
+  h2= `${contact.first} ${contact.last}`
+  hr
+  a(href="/") Back to list
+  p 
+    b Phone number:
+    span  #{contact.phone}
+  p
+    if contact.contact_by_email
+      i Maybe NOT be contacted by phone or text
+    else
+      i Maybe be contacted by phone or text
+  hr
+  p 
+    b Email address:
+    span  #{contact.email}
+  p
+    if contact.contact_by_email
+      i Maybe NOT be contacted by email 
+    else
+      i Maybe be contacted by email
+  hr
+  p 
+    b Address:
+    br
+    br
+    span= `${contact.street}`
+    br
+    span= `${contact.city}, ${contact.state} ${contact.zip}`
+    br
+    span= `${contact.country}`
+  p
+    if contact.contact_by_address
+      i Maybe NOT be contacted by mail 
+    else
+      i Maybe be contacted by mail
+  hr
+  a(href=`/:${contact.id}/edit`) Edit Contact
+  br
+  a(href=`/:${contact.id}/delete`) Delete Contact
+
+

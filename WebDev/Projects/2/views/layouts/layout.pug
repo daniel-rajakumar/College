@@ -7,11 +7,10 @@ html
     header
       nav
         if !hide_login 
-          a(href='/login') Sign in 
-        ul
           if user
-            li: a(href='/logout') Logout
+            span
+              span Logged in: #{user.username}
+              a(href='/logout')  Logout
           else
-          //- li: a(href='/signup') Signup
-          //- li: a(href='/create') Add Contact
+            a(href='/login') Sign in 
     block content

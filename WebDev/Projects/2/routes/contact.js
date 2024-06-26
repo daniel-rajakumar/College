@@ -4,24 +4,30 @@ const db = require('../db/contactDB');
 
 router.get('/create', (req, res) => {
   res.render('create');
-
 });
 
-router.post('/create', (req, res) => {
+router.post('/create', async (req, res) => {
   res.render('create');
-  // const {
-  //   firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country,
-  //   contactByEmail, contactByPhone
-  // } = req.body;
-  // db.run(`INSERT INTO Contacts (FirstName, LastName, PhoneNumber, EmailAddress, Street, City, State, Zip, Country, ContactByEmail, ContactByPhone)
-  //   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  //   [firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country, contactByEmail ? 1 : 0, contactByPhone ? 1 : 0], (err) => {
-  //   if (err) {
-  //     return res.status(500).send(err.message);
-  //   }
-  //   res.redirect('/');
-  // });
+  const {
+    first, last, phone, email, street, city, state, zip, country, contact_by_phone,
+    contact_by_email, contact_by_mail
+  } = req.body;
+
+  const id = await req.db.createContact(first, last, phone, email, street, city, state, zip, country, contact_by_phone, contact_by_email, contact_by_mail)
+
+
+  console.log(req.body);
+  // res.redirect('/');
 });
+
+router.get('/:id', async (req, res) => {
+  let { id } = req.params;
+  id = id.replace(":", "")
+  const contact = await req.db.findContactById(id);
+  console.log(contact)
+  // res.render('contact')
+  res.render('contact', { contact })
+})
 
 /** 
 router.get('/:id', (req, res) => {
