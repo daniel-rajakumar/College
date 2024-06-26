@@ -7,7 +7,6 @@ router.get('/create', async (req, res) => {
 });
 
 router.post('/create', async (req, res) => {
-  // res.render('create');
   const {
     first, last, phone, email, street, city, state, zip, country, contact_by_phone,
     contact_by_email, contact_by_mail
