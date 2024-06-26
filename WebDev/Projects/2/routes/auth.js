@@ -51,9 +51,10 @@ router.post('/signup', async (req, res) => {
 
   await req.db.createUser(first, last, username, hash)
 
-  user = await req.db.findUserByUsername(username);
-  req.session.user = user;
-  return res.redirect('/');
+  // user = await req.db.findUserByUsername(username);
+  // req.session.user = user;
+  // return res.redirect('/');
+  res.render('login', { hide_login: true });
 });
 
 router.get('/logout', (req, res) => {
