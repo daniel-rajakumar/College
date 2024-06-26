@@ -1,5 +1,5 @@
 require('dotenv').config();
-const Database = require('dbcmps369');
+const Database = require('../db/cmps369.js');
 
 class ContactDB {
 
@@ -87,6 +87,14 @@ class ContactDB {
 
     async findContactById(id) {
         const us = await this.db.read('Contact', [{ column: 'id', value: id }]);
+        if (us.length > 0) return us[0];
+        else {
+            return undefined;
+        }
+    }
+
+    async deleteContactById(id) {
+        const us = await this.db.delete('Contact', [{ column: 'id', value: id }]);
         if (us.length > 0) return us[0];
         else {
             return undefined;

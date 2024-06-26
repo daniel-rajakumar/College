@@ -24,9 +24,21 @@ router.get('/:id', async (req, res) => {
   let { id } = req.params;
   id = id.replace(":", "")
   const contact = await req.db.findContactById(id);
-  console.log(contact)
-  // res.render('contact')
   res.render('contact', { contact })
+})
+
+router.get('/:id/delete', async (req, res) => { 
+  let { id } = req.params;
+  id = id.replace(":", "")
+  const contact = await req.db.findContactById(id);
+  res.render('delete', { contact })
+})
+
+router.post('/:id/delete', async (req, res) => {
+  let { id } = req.params;
+  id = id.replace(":", "")
+  const contact = await req.db.deleteContactById(id);
+  res.redirect("/");
 })
 
 /** 
