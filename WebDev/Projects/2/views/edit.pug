@@ -18,7 +18,7 @@ block content
         input(name="phone", type="tel", value=contact.phone)
       section
         label(for="email") Email:
-        input(name="email", value=contact.phone)
+        input(name="email", value=contact.email)
     fieldset 
       legend Address
       section
@@ -52,7 +52,7 @@ block content
         label(for="contact_by_email") Contact by email
       section
         if contact.contact_by_mail
-          input(type="checkbox", name="contact_by_mail")
+          input(type="checkbox", name="contact_by_mail" checked)
         else
           input(type="checkbox", name="contact_by_mail")
         label(for="contact_by_mail") Contact by mail

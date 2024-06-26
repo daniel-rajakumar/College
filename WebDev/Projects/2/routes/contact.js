@@ -61,62 +61,7 @@ router.post('/:id/edit', async (req, res) => {
 
   res.redirect('/')
 
-  // const contact = await req.db.findContactById(id)
-
-  // res.render('edit', { contact })
 })
-
-/** 
-router.get('/:id', (req, res) => {
-  db.get('SELECT * FROM Contacts WHERE ID = ?', [req.params.id], (err, row) => {
-    if (err || !row) {
-      return res.status(404).send('Contact not found');
-    }
-    res.render('contact', { contact: row });
-  });
-});
-
-router.get('/:id/edit', (req, res) => {
-  db.get('SELECT * FROM Contacts WHERE ID = ?', [req.params.id], (err, row) => {
-    if (err || !row) {
-      return res.status(404).send('Contact not found');
-    }
-    res.render('edit', { contact: row });
-  });
-});
-
-
-router.post('/:id/edit', (req, res) => {
-  const {
-    firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country,
-    contactByEmail, contactByPhone
-  } = req.body;
-  db.run(`UPDATE Contacts SET FirstName = ?, LastName = ?, PhoneNumber = ?, EmailAddress = ?, Street = ?, City = ?, State = ?, Zip = ?, Country = ?, ContactByEmail = ?, ContactByPhone = ?
-    WHERE ID = ?`,
-    [firstName, lastName, phoneNumber, emailAddress, street, city, state, zip, country, contactByEmail ? 1 : 0, contactByPhone ? 1 : 0, req.params.id], (err) => {
-    if (err) {
-      return res.status(500).send(err.message);
-    }
-    res.redirect(`/${req.params.id}`);
-  });
-});
-
-router.get('/:id/delete', (req, res) => {
-  db.get('SELECT * FROM Contacts WHERE ID = ?', [req.params.id], (err, row) => {
-    if (err || !row) {
-      return res.status(404).send('Contact not found');
-    }
-    res.render('delete', { contact: row });
-  });
-});
-
-router.post('/:id/delete', (req, res) => {
-  db.run('DELETE FROM Contacts WHERE ID = ?', [req.params.id], (err) => {
-    if (err) {
-      return res.status
-      
-
-      */
 
 
 

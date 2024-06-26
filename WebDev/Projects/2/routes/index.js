@@ -3,21 +3,20 @@ const router = express.Router();
 // const Database = require('dbcmps369');
 const db = require('../db/contactDB');
 const ContactDB = require('../db/contactDB');
+const bcrypt = require('bcryptjs');
 
 
 
 router.get('/', async (req, res) => {
-  // const user = req.db.findUserByUsername("cmps369");
+  const user = await req.db.findUserByUsername("cmps369");
 
-  // if ( !user ){
-  //   console.log("user")
-  //   const salt = bcrypt.genSaltSync(10)
-  //   const hash = bcrypt.hashSync(password, salt);
+  if ( !user ){
+    const salt = bcrypt.genSaltSync(10)
+    const hash = bcrypt.hashSync("rcnj", salt);
 
-  //   const id = await req.db.createUser("cmps369", hash)
-  //   req.session.user = await req.db.findUserById(id);
-  //   res.redirect('/')
-  // }
+    const id = await req.db.createUser("road", "runner", "cmps369", hash)
+    // req.session.user = await req.db.findUserById(id);
+  }
 
   // console.log(req.db.readAllContacts())
 
