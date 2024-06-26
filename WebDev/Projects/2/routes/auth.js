@@ -55,7 +55,7 @@ router.post('/signup', async (req, res) => {
   const hash = bcrypt.hashSync(password, salt);
 
 
-  const id = await req.db.createUser(username, hash)
+  const id = await req.db.createUser(first, last, username, hash)
   req.session.user = await req.db.findUserById(id);
 
   res.redirect('/')

@@ -2,6 +2,8 @@ extends layouts/layout
 
 block content
   h1 Edit Contact
+  if message
+    h1 #{message}
   form(action=`/:${contact.id}/edit`, method='post')
     fieldset
       legend Basic Info

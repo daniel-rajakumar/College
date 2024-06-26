@@ -7,17 +7,18 @@ router.get('/create', async (req, res) => {
 });
 
 router.post('/create', async (req, res) => {
-  res.render('create');
+  // res.render('create');
   const {
     first, last, phone, email, street, city, state, zip, country, contact_by_phone,
     contact_by_email, contact_by_mail
   } = req.body;
 
-  const id = await req.db.createContact(first, last, phone, email, street, city, state, zip, country, contact_by_phone, contact_by_email, contact_by_mail)
-
-
-  console.log(req.body);
-  // res.redirect('/');
+  if (!await req.db.findContactById(email)){
+    await req.db.createContact(first, last, phone, email, street, city, state, zip, country, contact_by_phone, contact_by_email, contact_by_mail)
+    return res.redirect('/');
+  } else {
+    return res.render('create', {message: "User with same email already exists"})
+  }
 });
 
 router.get('/:id', async (req, res) => {
@@ -58,9 +59,11 @@ router.post('/:id/edit', async (req, res) => {
 
   await req.db.updateContactById(first, last, phone, email, street, city, state, zip, country, contact_by_phone, contact_by_email, contact_by_mail);
 
-  const contact = await req.db.findContactById(id)
+  res.redirect('/')
 
-  res.render('edit', { contact })
+  // const contact = await req.db.findContactById(id)
+
+  // res.render('edit', { contact })
 })
 
 /** 

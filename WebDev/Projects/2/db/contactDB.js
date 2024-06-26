@@ -46,8 +46,10 @@ class ContactDB {
         }
     }
 
-    async createUser(username, password) {
+    async createUser(first, last, username, password) {
         const id = await this.db.create('Users', [
+            { column: 'first', value: first },
+            { column: 'last', value: last },
             { column: 'username', value: username },
             { column: 'password', value: password },
         ])
