@@ -1,9 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
-const db = require('../db/contactDB');
-const base = require('..');
-const ContactDB = require('../db/contactDB');
 
 router.get('/login', (req, res) => {
   res.render('login', { hide_login: true });
@@ -24,8 +21,6 @@ router.post('/login', async (req, res) => {
     return res.render('login', { hide_login: true , message: "Could not authenticate" });
   }
 });
-
-
 
 
 
@@ -51,9 +46,6 @@ router.post('/signup', async (req, res) => {
 
   await req.db.createUser(first, last, username, hash)
 
-  // user = await req.db.findUserByUsername(username);
-  // req.session.user = user;
-  // return res.redirect('/');
   res.render('login', { hide_login: true });
 });
 

@@ -12,11 +12,6 @@ const db = new Database();
 db.initialize()
 
 
-// await req.db.createUser(username, hash)
-
-
-
-
 
 
 
