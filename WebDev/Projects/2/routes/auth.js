@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
 const db = require('../db/contactDB');
-const base = require('../app');
+const base = require('..');
 const ContactDB = require('../db/contactDB');
 
 router.get('/login', (req, res) => {
