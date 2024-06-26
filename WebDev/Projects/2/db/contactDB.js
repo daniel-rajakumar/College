@@ -121,8 +121,6 @@ class ContactDB {
             { column: 'contact_by_mail', value: contract_by_mail },
         ],  [{ column: 'id', value: email }]);
 
-        console.log("us:::::", us)
-
         if (us.length > 0) return us;
         else {
             return undefined;

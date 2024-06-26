@@ -5,20 +5,10 @@ const path = require('path');
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const contactRouter = require('./routes/contact');
-const { log } = require('console');
 
 const Database = require('./db/contactDB');
 const db = new Database();
 db.initialize()
-
-
-
-
-
-
-
-
-
 
 
 const app = express();
@@ -52,13 +42,10 @@ app.use((req, res, next) => {
   next()
 })
 
-// app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/', authRouter);
 app.use('/', contactRouter);
-
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

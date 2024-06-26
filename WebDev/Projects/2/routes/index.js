@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
     const salt = bcrypt.genSaltSync(10)
     const hash = bcrypt.hashSync("rcnj", salt);
 
-    const id = await req.db.createUser("road", "runner", "cmps369", hash)
+    await req.db.createUser("road", "runner", "cmps369", hash)
   }
 
   return res.render('index', { contacts: await req.db.readAllContacts() });

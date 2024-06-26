@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/contactDB');
 
 router.get('/create', async (req, res) => {
   res.render('create');
@@ -37,7 +36,7 @@ router.get('/:id/delete', async (req, res) => {
 router.post('/:id/delete', async (req, res) => {
   let { id } = req.params;
   id = id.replace(":", "")
-  const contact = await req.db.deleteContactById(id);
+  await req.db.deleteContactById(id);
   res.redirect("/");
 })
 
@@ -49,8 +48,6 @@ router.get('/:id/edit', async (req, res) => {
 })
 
 router.post('/:id/edit', async (req, res) => { 
-  let { id } = req.params;
-  id = id.replace(":", "")
   const {
     first, last, phone, email, street, city, state, zip, country, contact_by_phone,
     contact_by_email, contact_by_mail
@@ -59,7 +56,6 @@ router.post('/:id/edit', async (req, res) => {
   await req.db.updateContactById(first, last, phone, email, street, city, state, zip, country, contact_by_phone, contact_by_email, contact_by_mail);
 
   res.redirect('/')
-
 })
 
 
