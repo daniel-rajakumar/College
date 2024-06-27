@@ -1,0 +1,11 @@
+{
+  "name": "fwcmps369",
+  "version": "1.0.0",
+  "description": "Simple and limited web server framework for CMPS 369",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

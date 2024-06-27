@@ -1,0 +1,16 @@
+doctype html
+html
+  head
+    title Contact List Application
+    //- link(rel='stylesheet', href='https://unpkg.com/water.css@2/out/light.css')
+  body
+    header
+      nav
+        if !hide_login 
+          if user
+            span
+              span Logged in: #{user.username}
+              a(href='/logout')  Logout
+          else
+            a(href='/login') Sign in 
+    block content

@@ -1,0 +1,62 @@
+extends layouts/layout
+
+block content
+  h1 Edit Contact
+  if message
+    h1 #{message}
+  form(action=`/:${contact.id}/edit`, method='post')
+    fieldset
+      legend Basic Info
+      section
+        label(for="first") First Name: 
+        input(name="first", value=contact.first) 
+      section
+        label(for="last") Last Name: 
+        input(name="last", value=contact.last)
+      section
+        label(for="phone") Phone:
+        input(name="phone", type="tel", value=contact.phone)
+      section
+        label(for="email") Email:
+        input(name="email", value=contact.email)
+    fieldset 
+      legend Address
+      section
+        label(for="Street") Street:
+        input(name="street", value=contact.street)
+      section
+        label(for="city") City:
+        input(name="city", value=contact.city)
+      section
+        label(for="state") State:
+        input(name="state", value=contact.state)
+      section
+        label(for="zip") zip:
+        input(name="zip", value=contact.zip)
+      section
+        label(for="country") Country:
+        input(name="country", value=contact.country)
+    fieldset 
+      legend Contact Preferences
+      section
+        if contact.contact_by_phone
+          input(type="checkbox", name="contact_by_phone", checked)
+        else
+          input(type="checkbox", name="contact_by_phone")
+        label(for="contact_by_phone") Contact by phone
+      section
+        if contact.contact_by_email
+          input(type="checkbox", name="contact_by_email", checked)
+        else
+          input(type="checkbox", name="contact_by_email")
+        label(for="contact_by_email") Contact by email
+      section
+        if contact.contact_by_mail
+          input(type="checkbox", name="contact_by_mail" checked)
+        else
+          input(type="checkbox", name="contact_by_mail")
+        label(for="contact_by_mail") Contact by mail
+    button(type="submit") Edit
+    a(href="/") Cancel
+
+      

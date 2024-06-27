@@ -1,0 +1,35 @@
+extends layouts/layout
+
+block content 
+  h1 Sign up
+  p Please select a username, and a password. Don't worry about any password rules here, we don't really care much about protecting your information - so helloworld is just fine by us!
+  form(action="/signup", method="post")
+    section 
+      label(for="first") First Name
+      input(type="text", name='first')
+    section 
+      label(for="last") Last Name
+      input(type="text", name='last') 
+      hr
+    section 
+      label(for="username") Username
+      input(type="text", name='username') 
+    section 
+      label(for="password") Password
+      input(type="password", name='password') 
+    section 
+      label(for="password2") Confirm Password
+      input(type="password", name='password2') 
+      hr
+    button(type="submit") Sign up
+    a(href="/") Nevermind
+    if message
+      p #{message}
+    section 
+      p Already have an account? 
+        a(href="/login")  Sign in here!
+
+
+ 
+
+
