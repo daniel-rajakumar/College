@@ -2,22 +2,27 @@ extends layouts/layout
 
 block content 
   .container.d-flex.align-items-center.justify-content-center.vh-100
-    .card
+    .card.w-50
       .card-header
-        p Welcome Back
+        h1 Welcome Back
       .card-body
         form(action="/login", method="post").needs-validation
-          .mb-3
-            label(for="username", class="form-label") Username
-            input.form-control(name='username', id='username', required)
-            div(class="invalid-feedback") Please enter a username.
-          .mb-3
-            label(for="password", class="form-label") Password
-            input.form-control(name="password", id="password", type="password", required)
-            div(class="invalid-feedback") Please enter a password.
+          .mb-3.form-floating
+            input.form-control(name='username', id='username', required, placeholder='Username')
+            label.form-label(for="username", class="form-label") Username
+            //- div(class="invalid-feedback") Please enter a username.
+          .mb-3.form-floating
+            input.form-control(name="password", id="password", type="password", required, placeholder='Password')
+            label.form-label(for="password", class="form-label") Password
+            //- div(class="invalid-feedback") Please enter a password.
           .d-grid.gap-2
-            button.btn.btn-primary(type="submit") Sign in
-            a.btn.btn-secondary(href="/") Nevermind
+            .btn-group.d-none.d-lg-block
+              button.btn.btn-primary.w-50(type="submit") Sign in
+              a.btn.btn-secondary.w-50(href="/") Nevermind
+            .d-lg-none
+              button.btn.btn-primary.w-100(type="submit") Sign in
+              br
+              a.btn.btn-secondary.w-100.mt-2(href="/") Nevermind
             .text-center.mt-3
               p Don't have an account yet?
                 b(href="signup") 
