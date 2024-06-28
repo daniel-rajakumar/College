@@ -9,14 +9,16 @@ html
     link(rel='stylesheet', href="/stylesheets/style.css")
   body
     header
-      nav
+      nav(style="min-width: 33em")
         if !hide_login 
-          if user
-            span
-              span Logged in: #{user.username}
-              a(href='/logout')  Logout
-          else
-            a(href='/login') Sign in 
+          .navbar.navbar-light.bg-light.justify-content-between.px-5
+            a.navbar-brand Daniel Rajakumar
+            if user
+              h5 Hello, #{user.username}
+              a.btn.btn-secondary(href='/logout') Log out
+            else
+              a.btn.btn-secondary(href='/login') Sign in
+
     .container.d-flex.align-items-center.justify-content-center.vh-100
       .card.w-50(style="min-width: 25em")
         block content
