@@ -1,40 +1,41 @@
 extends layouts/layout
 
 block content 
-  .card-header
-    h1 Sign up
-    a Please select a username, and a password. Don't worry about any password rules here, we don't really care much about protecting your information - so helloworld is just fine by us!
-  .card-body
-    form(action="/signup", method="post").needs-validation
-      if message
-        p.alert.alert-info #{message}
-      .mb-3.form-floating 
-        input.form-control(type="text", name='first', required, placeholder="First Name")
-        label(for="first") First Name
-      .mb-3.form-floating 
-        input.form-control(type="text", name='last', required, placeholder="Last Name") 
-        label(for="last") Last Name
-      .mb-3.form-floating 
-        input.form-control(type="text", name='username', required, placeholder="Username") 
-        label.form-label(for="username") Username
-      .mb-3.form-floating 
-        input.form-control(name="password", type='password', required, placeholder='Password') 
-        label.form-label(for="password") Password
-      .mb-3.form-floating 
-        input.form-control(name="password2", type='password', required, placeholder='Confirm Password') 
-        label.form-label(for="password2") Confirm Password
-      .d-grid.gap-2.mt-3
-        .btn-group.d-none.d-lg-block
-          button.btn.btn-primary.w-50(type="submit") Sign up
-          a.btn.btn-secondary.w-50(href="/") Nevermind
-        .d-lg-none
-          button.btn.btn-primary.w-100(type="submit") Sign up
-          a.btn.btn-secondary.w-100.mt-2(href="/") Nevermind
-  .card-footer 
-    .text-center.mt-3
-      p Already have an account? 
-        br
-        a.btn.btn-outline-primary.mt-2(href="/login") Sign in
+  .card.w-50(style="min-width: 25em")
+    .card-header
+      h1 Sign up
+      a Please select a username, and a password. Don't worry about any password rules here, we don't really care much about protecting your information - so helloworld is just fine by us!
+    .card-body
+      form(action="/signup", method="post").needs-validation
+        if message
+          p.alert.alert-info #{message}
+        .mb-3.form-floating 
+          input.form-control(type="text", name='first', required, placeholder="First Name")
+          label(for="first") First Name
+        .mb-3.form-floating 
+          input.form-control(type="text", name='last', required, placeholder="Last Name") 
+          label(for="last") Last Name
+        .mb-3.form-floating 
+          input.form-control(type="text", name='username', required, placeholder="Username") 
+          label.form-label(for="username") Username
+        .mb-3.form-floating 
+          input.form-control(name="password", type='password', required, placeholder='Password') 
+          label.form-label(for="password") Password
+        .mb-3.form-floating 
+          input.form-control(name="password2", type='password', required, placeholder='Confirm Password') 
+          label.form-label(for="password2") Confirm Password
+        .d-grid.gap-2.mt-3
+          .btn-group.d-none.d-lg-block
+            button.btn.btn-primary.w-50(type="submit") Sign up
+            a.btn.btn-secondary.w-50(href="/") Nevermind
+          .d-lg-none
+            button.btn.btn-primary.w-100(type="submit") Sign up
+            a.btn.btn-secondary.w-100.mt-2(href="/") Nevermind
+    .card-footer 
+      .text-center.mt-3
+        p Already have an account? 
+          br
+          a.btn.btn-outline-primary.mt-2(href="/login") Sign in
 
 
 
