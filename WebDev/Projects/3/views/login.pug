@@ -7,6 +7,8 @@ block content
         h1 Welcome Back
       .card-body
         form(action="/login", method="post").needs-validation
+          if message
+            p.alert.alert-info #{message}
           .mb-3.form-floating
             input.form-control(name='username', id='username', required, placeholder='Username')
             label.form-label(for="username", class="form-label") Username
@@ -23,9 +25,8 @@ block content
               button.btn.btn-primary.w-100(type="submit") Sign in
               br
               a.btn.btn-secondary.w-100.mt-2(href="/") Nevermind
-            .text-center.mt-3
-              p Don't have an account yet?
-                br
-                a.btn.btn-outline-primary.mt-2(href="/signup") Sign up
-                  if message
-                    p.alert.alert-info #{message}
+      .card-footer
+        .text-center.mt-3
+          p Don't have an account yet?
+            br
+            a.btn.btn-outline-primary.mt-2(href="/signup") Sign up
