@@ -1,19 +1,26 @@
 extends layouts/layout
 
 block content 
-  form(action="/login", method="post")
-    section
-      label(for="text") Username
-      input(name='username')
-    section
-      label(for="password") Password
-      input(name="password", type="password")
-    section
-      button(type="submit") Sign in
-      a(href="/") Nevermind
-    section
-      p Don't have an account yet?
-        a(href="signup")  Sign up  
-    if message
-      p #{message}
-
+  .container.d-flex.align-items-center.justify-content-center.vh-100
+    .card
+      .card-header
+        p Welcome Back
+      .card-body
+        form(action="/login", method="post").needs-validation
+          .mb-3
+            label(for="username", class="form-label") Username
+            input.form-control(name='username', id='username', required)
+            div(class="invalid-feedback") Please enter a username.
+          .mb-3
+            label(for="password", class="form-label") Password
+            input.form-control(name="password", id="password", type="password", required)
+            div(class="invalid-feedback") Please enter a password.
+          .d-grid.gap-2
+            button.btn.btn-primary(type="submit") Sign in
+            a.btn.btn-secondary(href="/") Nevermind
+            .text-center.mt-3
+              p Don't have an account yet?
+                b(href="signup") 
+                 p.btn.btn-outline-primary Sign up
+                  if message
+                    p.alert.alert-info #{message}
