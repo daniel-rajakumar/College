@@ -42,18 +42,19 @@ block content
               .form-floating
                 input.form-control(name="country", placeholder="Country", required)
                 label.form-label(for="country") Country
-          fieldset.card-body 
+          fieldset.card-body.mb-2
             legend Contact Preferences
-            section
-              label(for="contact_by_phone") Contact by phone
-              input(type="checkbox", name="contact_by_phone")
-            section
-              label(for="contact_by_email") Contact by email
-              input(type="checkbox", name="contact_by_email")
-            section
-              label(for="contact_by_mail") Contact by mail
-              input(type="checkbox", name="contact_by_mail")
-        .text-center.mt-3
+            .input-group
+              .input-group-text.flex-fill
+                input(type="checkbox", name="contact_by_phone", id="contact_by_phone")
+                label.form-control-plaintext.ms-2(for="contact_by_phone") Phone
+              .input-group-text.flex-fill
+                input(type="checkbox", name="contact_by_email", id="contact_by_email")
+                label.form-control-plaintext.ms-2(for="contact_by_email") E-mail
+              .input-group-text.flex-fill
+                input(type="checkbox", name="contact_by_mail", id="contact_by_mail")
+                label.form-control-plaintext.ms-2(for="contact_by_mail") Mail
+        .text-center
           .btn-group.d-none.d-lg-block
             button.btn.btn-primary.w-50(type="submit") Add
             a.btn.btn-secondary.w-50(href="/") Cancel
