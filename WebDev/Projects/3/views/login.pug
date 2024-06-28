@@ -10,12 +10,12 @@ block content
           if message
             p.alert.alert-info #{message}
           .mb-3.form-floating
-            input.form-control(name='username', id='username', required, placeholder='Username')
-            label.form-label(for="username", class="form-label") Username
+            input.form-control(name='username', required, placeholder='Username')
+            label.form-label(for="username") Username
             //- div(class="invalid-feedback") Please enter a username.
           .mb-3.form-floating
-            input.form-control(name="password", id="password", type="password", required, placeholder='Password')
-            label.form-label(for="password", class="form-label") Password
+            input.form-control(name="password", type="password", required, placeholder='Password')
+            label.form-label(for="password") Password
             //- div(class="invalid-feedback") Please enter a password.
           .d-grid.gap-2
             .btn-group.d-none.d-lg-block
@@ -23,7 +23,6 @@ block content
               a.btn.btn-secondary.w-50(href="/") Nevermind
             .d-lg-none
               button.btn.btn-primary.w-100(type="submit") Sign in
-              br
               a.btn.btn-secondary.w-100.mt-2(href="/") Nevermind
       .card-footer
         .text-center.mt-3
