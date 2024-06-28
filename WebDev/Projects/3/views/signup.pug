@@ -9,7 +9,7 @@ block content
       .card-body
         form(action="/signup", method="post").needs-validation
           if message
-            p #{message}
+            p.alert.alert-info #{message}
           .mb-3.form-floating 
             input.form-control(type="text", name='first', required, placeholder="First Name")
             label(for="first") First Name
