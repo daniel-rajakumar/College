@@ -1,65 +1,66 @@
 extends layouts/layout
 
 block content
-  .card.w-50(style="min-width: 25em")
-    .card-header
-      h1 Create Contact
-      if message
-        p.alert.alert-info #{message}
-    .card-body
-      form(action="/create", method="post").needs-validation
-        fieldset.card-body
-          legend Basic Info
-          .input-group.mb-2
-            .form-floating
-              input.form-control(name="first", placeholder="First", required)
-              label.form-label(for="first") First Name
-            .form-floating
-              input.form-control(name="last", placeholder="Last", required)
-              label.form-label(for="last") Last Name 
-          .form-floating.mb-2
-            input.form-control(name="phone", type="tel", id="phone", placeholder="Phone", required)
-            label.form-label(for="phone") Phone
-          .form-floating.mb-2
-            input.form-control(name="email", id="email", placeholder="Email", required)
-            label.form-label(for="email") Email
-        fieldset.card-body
-          legend Address
-          .form-floating.mb-2
-            input.form-control(name="street", placeholder="Street", required)
-            label.form-label(for="Street") Street
-          .btn-group.d-none.d-lg-block
+  .container.d-flex.align-items-center.justify-content-center.vh-100
+    .card.w-50(style="min-width: 25em")
+      .card-header
+        h1 Create Contact
+        if message
+          p.alert.alert-info #{message}
+      .card-body
+        form(action="/create", method="post").needs-validation
+          fieldset.card-body
+            legend Basic Info
+            .input-group.mb-2
+              .form-floating
+                input.form-control(name="first", placeholder="First", required)
+                label.form-label(for="first") First Name
+              .form-floating
+                input.form-control(name="last", placeholder="Last", required)
+                label.form-label(for="last") Last Name 
+            .form-floating.mb-2
+              input.form-control(name="phone", type="tel", id="phone", placeholder="Phone", required)
+              label.form-label(for="phone") Phone
+            .form-floating.mb-2
+              input.form-control(name="email", id="email", placeholder="Email", required)
+              label.form-label(for="email") Email
+          fieldset.card-body
+            legend Address
+            .form-floating.mb-2
+              input.form-control(name="street", placeholder="Street", required)
+              label.form-label(for="Street") Street
+            .btn-group.d-none.d-lg-block
+              .input-group
+                .form-floating
+                  input.form-control(name="city", placeholder="City", required)
+                  label.form-label(for="city") City
+                .form-floating
+                  input.form-control(name="state", placeholder="State", required)
+                  label.form-label(for="state") State
+                .form-floating
+                  input.form-control(name="zip", placeholder="Zip", required)
+                  label.fo(for="zip") zip
+                .form-floating
+                  input.form-control(name="country", placeholder="Country", required)
+                  label.form-label(for="country") Country
+          fieldset.card-body.mb-2
+            legend Contact Preferences
             .input-group
-              .form-floating
-                input.form-control(name="city", placeholder="City", required)
-                label.form-label(for="city") City
-              .form-floating
-                input.form-control(name="state", placeholder="State", required)
-                label.form-label(for="state") State
-              .form-floating
-                input.form-control(name="zip", placeholder="Zip", required)
-                label.fo(for="zip") zip
-              .form-floating
-                input.form-control(name="country", placeholder="Country", required)
-                label.form-label(for="country") Country
-        fieldset.card-body.mb-2
-          legend Contact Preferences
-          .input-group
-            .input-group-text.flex-fill
-              input(type="checkbox", name="contact_by_phone", id="contact_by_phone")
-              label.form-control-plaintext.ms-2(for="contact_by_phone") Phone
-            .input-group-text.flex-fill
-              input(type="checkbox", name="contact_by_email", id="contact_by_email")
-              label.form-control-plaintext.ms-2(for="contact_by_email") E-mail
-            .input-group-text.flex-fill
-              input(type="checkbox", name="contact_by_mail", id="contact_by_mail")
-              label.form-control-plaintext.ms-2(for="contact_by_mail") Mail
-        .text-center
-          .btn-group.d-none.d-lg-block
-            button.btn.btn-primary.w-50(type="submit") Add
-            a.btn.btn-secondary.w-50(href="/") Cancel
-          .d-lg-none
-            button.btn.btn-primary.w-100(type="submit") Add
-            a.btn.btn-secondary.w-100.mt-2(href="/") Cancel
+              .input-group-text.flex-fill
+                input(type="checkbox", name="contact_by_phone", id="contact_by_phone")
+                label.form-control-plaintext.ms-2(for="contact_by_phone") Phone
+              .input-group-text.flex-fill
+                input(type="checkbox", name="contact_by_email", id="contact_by_email")
+                label.form-control-plaintext.ms-2(for="contact_by_email") E-mail
+              .input-group-text.flex-fill
+                input(type="checkbox", name="contact_by_mail", id="contact_by_mail")
+                label.form-control-plaintext.ms-2(for="contact_by_mail") Mail
+          .text-center
+            .btn-group.d-none.d-lg-block
+              button.btn.btn-primary.w-50(type="submit") Add
+              a.btn.btn-secondary.w-50(href="/") Cancel
+            .d-lg-none
+              button.btn.btn-primary.w-100(type="submit") Add
+              a.btn.btn-secondary.w-100.mt-2(href="/") Cancel
 
-          
+            

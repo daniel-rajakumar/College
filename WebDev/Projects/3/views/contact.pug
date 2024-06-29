@@ -1,50 +1,51 @@
 extends layouts/layout
 
 block content 
-  .card.w-50(style="min-width: 25em")
-    .card-header
-      h1 Contact Info
-      h2= `${contact.first} ${contact.last}`
-    .card-body
-      p 
-        b Phone number:
-        span  #{contact.phone}
-      p
-        if !contact.contact_by_phone
-          i Maybe NOT be contacted by phone or text
-        else
-          i Maybe be contacted by phone or text
-      hr
-      p 
-        b Email address:
-        span  #{contact.email}
-      p
-        if !contact.contact_by_email
-          i Maybe NOT be contacted by email 
-        else
-          i Maybe be contacted by email
-      hr
-      p 
-        b Address:
-        br
-        br
-        span= `${contact.street}`
-        br
-        span= `${contact.city}, ${contact.state} ${contact.zip}`
-        br
-        span= `${contact.country}`
-      p
-        if !contact.contact_by_mail  
-          i Maybe NOT be contacted by mail 
-        else
-          i Maybe be contacted by mail
-    .card-footer
-      .input-group
-        .input-group-text.flex-fill(style="border: 0; display: flex; justify-content: center;")
-          a.btn.text-bg-secondary(href="/") Back to list
-        .input-group-text.flex-fill(style="border: 0;  display: flex; justify-content: center;")
-          a.btn.text-bg-primary(href=`/:${contact.id}/edit`) Edit Contact
-        .input-group-text.flex-fill(style="border: 0; display: flex; justify-content: center;")
-          a.btn.text-bg-danger(href=`/:${contact.id}/delete`) Delete Contact
+  .container.d-flex.align-items-center.justify-content-center.vh-100
+    .card.w-50(style="min-width: 25em")
+      .card-header
+        h1 Contact Info
+        h2= `${contact.first} ${contact.last}`
+      .card-body
+        p 
+          b Phone number:
+          span  #{contact.phone}
+        p
+          if !contact.contact_by_phone
+            i Maybe NOT be contacted by phone or text
+          else
+            i Maybe be contacted by phone or text
+        hr
+        p 
+          b Email address:
+          span  #{contact.email}
+        p
+          if !contact.contact_by_email
+            i Maybe NOT be contacted by email 
+          else
+            i Maybe be contacted by email
+        hr
+        p 
+          b Address:
+          br
+          br
+          span= `${contact.street}`
+          br
+          span= `${contact.city}, ${contact.state} ${contact.zip}`
+          br
+          span= `${contact.country}`
+        p
+          if !contact.contact_by_mail  
+            i Maybe NOT be contacted by mail 
+          else
+            i Maybe be contacted by mail
+      .card-footer
+        .input-group
+          .input-group-text.flex-fill(style="border: 0; display: flex; justify-content: center;")
+            a.btn.text-bg-secondary(href="/") Back to list
+          .input-group-text.flex-fill(style="border: 0;  display: flex; justify-content: center;")
+            a.btn.text-bg-primary(href=`/:${contact.id}/edit`) Edit Contact
+          .input-group-text.flex-fill(style="border: 0; display: flex; justify-content: center;")
+            a.btn.text-bg-danger(href=`/:${contact.id}/delete`) Delete Contact
 
 
