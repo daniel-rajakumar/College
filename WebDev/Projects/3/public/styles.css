@@ -1,0 +1,8 @@
+.vertically-centered {
+  vertical-align: middle;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+}

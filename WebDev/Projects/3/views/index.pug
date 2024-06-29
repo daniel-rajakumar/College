@@ -18,11 +18,11 @@ block content
           tbody
             each contact in contacts
               tr
-                td= `${contact.first} ${contact.last}`
-                td= contact.phone
-                td= contact.email
-                td= `${contact.street} ${contact.city} ${contact.state} ${contact.zip} ${contact.country}`
-                td
+                td(style='vertical-align: middle')= `${contact.first} ${contact.last}`
+                td(style='vertical-align: middle')= contact.phone
+                td(style='vertical-align: middle')= contact.email
+                td(style='vertical-align: middle')= `${contact.street} ${contact.city} ${contact.state} ${contact.zip} ${contact.country}`
+                td(style='vertical-align: middle')
                   .form-check
                     input.form-check-input(id=contact.contact_by_phone, type="checkbox", disabled, checked=contact_by_phone) 
                     label.form-check-label(for=contact.contact_by_phone) Phone
