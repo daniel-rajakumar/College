@@ -6,33 +6,35 @@ block content
       h1 Contact List
     .card-body
       .table-responsive
-        table.table
-          tr
-            th Name
-            th Phone
-            th Email
-            th Address
-            th Contact
-            th
-          each contact in contacts
+        table.table.table-striped
+          thead.thead-dark
             tr
-              td= `${contact.first} ${contact.last}`
-              td= contact.phone
-              td= contact.email
-              td= `${contact.street} ${contact.city} ${contact.state} ${contact.zip} ${contact.country}`
-              td
-                .form-check
-                  input.form-check-input(id=contact.contact_by_phone, type="checkbox", disabled, checked=contact_by_phone) 
-                  label.form-check-label(for=contact.contact_by_phone) Phone
-                .form-check
-                  input.form-check-input(id=contact.contact_by_email, type="checkbox", disabled, checked=contact.contact_by_email) 
-                  label.form-check-label(for=contact.contact_by_email) Email
-                .form-check
-                  input.form-check-input(id=contact.contact_by_mail, type="checkbox", disabled, checked=contact.contact_by_mail) 
-                  label.form-check-label(for=contact.contact_by_mail) Mail
-              td
-                .btn-group-vertical
-                  a.btn.btn-secondary(href=`/:${contact.id}`) View
-                  a.btn.btn-primary(href=`/:${contact.id}/edit`) Edit
-                  a.btn.btn-danger(href=`/:${contact.id}/delete`) Delete
+              th Name
+              th Phone
+              th Email
+              th Address
+              th Contact
+              th
+          tbody
+            each contact in contacts
+              tr
+                td= `${contact.first} ${contact.last}`
+                td= contact.phone
+                td= contact.email
+                td= `${contact.street} ${contact.city} ${contact.state} ${contact.zip} ${contact.country}`
+                td
+                  .form-check
+                    input.form-check-input(id=contact.contact_by_phone, type="checkbox", disabled, checked=contact_by_phone) 
+                    label.form-check-label(for=contact.contact_by_phone) Phone
+                  .form-check
+                    input.form-check-input(id=contact.contact_by_email, type="checkbox", disabled, checked=contact.contact_by_email) 
+                    label.form-check-label(for=contact.contact_by_email) Email
+                  .form-check
+                    input.form-check-input(id=contact.contact_by_mail, type="checkbox", disabled, checked=contact.contact_by_mail) 
+                    label.form-check-label(for=contact.contact_by_mail) Mail
+                td
+                  .btn-group-vertical
+                    a.btn.btn-secondary(href=`/:${contact.id}`) View
+                    a.btn.btn-primary(href=`/:${contact.id}/edit`) Edit
+                    a.btn.btn-danger(href=`/:${contact.id}/delete`) Delete
       a.btn.btn-primary.w-100(href='/create') Create a new contact
