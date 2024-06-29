@@ -44,6 +44,7 @@ router.get('/:id/edit', async (req, res) => {
   let { id } = req.params;
   id = id.replace(":", "")
   const contact = await req.db.findContactById(id);
+  console.log(contact)
   res.render('edit', { contact })
 })
 
