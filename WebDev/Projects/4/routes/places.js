@@ -1,8 +1,9 @@
 const express = require('express')
 const router = express.Router();
 const geo = require('node-geocoder');
-const geocoder = geo({ provider: 'openstreetmap',  
-        headers: { 'user-agent': 'My application <email@domain.com>', } 
+const geocoder = geo({ 
+  provider: 'openstreetmap',  
+  headers: { 'user-agent': 'My application <email@domain.com>', } 
 });
 
 router.get('/', async (req, res) => {
@@ -11,19 +12,19 @@ router.get('/', async (req, res) => {
 })
 
 router.put('/', async (req, res) => {
-  const label = req.body.label;
-  const address = req.body.address;
-  let lat = 0, lng = 0;
+  const { label, address } = req.body
 
   const result = await geocoder.geocode(address);
 
   if (result.length > 0) {
-    lat = result[0].latitude 
-    lng = result[0].longitude 
-  }
+    const { latitude, longitude, formattedAddress } = result[0];
+    const id = await req.db.createPlace(label, formattedAddress, latitude, longitude);
+    res.json({ id, label, formattedAddress, latitude, longitude });
 
-  const id = await req.db.createPlace(label, address, lat, lng);
-  res.json({ id });
+  } else {
+    console.error("[ERROR]", "No results found")
+    res.status(404).send();
+  }
 })
 
 router.delete('/:id', async(req, res) => {
