@@ -1,0 +1,30 @@
+body {
+  overflow-y: hidden;
+}
+
+#map-container {
+  position:relative; /* important. */
+  height:50em; /* pick whatever height you think is nice. */
+  margin-bottom:5rem; /* change as you wish */
+}
+
+#map { /* This is required as-is. */
+  position: absolute; 
+  top: 0; 
+  bottom: 0; 
+  width: 100%;
+}
+
+.table-container {
+  max-height: 65vh; /* Set the desired height */
+  overflow-y: auto;  /* Enable vertical scrolling */
+}
+
+
+tbody tr {
+  cursor: pointer;
+}
+
+tbody tr:hover {
+  background-color: #aaa;
+}
