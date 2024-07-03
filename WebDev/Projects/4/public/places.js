@@ -49,9 +49,7 @@ const loadPlaces = async () => {
   const response = await axios.get('/places');
   const tbody = document.querySelector('tbody');
 
-  while (tbody.firstChild) {
-    tbody.removeChild(tbody.firstChild);
-  }
+  tbody.innerHTML = '';
   
   if (response?.data?.places){
     for (const place of response.data.places){
