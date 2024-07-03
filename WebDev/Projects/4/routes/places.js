@@ -1,5 +1,9 @@
 const express = require('express')
 const router = express.Router();
+const geo = require('node-geocoder');
+const geocoder = geo({ provider: 'openstreetmap',  
+        headers: { 'user-agent': 'My application <email@domain.com>', } 
+});
 
 router.get('/', async (req, res) => {
   const places = await req.db.findPlaces();
@@ -9,7 +13,16 @@ router.get('/', async (req, res) => {
 router.put('/', async (req, res) => {
   const label = req.body.label;
   const address = req.body.address;
-  const id = await req.db.createPlace(label, address);
+  let lat = 0, lng = 0;
+
+  const result = await geocoder.geocode(address);
+
+  if (result.length > 0) {
+    lat = result[0].latitude 
+    lng = result[0].longitude 
+  }
+
+  const id = await req.db.createPlace(label, address, lat, lng);
   res.json({ id });
 })
 
