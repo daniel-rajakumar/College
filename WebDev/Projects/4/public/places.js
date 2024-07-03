@@ -7,7 +7,7 @@ const addPlace = async () => {
 
 const deletePlace = async (id) => {
   await axios.delete(`/places/${id}`)
-  await loadPlaces();
+  await loadPlaces()
 }
 
 const loadPlaces = async () => {
@@ -25,10 +25,11 @@ const loadPlaces = async () => {
         <td>${place.label}</td>
         <td>${place.address}</td>
         <td>
-          <button class='btn btn-danger' onclick=deletePlace(${place.id})>Delete</button>
+          <button class='btn btn-danger' type='button' onclick=deletePlace(${place.id})>Delete</button>
         </td>
       `
       tbody.appendChild(tr);
     }
   }
 }
+          // <button class='btn btn-danger' onclick="deletePlace(${place.id})">Delete</button>

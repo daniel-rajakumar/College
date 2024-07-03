@@ -10,7 +10,7 @@ router.put('/', async (req, res) => {
   const label = req.body.label;
   const address = req.body.address;
   const id = await req.db.createPlace(label, address);
-  res.json({ id })
+  res.json({ id });
 })
 
 router.delete('/:id', async(req, res) => {
