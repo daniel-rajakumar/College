@@ -1,0 +1,41 @@
+-- create schema
+
+CREATE TABLE car_sales (
+id INT AUTO_INCREMENT PRIMARY KEY,
+make VARCHAR(51), 
+model VARCHAR(51),  
+year INT, 
+is_sold VARCHAR(3) default 'NO',
+sold_timestamp TIMESTAMP default NULL ON UPDATE CURRENT_TIMESTAMP
+
+);
+
+-- populate with 5 cars 
+INSERT INTO car_sales (make, model, year) 
+VALUES 
+  ('make_1', 'model_1', 1111),
+  ('make_2', 'model_2', 2222),
+  ('make_3', 'model_3', 3333),
+  ('make_4', 'model_4', 4444),
+  ('make_5', 'model_5', 5555);
+  
+
+START TRANSACTION;
+
+-- sell 5th car 
+UPDATE car_sales 
+SET is_sold = 'YES'
+WHERE id = 2;
+
+
+-- sell 3rd car
+UPDATE car_sales 
+SET is_sold = 'YES'
+WHERE id = 5;
+
+COMMIT;
+
+
+
+-- step 5
+SELECT * FROM car_sales;

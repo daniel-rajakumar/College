@@ -1,0 +1,68 @@
+-- STEP 0
+
+CREATE DATABASE mydatabase;
+USE mydatabase;
+
+-- STEP 1
+
+CREATE TABLE mytable (
+	id INT auto_increment PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100)  NOT NULL
+);
+
+CREATE TABLE oldtable (
+	id INT auto_increment PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE mygrade (
+	id INT auto_increment PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    grade CHAR(2) NOT NULL
+);
+
+-- STEP 2
+
+INSERT INTO mytable (username, email) 
+VALUES 	('username1', 'username1@example.com'),
+		('username2', 'username2@example.com'),
+		('username2', 'username2@example.com'),
+		('username3', 'username3@example.com'),
+		('username4', 'username3@example.com');
+
+
+INSERT INTO oldtable (username, email) 
+VALUES 	('username1', 'username1@example.com'),
+		('username2', 'username2@example.com'),
+		('username2', 'username2@example.com'),
+		('username3', 'username3@example.com'),
+		('username5', 'username5@example.com');
+
+INSERT INTO mygrade (username, grade) 
+VALUES 	('username1', 'A'),
+		('username2', 'B+'),
+		('username4', 'C');
+
+ 
+SELECT * FROM mytable;
+SELECT * FROM oldtable;
+SELECT * FROM mygrade;
+
+-- STEP 3
+UPDATE mytable
+SET email = 'user@ramapo.edu'
+WHERE username = 'username2' AND ID = 2;
+
+
+-- STEP 4.1
+SELECT * FROM mytable
+
+UNION
+SELECT * FROM oldtable;
+
+-- STEP 4.2
+SELECT mytable.username, mytable.email, mygrade.grade
+FROM mytable
+INNER JOIN mygrade ON mytable.username = mygrade.username;
