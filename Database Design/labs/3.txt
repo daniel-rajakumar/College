@@ -1,0 +1,81 @@
+CREATE TABLE school (
+ 	school_id INT NOT NULL auto_increment PRIMARY KEY,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  address VARCHAR(200) NOT NULL,
+  course VARCHAR(50) NOT NULL,
+  grade VARCHAR(2) NOT NULL,
+  instructor VARCHAR(50) NOT NULL
+);
+ 
+ CREATE TABLE gradescale (
+  gradescale_id INT NOT NULL auto_increment PRIMARY KEY,
+  Grade VARCHAR(2) NOT NULL, 
+  Min_score INT NOT NULL,
+  Max_score INT NOT NULL
+);
+
+
+INSERT INTO school(first_name, last_name, address, course, grade, instructor)
+VALUES
+  ("Emma-Louise", "Halliday", "830 E. Gulf Drive Munster IN 46321", "CMPS 311", "A-", "Megan Butler"),
+  ("Sommer", "Brook", "8429 Southampton Dr. Hempstead NY 11550", "CMPS 201", "B", "Karen Riley"),
+  ("Emilie", "Levy", "8429 Southampton Dr. Hempstead NY 11550", "MATH 101", "B+", "Melody Armstrong"),
+  ("Elspeth", "Schneider", "7 Golf Drive Chelsea MA 02150", "CMPS 231", "A", "Anthony Sanchez"),
+  ("Freddy", "Seymour", "9485 N. Santa Clara St. Eugene OR 97402", "STAT 302", "A", "Robyn Russell"),
+  ("Emma-Louise", "Halliday", "830 E. Gulf Drive Munster IN 46321","MATH 102", "D", "Nichole Carpenter"),
+  ("Kloe", "Appleton", "9485 N. Santa Clara St. Eugene OR 97402", "CMPS 311", "C", "Rose Barber"),
+  ("Safiya", "Moon", "266 Harvey St. Clover SC 29710", "CMPS 664", "A", "Glenn Howell"),
+  ("Jill", "Donaldson", "904 Albany Ave. Pickerington OH 43147", "CMPS 364", "A-", "Oscar Edwards"),
+  ("Sommer", "Brook", "8429 Southampton Dr. Hempstead NY 11550", "CMPS 530", "B", "Willard Wade"),
+  ("Emma-Louise", "Halliday", "830 E. Gulf Drive Munster IN 46321", "STAT 302", "C", "Robyn Russell"),
+  ("Fabio", "Blackwell", "993 Lookout Ave. Mooresville NC 28115", "MATH 101", "D", "Karen Riley"),
+  ("Shanay", "Bolton", "64 North Smoky Hollow Road Leland NC 28451", "CMPS 664", "B+", "Nichole Carpenter"),
+  ("Sommer", "Brook", "8429 Southampton Dr. Hempstead NY 11550", "CMPS 364", "B", "Willard Wade"),
+  ("Freddy", "Seymour", "9485 N. Santa Clara St. Eugene OR 97402", "STAT 109", "B-", "Robyn Russell");
+
+INSERT INTO gradescale(Grade, Min_score, Max_score)
+VALUES
+  ("A", 95, 100),
+  ("A-", 90, 94),
+  ("B+", 88, 89),
+  ("B", 83, 87),
+  ("B-", 80, 82),
+  ("C+", 77, 79),
+  ("C", 74, 76),
+  ("C-", 70, 73),
+  ("D", 60, 69),
+  ("F", 0, 59);
+
+
+SELECT DISTINCT first_name, last_name, course 
+FROM school 
+WHERE grade IN ('A', 'A-', 'B+', 'B', 'B-');
+
+
+SELECT first_name, last_name, AVG(gradescale.Max_score) AS avg_percentage_score
+FROM school 
+JOIN gradescale ON school.grade = gradescale.Grade
+GROUP BY first_name, last_name;
+
+
+SELECT DISTINCT CONCAT(      school.first_name, ' ',       school.last_name) student, 
+                CONCAT(other_school.first_name, ' ', other_school.last_name) friend, 
+                school.course
+                
+FROM school school
+JOIN school other_school ON school.course = other_school.course
+WHERE school.first_name != other_school.first_name AND school.last_name != other_school.last_name;
+
+
+
+
+
+
+
+ 
+
+
+
+
+  

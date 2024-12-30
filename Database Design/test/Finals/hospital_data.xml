@@ -1,0 +1,106 @@
+<?xml version="1.0" ?>
+<Hospital>
+  <Patients>
+    <Patient>
+      <PatientID>1</PatientID>
+      <Name>John Doe</Name>
+      <Age>30</Age>
+      <Gender>Male</Gender>
+      <Address>1234 Elm St.</Address>
+    </Patient>
+    <Patient>
+      <PatientID>2</PatientID>
+      <Name>Jane Smith</Name>
+      <Age>25</Age>
+      <Gender>Female</Gender>
+      <Address>5678 Oak Ave.</Address>
+    </Patient>
+    <Patient>
+      <PatientID>3</PatientID>
+      <Name>Alice Johnson</Name>
+      <Age>40</Age>
+      <Gender>Female</Gender>
+      <Address>9101 Pine Rd.</Address>
+    </Patient>
+  </Patients>
+  <Doctors>
+    <Doctor>
+      <DoctorID>101</DoctorID>
+      <Name>Dr. Emily White</Name>
+      <Specialty>Cardiology</Specialty>
+      <YearsOfExperience>10</YearsOfExperience>
+    </Doctor>
+    <Doctor>
+      <DoctorID>102</DoctorID>
+      <Name>Dr. Mark Black</Name>
+      <Specialty>Neurology</Specialty>
+      <YearsOfExperience>12</YearsOfExperience>
+    </Doctor>
+    <Doctor>
+      <DoctorID>103</DoctorID>
+      <Name>Dr. Sarah Green</Name>
+      <Specialty>Pediatrics</Specialty>
+      <YearsOfExperience>8</YearsOfExperience>
+    </Doctor>
+  </Doctors>
+  <Appointments>
+    <Appointment>
+      <AppointmentID>2001</AppointmentID>
+      <PatientID>1</PatientID>
+      <DoctorID>101</DoctorID>
+      <Date>2022-12-01</Date>
+      <Time>09:00</Time>
+      <Reason>Checkup</Reason>
+    </Appointment>
+    <Appointment>
+      <AppointmentID>2002</AppointmentID>
+      <PatientID>2</PatientID>
+      <DoctorID>103</DoctorID>
+      <Date>2022-12-02</Date>
+      <Time>10:30</Time>
+      <Reason>Regular Visit</Reason>
+    </Appointment>
+    <Appointment>
+      <AppointmentID>2003</AppointmentID>
+      <PatientID>3</PatientID>
+      <DoctorID>102</DoctorID>
+      <Date>2022-12-03</Date>
+      <Time>08:45</Time>
+      <Reason>Consultation</Reason>
+    </Appointment>
+  </Appointments>
+  <Departments>
+    <Department>
+      <DepartmentID>301</DepartmentID>
+      <Name>Cardiology</Name>
+      <Location>Building A</Location>
+    </Department>
+    <Department>
+      <DepartmentID>302</DepartmentID>
+      <Name>Neurology</Name>
+      <Location>Building B</Location>
+    </Department>
+    <Department>
+      <DepartmentID>303</DepartmentID>
+      <Name>Pediatrics</Name>
+      <Location>Building C</Location>
+    </Department>
+  </Departments>
+  <Treatments>
+    <Treatment>
+      <TreatmentID>4001</TreatmentID>
+      <Name>Heart Surgery</Name>
+      <Cost>20000</Cost>
+    </Treatment>
+    <Treatment>
+      <TreatmentID>4002</TreatmentID>
+      <Name>MRI Scan</Name>
+      <Cost>1200</Cost>
+    </Treatment>
+    <Treatment>
+      <TreatmentID>4003</TreatmentID>
+      <Name>Vaccination</Name>
+      <Cost>100</Cost>
+    </Treatment>
+  </Treatments>
+</Hospital>

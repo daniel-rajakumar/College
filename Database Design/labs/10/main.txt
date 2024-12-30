@@ -1,0 +1,31 @@
+DROP DATABASE IF EXISTS TrainScheduler;
+CREATE DATABASE IF NOT EXISTS TrainScheduler;
+
+USE TrainScheduler;
+
+CREATE TABLE Trains (
+    TrainID INT PRIMARY KEY,
+    TrainName VARCHAR(100),
+    Source VARCHAR(100),
+    Destination VARCHAR(100),
+    DepartureTime TIME,
+    ArrivalTime TIME
+);
+
+INSERT INTO Trains (TrainID, TrainName, Source, Destination, DepartureTime, ArrivalTime)
+VALUES
+(111, 'CityHopper', 'Washington', 'Philadelphia', '13:00:00', '16:30:00'),
+(112, 'ValleyExpress', 'San Francisco', 'Los Angeles', '14:00:00', '18:15:00'),
+(113, 'SunshineSpecial', 'Orlando', 'Miami', '15:00:00', '19:15:00'),
+(114, 'PeakPerformer', 'Aspen', 'Denver', '10:00:00', '13:30:00'),
+(115, 'AtlanticLine', 'Philadelphia', 'Boston', '11:30:00', '15:35:00'),
+(116, 'DesertFlyer', 'Tucson', 'Phoenix', '06:30:00', '08:00:00'),
+(117, 'SouthernBelle', 'Charlotte', 'Atlanta', '13:30:00', '16:45:00'),
+(118, 'RainCitySpecial', 'Portland', 'Seattle', '10:30:00', '13:00:00'),
+(119, 'LoneStar', 'Austin', 'Dallas', '07:45:00', '11:00:00'),
+(120, 'LakeshoreExpress', 'Minneapolis', 'Chicago', '09:00:00', '13:30:00'),
+(121, 'EmpireState', 'Philadelphia', 'New York', '12:00:00', '15:05:00'),
+(122, 'GoldenGate', 'Los Angeles', 'San Diego', '15:30:00', '18:00:00'),
+(123, 'OrangeBlossom', 'Orlando', 'Tampa', '08:00:00', '09:45:00'),
+(124, 'RockyRanger', 'Denver', 'Salt Lake City', '18:00:00', '22:30:00'),
+(125, 'SeaboardExpress', 'Boston', 'New York', '16:45:00', '20:50:00');

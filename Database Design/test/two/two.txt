@@ -1,0 +1,29 @@
+USE test;
+
+DELIMITER //
+
+CREATE PROCEDURE IF NOT EXISTS CalculateAverageAge(
+    IN major_name VARCHAR(50),
+    OUT avg_age DECIMAL(5,2)
+)
+BEGIN
+    DECLARE count_major INT;
+
+    SELECT COUNT(*) INTO count_major
+    FROM students
+    WHERE major = major_name;
+
+    IF count_major = 0 THEN
+        SET avg_age = -1;
+    ELSE
+        SELECT AVG(age) INTO avg_age
+        FROM students
+        WHERE major = major_name;
+    END IF;
+END //
+DELIMITER ;
+
+SET @avg_age = 0;
+
+CALL CalculateAverageAge('Computer Science', @avg_age);
+SELECT @avg_age AS Average_Age;

@@ -1,0 +1,22 @@
+CREATE TABLE employees (
+  employee_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  employee_name VARCHAR(50) NOT NULL,
+  hire_date DATE NOT NULL
+);
+
+
+
+
+INSERT INTO employees(employee_name, hire_date) 
+VALUES
+  ("Alice", "2023-05-15"),
+  ("Sarah", "2023-05-19"),
+  ("Michale", "2023-06-10"),
+  ("Emma", "2023-06-12"),
+  ("Jason", "2023-07-05");
+  
+
+
+SELECT * FROM employees;
+
+

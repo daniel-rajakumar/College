@@ -1,0 +1,37 @@
+
+CREATE TABLE customers (
+  customer_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  customer_name VARCHAR(50) NOT NULL,
+  birth_date DATE NOT NULL
+);
+
+
+CREATE TABLE employees (
+  employee_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  employee_name VARCHAR(50) NOT NULL,
+  birth_date DATE NOT NULL
+);
+
+
+INSERT INTO customers(customer_name, birth_date) 
+VALUES
+  ("Alice", "1990-05-12"),
+  ("Bob", "1985-07-21"),
+  ("Charlie", "1992-05-03");
+  
+  
+INSERT INTO employees(employee_name, birth_date) 
+VALUES
+  ("John", "1989-05-12"),
+  ("Sarah", "1991-05-19");
+
+-- ONE
+SELECT DISTINCT customers.customer_name, customers.birth_date
+FROM customers 
+JOIN employees 
+ON MONTH(customers.birth_date) = MONTH(employees.birth_date)
+
+
+
+
+

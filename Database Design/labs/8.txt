@@ -1,0 +1,138 @@
+DROP DATABASE IF EXISTS library_management;
+CREATE DATABASE IF NOT EXISTS library_management;
+USE library_management;
+
+-- Create the 'books' table
+CREATE TABLE books (
+    book_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    isbn VARCHAR(14) NOT NULL,
+    copies_available INT NOT NULL
+);
+
+-- Create the 'borrowers' table
+CREATE TABLE borrowers (
+    borrower_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL
+);
+
+-- Create the 'borrowings' table
+CREATE TABLE borrowings (
+    borrowing_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    borrower_id INT NOT NULL,
+    checkout_date DATE NOT NULL,
+    return_date DATE
+);
+
+-- Populate the 'books' table
+INSERT INTO books (title, author, isbn, copies_available)
+VALUES
+    ('Book 1', 'Author A', 'ISBN1234567890', 5),
+    ('Book 2', 'Author B', 'ISBN2345678901', 3),
+    ('Book 3', 'Author C', 'ISBN3456789012', 8),
+    ('Book 4', 'Author D', 'ISBN4567890123', 2),
+    ('Book 5', 'Author E', 'ISBN5678901234', 6),
+    ('Book 6', 'Author F', 'ISBN6789012345', 4),
+    ('Book 7', 'Author G', 'ISBN7890123456', 7),
+    ('Book 8', 'Author H', 'ISBN8901234567', 1),
+    ('Book 9', 'Author I', 'ISBN9012345678', 9),
+    ('Book 10', 'Author J', 'ISBN0123456789', 0);
+
+-- Populate the 'borrowers' table
+INSERT INTO borrowers (name, email)
+VALUES
+    ('Borrower 1', 'borrower1@example.com'),
+    ('Borrower 2', 'borrower2@example.com'),
+    ('Borrower 3', 'borrower3@example.com'),
+    ('Borrower 4', 'borrower4@example.com'),
+    ('Borrower 5', 'borrower5@example.com');
+
+-- Populate the 'borrowings' table (simulating some checkouts)
+INSERT INTO borrowings (book_id, borrower_id, checkout_date, return_date)
+VALUES
+    (1, 1, '2023-10-01', '2023-10-15'),
+    (2, 2, '2023-09-20', '2023-10-05'),
+    (3, 3, '2023-10-10', '2023-10-24'),
+    (4, 4, '2023-10-05', '2023-10-19'),
+    (5, 5, '2023-09-15', '2023-09-30');
+    
+    
+
+    
+    
+DELIMITER //
+
+CREATE PROCEDURE CheckoutBook(IN p_book_id INT, IN p_borrower_id INT)
+BEGIN
+    DECLARE available_copies INT;
+
+    SELECT copies_available INTO available_copies
+    FROM books
+    WHERE book_id = p_book_id;
+    
+    IF available_copies > 0 THEN
+        UPDATE books
+        SET copies_available = copies_available - 1
+        WHERE book_id = p_book_id;
+
+		SELECT p_borrower_id;  
+
+        INSERT INTO borrowings (book_id, borrower_id, checkout_date)
+        VALUES (p_book_id, p_borrower_id, CURDATE());
+    END IF;
+END//
+
+
+CREATE PROCEDURE ReturnBook(IN p_borrowing_id INT)
+BEGIN
+    DECLARE book_id INT;
+
+    SELECT book_id INTO book_id
+    FROM borrowings
+    WHERE borrowing_id = p_borrowing_id
+    LIMIT 1;
+
+    UPDATE borrowings
+    SET return_date = CURDATE()
+    WHERE borrowing_id = p_borrowing_id;
+
+    UPDATE books
+    SET copies_available = copies_available + 1
+    WHERE book_id = book_id;
+END//
+
+
+
+CREATE TABLE overdue_books (
+    overdue_id INT AUTO_INCREMENT PRIMARY KEY,
+    borrowing_id INT,
+    overdue_date DATE
+);
+
+
+CREATE TRIGGER CheckOverdueBooks_AfterInsert
+AFTER INSERT ON borrowings
+FOR EACH ROW
+BEGIN
+    IF NEW.return_date IS NULL AND CURDATE() > DATE_ADD(NEW.checkout_date, INTERVAL 1 DAY) THEN
+        INSERT INTO overdue_books (borrowing_id, overdue_date) VALUES (NEW.borrowing_id, CURDATE());
+    END IF;
+END//
+
+CREATE TRIGGER CheckOverdueBooks_AfterUpdate
+AFTER UPDATE ON borrowings
+FOR EACH ROW
+BEGIN
+    IF NEW.return_date IS NULL AND CURDATE() > DATE_ADD(NEW.checkout_date, INTERVAL 14 DAY) THEN
+        INSERT INTO overdue_books (borrowing_id, overdue_date) VALUES (NEW.borrowing_id, CURDATE());
+    END IF;
+END//
+
+DELIMITER ;
+
+CALL CheckoutBook(6, 6); 
+CALL ReturnBook(6);  
+SELECT * FROM overdue_books;

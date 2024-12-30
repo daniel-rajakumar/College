@@ -1,0 +1,58 @@
+CREATE TABLE customer (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  country VARCHAR(50) NOT NULL
+);
+
+
+CREATE TABLE orders (
+  order_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+  customer_id INT NOT NULL,
+  amount INT NOT NULL,
+  order_date DATE NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES customer(id)  
+);
+
+
+INSERT INTO customer(name, country)
+VALUES 
+('John Doe', 'USA'),
+('Jane Smith', 'Canada'),
+('Bob Johnson', 'USA'),
+('Alice Davis', 'UK'),
+('Charlie Lee', 'USA');
+
+
+INSERT INTO orders(customer_id, amount, order_date)
+VALUES
+(1, 200, '2024-09-01'), 
+(2, 150, '2024-09-03'),  
+(1, 50, '2024-09-05'),   
+(4, 300, '2024-09-10'),  
+(5, 120, '2024-09-12');
+
+
+
+SELECT customer.name, orders.amount
+FROM customer
+JOIN orders ON customer.id = orders.customer_id;
+
+ 
+SELECT customer.name, orders.amount
+FROM customer
+LEFT JOIN orders ON customer.id = orders.customer_id;
+
+
+
+SELECT customer.name
+FROM customer
+JOIN orders ON customer.id = orders.customer_id
+GROUP BY customer.id, customer.name
+HAVING COUNT(orders.order_id) > 1;
+
+
+
+SELECT customer.name, COUNT(orders.order_id) AS total_orders, SUM(orders.amount) AS total_amount
+FROM customer
+LEFT JOIN orders ON customer.id = orders.customer_id
+GROUP BY customer.id, customer.name, customer.country;

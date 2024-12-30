@@ -1,0 +1,105 @@
+{
+  "Patients": [
+    {
+      "PatientID": 1,
+      "Name": "John Doe",
+      "Age": 30,
+      "Gender": "Male",
+      "Address": "1234 Elm St."
+    },
+    {
+      "PatientID": 2,
+      "Name": "Jane Smith",
+      "Age": 25,
+      "Gender": "Female",
+      "Address": "5678 Oak Ave."
+    },
+    {
+      "PatientID": 3,
+      "Name": "Alice Johnson",
+      "Age": 40,
+      "Gender": "Female",
+      "Address": "9101 Pine Rd."
+    }
+  ],
+  "Doctors": [
+    {
+      "DoctorID": 101,
+      "Name": "Dr. Emily White",
+      "Specialty": "Cardiology",
+      "YearsOfExperience": 10
+    },
+    {
+      "DoctorID": 102,
+      "Name": "Dr. Mark Black",
+      "Specialty": "Neurology",
+      "YearsOfExperience": 12
+    },
+    {
+      "DoctorID": 103,
+      "Name": "Dr. Sarah Green",
+      "Specialty": "Pediatrics",
+      "YearsOfExperience": 8
+    }
+  ],
+  "Appointments": [
+    {
+      "AppointmentID": 2001,
+      "PatientID": 1,
+      "DoctorID": 101,
+      "Date": "2022-12-01",
+      "Time": "09:00",
+      "Reason": "Checkup"
+    },
+    {
+      "AppointmentID": 2002,
+      "PatientID": 2,
+      "DoctorID": 103,
+      "Date": "2022-12-02",
+      "Time": "10:30",
+      "Reason": "Regular Visit"
+    },
+    {
+      "AppointmentID": 2003,
+      "PatientID": 3,
+      "DoctorID": 102,
+      "Date": "2022-12-03",
+      "Time": "08:45",
+      "Reason": "Consultation"
+    }
+  ],
+  "Departments": [
+    {
+      "DepartmentID": 301,
+      "Name": "Cardiology",
+      "Location": "Building A"
+    },
+    {
+      "DepartmentID": 302,
+      "Name": "Neurology",
+      "Location": "Building B"
+    },
+    {
+      "DepartmentID": 303,
+      "Name": "Pediatrics",
+      "Location": "Building C"
+    }
+  ],
+  "Treatments": [
+    {
+      "TreatmentID": 4001,
+      "Name": "Heart Surgery",
+      "Cost": 20000
+    },
+    {
+      "TreatmentID": 4002,
+      "Name": "MRI Scan",
+      "Cost": 1200
+    },
+    {
+      "TreatmentID": 4003,
+      "Name": "Vaccination",
+      "Cost": 100
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+<Company>
+    <Employee empID="E1">
+        <Name>John Doe</Name>
+        <Salary>75000</Salary>
+        <DepartmentID>D1</DepartmentID>
+    </Employee>
+    <Employee empID="E2">
+        <Name>Jane Smith</Name>
+        <Salary>85000</Salary>
+        <DepartmentID>D2</DepartmentID>
+    </Employee>
+    <Employee empID="E3">
+        <Name>Sam Wilson</Name>
+        <Salary>68000</Salary>
+        <DepartmentID>D1</DepartmentID>
+    </Employee>
+    <Department deptID="D1">
+        <DeptName>Human Resources</DeptName>
+        <Manager>E1</Manager>
+    </Department>
+    <Department deptID="D2">
+        <DeptName>Finance</DeptName>
+        <Manager>E2</Manager>
+    </Department>
+</Company>

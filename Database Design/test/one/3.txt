@@ -1,0 +1,45 @@
+CREATE TABLE customers (
+  customer_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  customer_name VARCHAR(50) NOT NULL
+);
+
+
+CREATE TABLE orders (
+  order_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  order_date DATE NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id)  
+) AUTO_INCREMENT=101;
+
+
+INSERT INTO customers(customer_name) 
+VALUES
+  ("Alice"),
+  ("Bob"),
+  ("Charlie");
+  
+  
+INSERT INTO orders(customer_id, order_date) 
+VALUES
+  (1, "2023-07-15"),
+  (2, "2023-08-21"),
+  (1, "2023-07-28"),
+  (3, "2023-05-03");
+
+
+SELECT * FROM customers;
+SELECT * FROM orders;
+
+
+SELECT DISTINCT customers.customer_name
+FROM customers
+
+JOIN orders order_ 
+ON customers.customer_id = order_.customer_id
+
+JOIN orders order_alt 
+ON customers.customer_id = order_alt.customer_id
+
+WHERE MONTH(order_.order_date) = MONTH(order_alt.order_date) AND order_.order_id < order_alt.order_id;
+
+

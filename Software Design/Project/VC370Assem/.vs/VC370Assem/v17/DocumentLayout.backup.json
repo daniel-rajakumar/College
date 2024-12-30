@@ -1,0 +1,249 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\softr\\source\\repos\\VC370Assem\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\SymTab.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\SymTab.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\SymTab.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\SymTab.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assembler.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\Assembler.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\stdafx.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\stdafx.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\FileAccess.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\FileAccess.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assembler.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\Assembler.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assem.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\Assem.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\stdafx.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\stdafx.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Errors.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\Errors.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Instruction.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\Instruction.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\FileAccess.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\FileAccess.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Emulator.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\Emulator.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\program.asm||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{2E17C5AF-D2C7-40AF-BE3D-380233384E7D}|VC370Assem\\VC370Assem.vcxproj|solutionrelative:VC370Assem\\program.asm||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Assembler.cpp",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assembler.cpp",
+              "RelativeDocumentMoniker": "VC370Assem\\Assembler.cpp",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assembler.cpp",
+              "RelativeToolTip": "VC370Assem\\Assembler.cpp",
+              "ViewState": "AgIAANoAAAAANzMzM7MawFYAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-12-21T02:07:34.686Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "FileAccess.cpp",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\FileAccess.cpp",
+              "RelativeDocumentMoniker": "VC370Assem\\FileAccess.cpp",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\FileAccess.cpp",
+              "RelativeToolTip": "VC370Assem\\FileAccess.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-12-21T02:08:46.28Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SymTab.cpp",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\SymTab.cpp",
+              "RelativeDocumentMoniker": "VC370Assem\\SymTab.cpp",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\SymTab.cpp",
+              "RelativeToolTip": "VC370Assem\\SymTab.cpp",
+              "ViewState": "AgIAADMAAAAAAAAAAAAAADYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-12-21T02:11:07.876Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Assem.cpp",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assem.cpp",
+              "RelativeDocumentMoniker": "VC370Assem\\Assem.cpp",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assem.cpp",
+              "RelativeToolTip": "VC370Assem\\Assem.cpp",
+              "ViewState": "AgIAABgAAAAgaGZmZmYkwBAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-12-21T02:03:20.705Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Errors.h",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Errors.h",
+              "RelativeDocumentMoniker": "VC370Assem\\Errors.h",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Errors.h",
+              "RelativeToolTip": "VC370Assem\\Errors.h",
+              "ViewState": "AgIAABsAAAAgMzMzM/MmwCIAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-12-21T02:11:39.343Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "stdafx.h",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\stdafx.h",
+              "RelativeDocumentMoniker": "VC370Assem\\stdafx.h",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\stdafx.h",
+              "RelativeToolTip": "VC370Assem\\stdafx.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-12-21T02:05:24.956Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Assembler.h",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assembler.h",
+              "RelativeDocumentMoniker": "VC370Assem\\Assembler.h",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Assembler.h",
+              "RelativeToolTip": "VC370Assem\\Assembler.h",
+              "ViewState": "AgIAABIAAAAAAAAAAAAUwB4AAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-12-21T02:06:56.286Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SymTab.h",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\SymTab.h",
+              "RelativeDocumentMoniker": "VC370Assem\\SymTab.h",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\SymTab.h",
+              "RelativeToolTip": "VC370Assem\\SymTab.h",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAUwBUAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-12-21T02:10:35.649Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "stdafx.cpp",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\stdafx.cpp",
+              "RelativeDocumentMoniker": "VC370Assem\\stdafx.cpp",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\stdafx.cpp",
+              "RelativeToolTip": "VC370Assem\\stdafx.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-12-21T02:06:00.978Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Instruction.h",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Instruction.h",
+              "RelativeDocumentMoniker": "VC370Assem\\Instruction.h",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Instruction.h",
+              "RelativeToolTip": "VC370Assem\\Instruction.h",
+              "ViewState": "AgIAAAYAAACAnpmZmVkqwLcAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-12-21T02:09:47.012Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "FileAccess.h",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\FileAccess.h",
+              "RelativeDocumentMoniker": "VC370Assem\\FileAccess.h",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\FileAccess.h",
+              "RelativeToolTip": "VC370Assem\\FileAccess.h",
+              "ViewState": "AgIAAA4AAAAANDMzMzMrwB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-12-21T02:08:27.134Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Emulator.h",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Emulator.h",
+              "RelativeDocumentMoniker": "VC370Assem\\Emulator.h",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\Emulator.h",
+              "RelativeToolTip": "VC370Assem\\Emulator.h",
+              "ViewState": "AgIAAFgAAAAATzMzM7MSwGIAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-12-21T02:12:15.976Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "program.asm",
+              "DocumentMoniker": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\program.asm",
+              "RelativeDocumentMoniker": "VC370Assem\\program.asm",
+              "ToolTip": "C:\\Users\\softr\\source\\repos\\VC370Assem\\VC370Assem\\program.asm",
+              "RelativeToolTip": "VC370Assem\\program.asm",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-12-21T03:22:13.852Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
