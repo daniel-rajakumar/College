@@ -49,53 +49,53 @@ cmake_ninja_workdir = /Users/danielrajakumar/code/College/OPL/C++/cmake-build-de
 
 build cmake_object_order_depends_target_C__: phony || .
 
-build CMakeFiles/C__.dir/main.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/main.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/main.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/main.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/main.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/main.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Player.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Player.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Player.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/Player.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Player.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Player.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Dice.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Dice.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Dice.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/Dice.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Dice.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Dice.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Computer.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Computer.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Computer.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/Computer.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Computer.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Computer.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Human.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Human.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Human.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/Human.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Human.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Human.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Tournament.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Tournament.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Tournament.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Tournament.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Game.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Game.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Game.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/Game.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Game.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Game.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Serializer.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Serializer.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Serializer.cpp.o.d
+build CMakeFiles/C__.dir/Source_Files/Serializer.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Serializer.cpp || cmake_object_order_depends_target_C__
+  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Serializer.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir
+  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
 
 
 # =============================================================================
@@ -105,7 +105,7 @@ build CMakeFiles/C__.dir/Serializer.cpp.o: CXX_COMPILER__C___unscanned_Debug /Us
 #############################################
 # Link the executable C__
 
-build C__: CXX_EXECUTABLE_LINKER__C___Debug CMakeFiles/C__.dir/main.cpp.o CMakeFiles/C__.dir/Player.cpp.o CMakeFiles/C__.dir/Dice.cpp.o CMakeFiles/C__.dir/Computer.cpp.o CMakeFiles/C__.dir/Human.cpp.o CMakeFiles/C__.dir/Tournament.cpp.o CMakeFiles/C__.dir/Game.cpp.o CMakeFiles/C__.dir/Serializer.cpp.o
+build C__: CXX_EXECUTABLE_LINKER__C___Debug CMakeFiles/C__.dir/Source_Files/main.cpp.o CMakeFiles/C__.dir/Source_Files/Player.cpp.o CMakeFiles/C__.dir/Source_Files/Dice.cpp.o CMakeFiles/C__.dir/Source_Files/Computer.cpp.o CMakeFiles/C__.dir/Source_Files/Human.cpp.o CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o CMakeFiles/C__.dir/Source_Files/Game.cpp.o CMakeFiles/C__.dir/Source_Files/Serializer.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1
   OBJECT_DIR = CMakeFiles/C__.dir
   POST_BUILD = :
