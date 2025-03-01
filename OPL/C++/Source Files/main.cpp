@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "../Header Files/Serializer.h"
 #include "../Header Files/Tournament.h"
 using namespace std;
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
