@@ -8,7 +8,6 @@
 #include <ostream>
 using namespace std;
 
-
-void start() {
-    cout << "Tournament" << endl;
+void Tournament::start() {
+    cout << "Enter the number of tournaments: ";
 }
