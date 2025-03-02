@@ -6,9 +6,18 @@
 #define ROUND_H
 
 
+class Player;
 
 class Round {
+private:
+    Player& player1;
+    Player& player2;
+    bool isOver;
 
+public:
+    Round(Player& p1, Player& p2); // Constructor
+    void play();
+    bool isRoundOver() const;
 };
 
 

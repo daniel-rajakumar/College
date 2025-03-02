@@ -5,9 +5,8 @@ using namespace std;
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {
-    srand(time(0));
-    Tournament tournament;
-    tournament.start();
+    srand(static_cast<unsigned int>(time(0)));
+    Tournament::start();
     return 0;
 }
 

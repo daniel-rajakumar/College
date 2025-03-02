@@ -3,3 +3,5 @@
 //
 
 #include "../Header Files/Board.h"
+
+Board::Board(const int n): squares(n, true), size(n) {}

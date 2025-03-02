@@ -4,11 +4,17 @@
 
 #ifndef HUMAN_H
 #define HUMAN_H
+#include "BoardView.h"
+#include "Player.h"
 
 
+class Human : public Player {
+private:
+    BoardView boardView; // Add a BoardView object
 
-class Human {
-
+public:
+    Human(Board& b); // Constructor
+    void takeTurn() override;
 };
 
 

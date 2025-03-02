@@ -20,7 +20,7 @@ private:
     void updateScores(bool humanWonByCover, int humanScore, int computerScore);
 
 public:
-    void start();
+    static void start();
     void saveGame(const string& filename) const;
     bool loadGame(const string& filename);
 };

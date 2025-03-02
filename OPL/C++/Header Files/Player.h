@@ -5,11 +5,18 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 using namespace std;
-
+#include "Board.h"
 
 class Player {
+    protected:
+        Board& board;
+        bool isHuman;
 
+    public:
+        Player(Board& b, bool human); // Constructor
+        virtual void takeTurn() = 0; // Pure virtual function
 };
+
 
 
 

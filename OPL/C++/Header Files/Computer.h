@@ -4,11 +4,17 @@
 
 #ifndef COMPUTER_H
 #define COMPUTER_H
+#include "BoardView.h"
+#include "Player.h"
 
 
+class Computer: public Player {
+private:
+    BoardView boardView; // Add a BoardView object
 
-class Computer {
-
+public:
+    Computer(Board& b); // Constructor
+    void takeTurn() override;
 };
 
 
