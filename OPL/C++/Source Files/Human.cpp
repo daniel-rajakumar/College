@@ -5,3 +5,6 @@
 #include "../Header Files/Human.h"
 
 Human::Human(Board& b) : Player(b, true), boardView(b, "Human") {}
+
+void Human::takeTurn() {
+}

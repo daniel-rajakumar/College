@@ -21,11 +21,12 @@ void Tournament::start() {
     do {
         Board humanBoard(numOfSquares);
         Board computerBoard(numOfSquares);
-        Computer computer(computerBoard);
+
         Human human(humanBoard);
-        Round round(humanBoard, computerBoard);
+        Computer computer(computerBoard);
 
-
+        Round round(human, computer);
+        round.play();
 
         // Ask the human player if they want to play another round
         cout << "Do you want to play another round? (y/n): ";

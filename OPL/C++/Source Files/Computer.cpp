@@ -5,3 +5,6 @@
 #include "../Header Files/Computer.h"
 
 Computer::Computer(Board& b) : Player(b, false), boardView(b, "Computer") {}
+
+void Computer::takeTurn() {
+}
