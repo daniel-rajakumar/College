@@ -5,3 +5,4 @@
 #include "../Header Files/Player.h"
 
 Player::Player(Board& b, const bool human) : board(b), isHuman(human) {}
+

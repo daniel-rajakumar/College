@@ -11,6 +11,8 @@ class Player {
     protected:
         Board& board;
         bool isHuman;
+        int input;
+
 
     public:
         Player(Board& b, bool human); // Constructor
