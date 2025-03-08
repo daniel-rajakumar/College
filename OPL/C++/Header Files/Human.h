@@ -11,10 +11,20 @@
 class Human : public Player {
 private:
     BoardView boardView; // Add a BoardView object
+    BoardView computerBoardView; // Computer's board view
 
 public:
-    Human(Board& b); // Constructor
+    Human(Board &b, const Board &computerBoard);
+
     void takeTurn() override;
+
+    void coverSquares(int sum);
+
+    void uncoverSquares(int sum);
+
+    void coverSquares(int sum) const;
+
+    void uncoverSquares(int sum) const;
 };
 
 

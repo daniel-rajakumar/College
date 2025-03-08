@@ -22,8 +22,8 @@ void Tournament::start() {
         Board humanBoard(numOfSquares);
         Board computerBoard(numOfSquares);
 
-        Human human(humanBoard);
-        Computer computer(computerBoard);
+        Human human(humanBoard, computerBoard);
+        Computer computer(computerBoard, humanBoard);
 
         Round round(human, computer);
         round.play();

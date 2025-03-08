@@ -11,10 +11,18 @@
 class Computer: public Player {
 private:
     BoardView boardView; // Add a BoardView object
+    BoardView humanBoardView;
 
 public:
-    Computer(Board& b); // Constructor
+    Computer(Board &b, Board &humanBoard);
+
     void takeTurn() override;
+
+    bool shouldCover(int sum) const;
+
+    void coverSquares(int sum) const;
+
+    void uncoverSquares(int sum) const;
 };
 
 

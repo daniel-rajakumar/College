@@ -11,11 +11,13 @@ class Player {
     protected:
         Board& board;
         bool isHuman;
-        int input;
+        int input{};
 
 
     public:
         Player(Board& b, bool human); // Constructor
+        int rollDie() const;
+
         virtual void takeTurn() = 0; // Pure virtual function
 };
 

@@ -4,6 +4,8 @@
 
 #include "../Header Files/Board.h"
 
+#include <set>
+
 Board::Board(const int n): squares(n, false), size(n) {}
 
 // Cover a square
@@ -45,6 +47,40 @@ bool Board::allCovered() const {
 bool Board::allUncovered() const {
     for (bool square : squares) {
         if (square) return false;
+    }
+    return true;
+}
+
+
+
+// Find all valid combinations of squares that add up to the sum
+set<set<int>> Board::findValidCombinations(const int sum, const bool forCovering) const {
+    set<set<int>> combinations;
+    for (int i = 1; i <= size; ++i) {
+        if ((forCovering && !isSquareCovered(i)) || (!forCovering && isSquareCovered(i))) {
+            if (i == sum) {
+                combinations.insert({i});
+            } else if (i < sum) {
+                set<set<int>> subCombinations = findValidCombinations(sum - i, forCovering);
+                for (const set<int>& subCombination : subCombinations) {
+                    if (!subCombination.contains(i)) {
+                        set<int> combination = subCombination;
+                        combination.insert(i);
+                        combinations.insert(combination);
+                    }
+                }
+            }
+        }
+    }
+    return combinations;
+}
+
+// Check if a combination is valid
+bool Board::isValidCombination(const set<int>& combination, bool forCovering) const {
+    for (const int square : combination) {
+        if ((forCovering && isSquareCovered(square)) || (!forCovering && !isSquareCovered(square))) {
+            return false;
+        }
     }
     return true;
 }

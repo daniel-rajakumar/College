@@ -4,6 +4,7 @@
 
 #ifndef BOARD_H
 #define BOARD_H
+#include <set>
 #include <vector>
 using namespace std;
 
@@ -21,6 +22,10 @@ public:
     int getSize() const;
     bool allCovered() const;
     bool allUncovered() const;
+
+    set<set<int>> findValidCombinations(int sum, bool forCovering) const;
+
+    bool isValidCombination(const set<int> &combination, bool forCovering) const;
 };
 
 #endif //BOARD_H

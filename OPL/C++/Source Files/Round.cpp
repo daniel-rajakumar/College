@@ -14,7 +14,9 @@ void Round::play() const {
     char hello;
     while (!isOver) {
         player1.takeTurn();
+        cout << endl;
         player2.takeTurn();
+
         cout << "\n";
     }
 }
