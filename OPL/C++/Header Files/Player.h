@@ -18,6 +18,8 @@ class Player {
         Player(Board& b, bool human); // Constructor
         int rollDie() const;
 
+        Board &getBoard() const;
+
         virtual void takeTurn() = 0; // Pure virtual function
 };
 

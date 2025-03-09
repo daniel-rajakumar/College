@@ -51,7 +51,27 @@ bool Board::allUncovered() const {
     return true;
 }
 
+// Get the sum of uncovered squares
+int Board::getUncoveredSum() const {
+    int sum = 0;
+    for (int i = 1; i <= size; ++i) {
+        if (!isSquareCovered(i)) {
+            sum += i;
+        }
+    }
+    return sum;
+}
 
+// Get the sum of covered squares
+int Board::getCoveredSum() const {
+    int sum = 0;
+    for (int i = 1; i <= size; ++i) {
+        if (isSquareCovered(i)) {
+            sum += i;
+        }
+    }
+    return sum;
+}
 
 // Find all valid combinations of squares that add up to the sum
 set<set<int>> Board::findValidCombinations(const int sum, const bool forCovering) const {

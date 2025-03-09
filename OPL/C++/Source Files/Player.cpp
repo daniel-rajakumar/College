@@ -32,3 +32,8 @@ int Player::rollDie() const {
 
     return diceSum;
 }
+
+// Get the player's board
+Board& Player::getBoard() const {
+    return board;
+}

@@ -6,7 +6,8 @@ using namespace std;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {
     srand(static_cast<unsigned int>(time(0)));
-    Tournament::start();
+    Tournament tournament;
+    tournament.start();
     return 0;
 }
 

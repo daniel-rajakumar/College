@@ -17,10 +17,11 @@ private:
     int advantageSquare = -1;
 
     void applyHandicap(int winnerScore);
-    void updateScores(bool humanWonByCover, int humanScore, int computerScore);
 
 public:
-    static void start();
+    void start();
+    void updateScores(bool humanWonByCover, int humanScore, int computerScore);
+    void declareTournamentWinner() const;
     void saveGame(const string& filename) const;
     bool loadGame(const string& filename);
 };

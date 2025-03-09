@@ -26,8 +26,8 @@ void Computer::takeTurn() {
         uncoverSquares(diceSum);
     }
 
-    boardView.display(); // Use BoardView to display the board
     humanBoardView.display(); // Use BoardView to display the board
+    boardView.display(); // Use BoardView to display the board
 }
 
 // Decide whether to cover or uncover

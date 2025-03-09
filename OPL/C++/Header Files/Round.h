@@ -19,7 +19,7 @@ public:
     void play() const;
     bool isRoundOver() const;
 
-    
+    void declareWinner() const;
 };
 
 

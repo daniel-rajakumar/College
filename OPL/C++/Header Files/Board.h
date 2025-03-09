@@ -23,6 +23,10 @@ public:
     bool allCovered() const;
     bool allUncovered() const;
 
+    int getUncoveredSum() const;
+
+    int getCoveredSum() const;
+
     set<set<int>> findValidCombinations(int sum, bool forCovering) const;
 
     bool isValidCombination(const set<int> &combination, bool forCovering) const;
