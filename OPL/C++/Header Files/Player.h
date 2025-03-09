@@ -20,6 +20,8 @@ class Player {
 
         Board &getBoard() const;
 
+        bool canThrowOneDie() const;
+
         virtual void takeTurn() = 0; // Pure virtual function
 };
 

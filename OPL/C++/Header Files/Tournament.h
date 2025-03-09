@@ -6,6 +6,7 @@
 #define TOURNAMENT_H
 
 #include <string>
+class Board;
 using namespace std;
 
 
@@ -15,12 +16,19 @@ private:
     int tournamentScoreComputer = 0;
     bool advantage = false;
     int advantageSquare = -1;
+    bool isHumanTurn;
+    Board& humanBoard; // Reference to the human's board
+    Board& computerBoard; // Reference to the computer's board
+
 
     void applyHandicap(int winnerScore);
 
 public:
-    void start();
+    Tournament(Board &humanBoard, Board &computerBoard);
+
+    static void start();
     void updateScores(bool humanWonByCover, int humanScore, int computerScore);
+
     void declareTournamentWinner() const;
     void saveGame(const string& filename) const;
     bool loadGame(const string& filename);
