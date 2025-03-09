@@ -6,6 +6,8 @@
 #define ROUND_H
 #include <string>
 
+#include "Tournament.h"
+
 
 class Tournament;
 class Board;
@@ -17,10 +19,11 @@ private:
     Player& player2;
     bool isOver;
     bool isHumanTurn{};
+    Tournament& tournament;
 
 public:
     // Round(Player& p1, Player& p2); // Constructor
-    Round(Player &p1, Player &p2);
+    Round(Player &p1, Player &p2, Tournament &tournament);
 
     void play() const;
     bool isRoundOver() const;

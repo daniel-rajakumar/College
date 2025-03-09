@@ -10,9 +10,9 @@
 #include "../Header Files/Player.h"
 #include "../Header Files/Tournament.h"
 
-// Constructor
-Round::Round(Player& p1, Player& p2)
-    : player1(p1), player2(p2), isOver(false) {}
+Round::Round(Player& p1, Player& p2, Tournament& tournament)
+    : player1(p1), player2(p2), isOver(false), tournament(tournament) {}
+
 
 
 // void Round::play() const {
@@ -93,6 +93,17 @@ void Round::play() const {
         isFirst = false;
         cout << "~~~~~~~~~~~~~~~~~~" << endl;
 
+        // Ask the user if they want to save the game
+        char saveChoice;
+        cout << "Do you want to save the game? (y/n): ";
+        cin >> saveChoice;
+
+        if (saveChoice == 'y' || saveChoice == 'Y') {
+            string filename;
+            cout << "Enter the filename to save: ";
+            cin >> filename;
+            tournament.saveGame(filename);
+        }
     }
 }
 

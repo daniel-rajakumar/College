@@ -49,7 +49,7 @@ void Tournament::start() {
     // Start the game loop
     char playAgain;
     do {
-        Round round(human, computer);
+        Round round(human, computer, tournament);
         round.play();
 
         // Update scores based on the round result
@@ -63,16 +63,6 @@ void Tournament::start() {
             tournament.updateScores(false, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
         }
 
-        // Ask the user if they want to save the game
-        char saveChoice;
-        cout << "Do you want to save the game? (y/n): ";
-        cin >> saveChoice;
-
-        if (saveChoice == 'y' || saveChoice == 'Y') {
-            string filename;
-            cout << "Enter the filename to save: ";
-            tournament.saveGame(filename);
-        }
 
         // Ask the human player if they want to play another round
         cout << "Do you want to play another round? (y/n): ";
@@ -115,6 +105,7 @@ void Tournament::declareTournamentWinner() const {
 
 // Save the game state to a file
 void Tournament::saveGame(const string& filename) const {
+    string filePath = filename; // Save in the res folder
     if (ofstream file(filename); file.is_open()) {
         // Save computer's board and score
         file << "Computer:" << endl;
