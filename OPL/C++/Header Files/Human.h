@@ -12,9 +12,10 @@ class Human : public Player {
 private:
     BoardView boardView; // Add a BoardView object
     BoardView computerBoardView; // Computer's board view
+    Board& computerBoard;
 
 public:
-    Human(Board &b, const Board &computerBoard);
+    Human(Board &b, Board &computerBoard);
 
     void takeTurn() override;
 

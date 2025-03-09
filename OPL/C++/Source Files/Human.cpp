@@ -6,8 +6,8 @@
 
 #include <iostream>
 
-Human::Human(Board& b, const Board& computerBoard)
-    : Player(b, true), boardView(b, "Human"), computerBoardView(computerBoard, "Computer") {}
+Human::Human(Board& b, Board& computerBoard)
+    : Player(b, true), boardView(b, "Human"), computerBoardView(computerBoard, "Computer"), computerBoard(computerBoard) {}
 
 
 void Human::takeTurn() {
@@ -71,6 +71,7 @@ void Human::coverSquares(int sum) {
     // Cover the selected squares
     for (const int square : selectedCombination) {
         board.coverSquare(square);
+        // computerBoard.coverSquare(square);
     }
     cout << "Covered squares: ";
     for (const int square : selectedCombination) {
@@ -79,9 +80,9 @@ void Human::coverSquares(int sum) {
     cout << endl;
 }
 
-// Uncover squares
-void Human::uncoverSquares(const int sum) {
-    set<set<int>> validCombinations = board.findValidCombinations(sum, false);
+// Uncover squares on the computer's board
+void Human::uncoverSquares(int sum) {
+    set<set<int>> validCombinations = computerBoard.findValidCombinations(sum, false);
 
     if (validCombinations.empty()) {
         cout << "No valid moves to uncover squares. Turn ends." << endl;
@@ -93,7 +94,7 @@ void Human::uncoverSquares(const int sum) {
     int index = 1;
     for (const set<int>& combination : validCombinations) {
         cout << index << ": ";
-        for (const int square : combination) {
+        for (int square : combination) {
             cout << square << " ";
         }
         cout << endl;
@@ -114,14 +115,14 @@ void Human::uncoverSquares(const int sum) {
     // Get the selected combination
     auto it = validCombinations.begin();
     advance(it, choice - 1);
-    const set<int> selectedCombination = *it;
+    set<int> selectedCombination = *it;
 
-    // Uncover the selected squares
-    for (const int square : selectedCombination) {
-        board.uncoverSquare(square);
+    // Uncover the selected squares on the computer's board
+    for (int square : selectedCombination) {
+        computerBoard.uncoverSquare(square);
     }
     cout << "Uncovered squares: ";
-    for (const int square : selectedCombination) {
+    for (int square : selectedCombination) {
         cout << square << " ";
     }
     cout << endl;

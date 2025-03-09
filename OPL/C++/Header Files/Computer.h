@@ -12,6 +12,7 @@ class Computer: public Player {
 private:
     BoardView boardView; // Add a BoardView object
     BoardView humanBoardView;
+    Board& humanBoard;
 
 public:
     Computer(Board &b, Board &humanBoard);
@@ -21,6 +22,8 @@ public:
     bool shouldCover(int sum) const;
 
     void coverSquares(int sum) const;
+
+    void uncoverSquares(int sum);
 
     void uncoverSquares(int sum) const;
 };

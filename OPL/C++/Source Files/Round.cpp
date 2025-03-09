@@ -5,15 +5,18 @@
 #include "../Header Files/Round.h"
 
 #include <iostream>
+#include <stdlib.h>
 
 #include "../Header Files/Player.h"
 
 Round::Round(Player& p1, Player& p2) : player1(p1), player2(p2), isOver(false) {}
 
 void Round::play() const {
+    bool firstTime = true;
+
     while (!isOver) {
         player1.takeTurn();
-        if (isRoundOver()) {
+        if (isRoundOver() && !firstTime) {
             declareWinner();
             break;
         }
@@ -21,12 +24,13 @@ void Round::play() const {
         cout << endl;
 
         player2.takeTurn();
-        if (isRoundOver()) {
+        if (isRoundOver() && !firstTime) {
             declareWinner();
             break;
         }
 
         cout << endl;
+        firstTime = false;
     }
 }
 

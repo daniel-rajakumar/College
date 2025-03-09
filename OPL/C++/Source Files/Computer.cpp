@@ -7,7 +7,7 @@
 #include <iostream>
 
 Computer::Computer(Board& b, Board& humanBoard)
-    : Player(b, false), boardView(b, "Computer"), humanBoardView(humanBoard, "Human") {}
+    : Player(b, false), boardView(b, "Computer"), humanBoardView(humanBoard, "Human"), humanBoard(humanBoard) {}
 
 
 
@@ -59,6 +59,7 @@ void Computer::coverSquares(const int sum) const {
     // Cover the selected squares
     for (const int square : selectedCombination) {
         board.coverSquare(square);
+        // humanBoard.coverSquare(square);
     }
     cout << "Computer covered squares: ";
     for (const int square : selectedCombination) {
@@ -67,9 +68,12 @@ void Computer::coverSquares(const int sum) const {
     cout << endl;
 }
 
-// Uncover squares
-void Computer::uncoverSquares(const int sum) const {
-    const set<set<int>> validCombinations = board.findValidCombinations(sum, false);
+
+
+
+// Uncover squares on the human's board
+void Computer::uncoverSquares(int sum) {
+    set<set<int>> validCombinations = humanBoard.findValidCombinations(sum, false);
 
     if (validCombinations.empty()) {
         cout << "Computer has no valid moves to uncover squares. Turn ends." << endl;
@@ -86,12 +90,12 @@ void Computer::uncoverSquares(const int sum) const {
         }
     }
 
-    // Uncover the selected squares
-    for (const int square : selectedCombination) {
-        board.uncoverSquare(square);
+    // Uncover the selected squares on the human's board
+    for (int square : selectedCombination) {
+        humanBoard.uncoverSquare(square);
     }
     cout << "Computer uncovered squares: ";
-    for (const int square : selectedCombination) {
+    for (int square : selectedCombination) {
         cout << square << " ";
     }
     cout << endl;
