@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "../Header Files/Tournament.h"
+
 Computer::Computer(Board& b, Board& humanBoard)
     : Player(b, false), boardView(b, "Computer"), humanBoardView(humanBoard, "Human"), humanBoard(humanBoard) {}
 
@@ -83,9 +85,9 @@ void Computer::uncoverSquares(int sum) {
     }
 
     // Remove combinations that include the advantage square if the advantage has been applied
-    if (tournament.advantageApplied) {
+    if (Tournament::getAdvantageApplied()) {
         for (auto it = validCombinations.begin(); it != validCombinations.end(); ) {
-            if (it->contains(tournament.advantageSquare)) {
+            if (it->contains(Tournament::getAdvantageSquare())) {
                 it = validCombinations.erase(it); // Remove the combination
             } else {
                 ++it;

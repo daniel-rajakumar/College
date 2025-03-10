@@ -18,6 +18,18 @@ Tournament::Tournament(Board& humanBoard, Board& computerBoard)
     : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(false) {
 }
 
+// Initialize static variables
+bool Tournament::advantageApplied = false;
+int Tournament::advantageSquare = 0;
+
+bool Tournament::getAdvantageApplied() {
+    return advantageApplied;
+}
+
+int Tournament::getAdvantageSquare() {
+    return advantageSquare;
+}
+
 void clearScreen() {
 #ifdef _WIN32
     system("cls");
@@ -37,7 +49,7 @@ void Tournament::start() {
 
     // Initialize players
     Human human(humanBoard, computerBoard);
-    Computer computer(computerBoard, humanBoard, );
+    Computer computer(computerBoard, humanBoard);
 
     // Initialize tournament
     Tournament tournament(humanBoard, computerBoard);

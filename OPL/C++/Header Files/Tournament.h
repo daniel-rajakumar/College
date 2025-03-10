@@ -15,20 +15,18 @@ private:
     int tournamentScoreHuman = 0;
     int tournamentScoreComputer = 0;
     bool advantage = false;
-    int advantageSquare = -1;
     bool isHumanTurn;
     Board& humanBoard; // Reference to the human's board
     Board& computerBoard; // Reference to the computer's board
     bool isANewGame;
-    bool winnerWasFirstPlayer = false; // Track if the winner was the first player
-    bool advantageApplied = false; // Track if the advantage has been applied
-
+    static bool advantageApplied; // Static variable to track if the advantage has been applied
+    static int advantageSquare;   // Static variable for the advantage square
 
 
 
 public:
     Tournament(Board &humanBoard, Board &computerBoard);
-    void applyHandicap(bool winnerWasFirstPlayer, int winningScore); // Apply handicap for the next round
+    // void applyHandicap(bool winnerWasFirstPlayer, int winningScore); // Apply handicap for the next round
     int calculateAdvantageSquare(int winningScore); // Calculate the advantage square
 
     bool getIsANewGame() const;
@@ -42,8 +40,9 @@ public:
     bool loadGame(const string& filename);
     void resetGame();
 
-    bool getWinnerWasFirstPlayer() const;
-    bool getAdvantageApplied() const;
+    static bool getAdvantageApplied(); // Static getter for advantageApplied
+    static int getAdvantageSquare();   // Static getter for advantageSquare
+    void applyHandicap(bool winnerWasFirstPlayer, int winningScore); // Static method to apply handicap
 };
 
 
