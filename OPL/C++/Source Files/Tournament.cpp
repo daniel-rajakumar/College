@@ -44,7 +44,7 @@ bool Tournament::getIsANewGame() const {
 
 void Tournament::start() {
     // Initialize boards
-    Board humanBoard(11); // Example: 9 squares
+    Board humanBoard(11);
     Board computerBoard(11);
 
     // Initialize players
@@ -68,6 +68,16 @@ void Tournament::start() {
         if (!tournament.loadGame(filename)) {
             cout << "Starting a new game..." << endl;
         }
+    } else {
+        int boardSize;
+        do {
+            cout << "Enter the size of the board (9, 10, or 11): ";
+            cin >> boardSize;
+        } while (boardSize != 9 && boardSize != 10 && boardSize != 11);
+
+        // Initialize boards with the chosen size
+        humanBoard = Board(boardSize);
+        computerBoard = Board(boardSize);
     }
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 
@@ -266,7 +276,7 @@ bool Tournament::loadGame(const string& filename) {
                 isHumanTurn = (line.find("Human") != string::npos);
             } else if (line.find("Next Turn:") != string::npos) {
                 // Load next turn information
-                // isHumanTurn = !(line.find("Human") != string::npos);
+                isHumanTurn = !(line.find("Human") != string::npos);
             }
         }
         file.close();
