@@ -197,7 +197,7 @@ void Tournament::saveGame(const string& filename) const {
 
         // Save turn information
         file << "First Turn: " << (isHumanTurn ? "Human" : "Computer") << endl;
-        file << "Next Turn: " << (isHumanTurn ? "Human" : "Computer") << endl;
+        file << "Next Turn: " << (!isHumanTurn ? "Human" : "Computer") << endl;
 
         file.close();
         cout << "Game saved successfully to " << filename << endl;

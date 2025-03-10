@@ -45,9 +45,9 @@ void Round::play() const {
     Player* currentPlayer = isHumanTurn ? &player1 : &player2;
 
     if (isANewGame) {
-        cout << "~~~~~~~~~~~~~~~~~~" << endl;
+        cout << "~~~~~~~~[Who Goes First?]~~~~~~~~~" << endl;
         currentPlayer = &determineFirstPlayer(); // Determine the first player
-        cout << "~~~~~~~~~~~~~~~~~~" << endl;
+        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
     }
 
     bool isFirst = true;
