@@ -16,6 +16,8 @@ public:
     BoardView(const Board &b, const string &name);
 
     void display() const;
+
+    void display(bool highlightAdvantageSquare, int advantageSquare) const;
 };
 
 

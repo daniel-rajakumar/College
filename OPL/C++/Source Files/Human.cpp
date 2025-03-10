@@ -6,13 +6,15 @@
 
 #include <iostream>
 
+#include "../Header Files/Tournament.h"
+
 Human::Human(Board& b, Board& computerBoard)
     : Player(b, true), boardView(b, "Human"), computerBoardView(computerBoard, "Computer"), computerBoard(computerBoard) {}
 
 
 void Human::takeTurn() {
     const int die = rollDie();
-    cout << "You rolled " << die << endl;;
+    cout << "Your rolled " << die << endl;;
 
     // Choose to cover or uncover squares
     cout << "Do you want to cover your squares or uncover the opponent's squares? (c/u): ";
@@ -28,6 +30,10 @@ void Human::takeTurn() {
     cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
     boardView.display(); // Use BoardView to display the board
     computerBoardView.display(); // Computer's board (assuming you have access to it)
+    // boardView.display(Tournament::getAdvantageApplied() && ournament.isHumanTurn, Tournament::getAdvantageSquare());
+    // computerBoardView.display(Tournament::getAdvantageApplied() && !tournament.isHumanTurn, Tournament::getAdvantageSquare());
+    boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
+    computerBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 }
 

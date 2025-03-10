@@ -21,3 +21,20 @@ void BoardView::display() const {
     }
     cout << endl;
 }
+
+void BoardView::display(bool highlightAdvantageSquare, int advantageSquare) const {
+    cout << playerName << "'s Board:" << endl;
+    for (int i = 1; i <= board.getSize(); ++i) {
+        if (board.isSquareCovered(i)) {
+            if (highlightAdvantageSquare && i == advantageSquare) {
+                cout << "[" << i << "]"; // Highlight the advantage square
+            } else {
+                cout << "_"; // Covered square
+            }
+        } else {
+            cout << i; // Uncovered square
+        }
+        cout << " "; // Add space between squares
+    }
+    cout << endl;
+}

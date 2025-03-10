@@ -29,8 +29,8 @@ void Computer::takeTurn() {
     }
 
     cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
-    humanBoardView.display(); // Use BoardView to display the board
-    boardView.display(); // Use BoardView to display the board
+    boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
+    humanBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 }
 

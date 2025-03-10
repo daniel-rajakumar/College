@@ -275,7 +275,6 @@ int Tournament::calculateAdvantageSquare(int winningScore) {
     return sum;
 }
 
-// Apply handicap for the next round
 void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
     // Calculate the advantage square
     advantageSquare = calculateAdvantageSquare(winningScore);
@@ -283,18 +282,20 @@ void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
     // Determine who gets the advantage
     if (winnerWasFirstPlayer) {
         // If the winner was the first player, the opponent gets the advantage
-        cout << "Opponent gets the advantage. Square " << advantageSquare << " will be covered." << endl;
         if (isHumanTurn) {
+            cout << "Computer gets the advantage. Square " << advantageSquare << " on the computer's board will be covered." << endl;
             computerBoard.coverSquare(advantageSquare); // Cover the square on the computer's board
         } else {
+            cout << "Human gets the advantage. Square " << advantageSquare << " on the human's board will be covered." << endl;
             humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
         }
     } else {
         // If the winner was the second player, the winner keeps the advantage
-        cout << "Winner keeps the advantage. Square " << advantageSquare << " will be covered." << endl;
         if (isHumanTurn) {
+            cout << "Human keeps the advantage. Square " << advantageSquare << " on the human's board will be covered." << endl;
             humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
         } else {
+            cout << "Computer keeps the advantage. Square " << advantageSquare << " on the computer's board will be covered." << endl;
             computerBoard.coverSquare(advantageSquare); // Cover the square on the computer's board
         }
     }
