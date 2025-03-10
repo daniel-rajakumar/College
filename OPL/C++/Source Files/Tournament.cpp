@@ -44,8 +44,8 @@ bool Tournament::getIsANewGame() const {
 
 void Tournament::start() {
     // Initialize boards
-    Board humanBoard(9); // Example: 9 squares
-    Board computerBoard(9);
+    Board humanBoard(11); // Example: 9 squares
+    Board computerBoard(11);
 
     // Initialize players
     Human human(humanBoard, computerBoard);
@@ -256,6 +256,11 @@ bool Tournament::loadGame(const string& filename) {
         file.close();
         cout << "Game loaded successfully from " << filename << endl;
         isANewGame = false;
+
+
+
+
+
         return true;
     } else {
         cerr << "Unable to load game from " << filename << endl;

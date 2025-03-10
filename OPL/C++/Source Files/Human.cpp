@@ -16,8 +16,6 @@ void Human::takeTurn() {
     const int die = rollDie();
     cout << "Your rolled " << die << endl;;
 
-
-
     // Display boards with the advantage square highlighted
     cout << "Current Board State:" << endl;
     boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
@@ -49,8 +47,8 @@ void Human::takeTurn() {
     }
 
     cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
-    boardView.display(); // Use BoardView to display the board
-    computerBoardView.display(); // Computer's board (assuming you have access to it)
+    // boardView.display(); // Use BoardView to display the board
+    // computerBoardView.display(); // Computer's board (assuming you have access to it)
     // boardView.display(Tournament::getAdvantageApplied() && ournament.isHumanTurn, Tournament::getAdvantageSquare());
     // computerBoardView.display(Tournament::getAdvantageApplied() && !tournament.isHumanTurn, Tournament::getAdvantageSquare());
     boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
