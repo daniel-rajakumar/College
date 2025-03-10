@@ -19,6 +19,7 @@ private:
     bool isHumanTurn;
     Board& humanBoard; // Reference to the human's board
     Board& computerBoard; // Reference to the computer's board
+    bool isANewGame;
 
 
     void applyHandicap(int winnerScore);
@@ -26,8 +27,11 @@ private:
 public:
     Tournament(Board &humanBoard, Board &computerBoard);
 
+    bool getIsANewGame() const;
+
     static void start();
-    void updateScores(bool humanWonByCover, int humanScore, int computerScore);
+    void updateScores(bool humanWonByCover, bool humanWonByUncover, bool computerWonByCover, bool computerWonByUncover, int humanScore, int
+                      computerScore);
 
     void declareTournamentWinner() const;
     void saveGame(const string& filename) const;

@@ -23,6 +23,7 @@ class Player {
         bool canThrowOneDie() const;
 
         virtual void takeTurn() = 0; // Pure virtual function
+        bool getIsHuman() const;
 };
 
 

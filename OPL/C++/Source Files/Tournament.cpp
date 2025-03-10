@@ -15,9 +15,12 @@
 using namespace std;
 
 Tournament::Tournament(Board& humanBoard, Board& computerBoard)
-    : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard) {}
+    : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(false) {
+}
 
-
+bool Tournament::getIsANewGame() const {
+    return isANewGame;
+}
 
 void Tournament::start() {
     // Initialize boards
@@ -49,20 +52,30 @@ void Tournament::start() {
     // Start the game loop
     char playAgain;
     do {
-        Round round(human, computer, tournament);
+        Round round(human, computer, tournament, tournament.getIsANewGame());
         round.play();
 
         // Update scores based on the round result
         if (human.getBoard().allCovered()) {
-            tournament.updateScores(true, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
+            cout << "Human wins by covering all their squares!" << endl;
+            tournament.updateScores(true, false, false, false, human.getBoard().getCoveredSum(), computer.getBoard().getUncoveredSum());
         } else if (computer.getBoard().allUncovered()) {
-            tournament.updateScores(true, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
+            cout << "Human wins by uncovering all the computer's squares!" << endl;
+            tournament.updateScores(false, true, false, false, human.getBoard().getCoveredSum(), computer.getBoard().getUncoveredSum());
         } else if (computer.getBoard().allCovered()) {
-            tournament.updateScores(false, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
+            cout << "Computer wins by covering all their squares!" << endl;
+            tournament.updateScores(false, false, true, false, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
         } else if (human.getBoard().allUncovered()) {
-            tournament.updateScores(false, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
+            cout << "Computer wins by uncovering all the human's squares!" << endl;
+            tournament.updateScores(false, false, false, true, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
         }
 
+        cout << endl;
+        cout << "~~~~~~~~~[SCORE BOARD]~~~~~~~~~~" << endl;
+        cout << "Your Score: " << tournament.tournamentScoreHuman << endl;
+        cout << "Computer's Score: " << tournament.tournamentScoreComputer << endl;
+        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+        cout << endl;
 
         // Ask the human player if they want to play another round
         cout << "Do you want to play another round? (y/n): ";
@@ -73,18 +86,28 @@ void Tournament::start() {
     tournament.declareTournamentWinner();
 }
 
-// Update scores
-void Tournament::updateScores(const bool humanWonByCover, const int humanScore, const int computerScore) {
+
+void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByUncover,
+                             const bool computerWonByCover, const bool computerWonByUncover,
+                             const int humanScore, const int computerScore) {
     if (humanWonByCover) {
-        tournamentScoreHuman += computerScore; // Human wins by covering their squares
-    } else {
-        tournamentScoreHuman += humanScore; // Human wins by uncovering the computer's squares
+        // Human wins by covering all their squares
+        // Human's score increases by the sum of the computer's uncovered squares
+        tournamentScoreHuman += computerScore;
+    } else if (humanWonByUncover) {
+        // Human wins by uncovering all the computer's squares
+        // Human's score increases by the sum of the human's covered squares
+        tournamentScoreHuman += humanScore;
     }
 
-    if (!humanWonByCover) {
-        tournamentScoreComputer += humanScore; // Computer wins by covering its squares
-    } else {
-        tournamentScoreComputer += computerScore; // Computer wins by uncovering the human's squares
+    if (computerWonByCover) {
+        // Computer wins by covering all its squares
+        // Computer's score increases by the sum of the human's uncovered squares
+        tournamentScoreComputer += humanScore;
+    } else if (computerWonByUncover) {
+        // Computer wins by uncovering all the human's squares
+        // Computer's score increases by the sum of the computer's covered squares
+        tournamentScoreComputer += computerScore;
     }
 }
 
@@ -193,6 +216,7 @@ bool Tournament::loadGame(const string& filename) {
         }
         file.close();
         cout << "Game loaded successfully from " << filename << endl;
+        isANewGame = false;
         return true;
     } else {
         cerr << "Unable to load game from " << filename << endl;

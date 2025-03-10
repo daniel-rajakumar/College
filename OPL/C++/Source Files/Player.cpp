@@ -8,6 +8,7 @@
 
 Player::Player(Board& b, const bool human) : board(b), isHuman(human) {}
 
+
 // Roll dice
 int Player::rollDie() const {
     int diceSum = 0;
@@ -54,4 +55,9 @@ bool Player::canThrowOneDie() const {
         }
     }
     return true; // All squares from 7 to n are covered
+}
+
+
+bool Player::getIsHuman() const {
+    return isHuman;
 }

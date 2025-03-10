@@ -10,36 +10,8 @@
 #include "../Header Files/Player.h"
 #include "../Header Files/Tournament.h"
 
-Round::Round(Player& p1, Player& p2, Tournament& tournament)
-    : player1(p1), player2(p2), isOver(false), tournament(tournament) {}
-
-
-
-// void Round::play() const {
-//     bool firstTime = true;
-//     Player& currentPlayer = determineFirstPlayer(); // Determine the first player
-//
-//
-//     while (!isOver) {
-//         player1.takeTurn();
-//         if (isRoundOver() && !firstTime) {
-//             declareWinner();
-//             break;
-//         }
-//
-//         cout << endl;
-//
-//         player2.takeTurn();
-//         if (isRoundOver() && !firstTime) {
-//             declareWinner();
-//             break;
-//         }
-//
-//         cout << endl;
-//         firstTime = false;
-//     }
-//
-// }
+Round::Round(Player& p1, Player& p2, Tournament& tournament, const bool isANewGame)
+    : player1(p1), player2(p2), isOver(false), tournament(tournament), isANewGame(isANewGame) {}
 
 // Determine the first player
 Player& Round::determineFirstPlayer() const {
@@ -70,17 +42,17 @@ Player& Round::determineFirstPlayer() const {
 }
 
 void Round::play() const {
-    cout << "~~~~~~~~~~~~~~~~~~" << endl;
-    Player* currentPlayer = &determineFirstPlayer(); // Determine the first player
-    cout << "~~~~~~~~~~~~~~~~~~" << endl;
+    Player* currentPlayer = isHumanTurn ? &player1 : &player2;
+
+    if (isANewGame) {
+        cout << "~~~~~~~~~~~~~~~~~~" << endl;
+        currentPlayer = &determineFirstPlayer(); // Determine the first player
+        cout << "~~~~~~~~~~~~~~~~~~" << endl;
+    }
+
     bool isFirst = true;
-
-
     while (!isOver) {
-
         currentPlayer -> takeTurn();
-
-
 
         // Check if the round is over after the current player's turn
         if (isRoundOver() && !isFirst) {
@@ -90,20 +62,32 @@ void Round::play() const {
 
         // Switch to the other player
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
-        isFirst = false;
         cout << "~~~~~~~~~~~~~~~~~~" << endl;
 
+        bool isHuman = currentPlayer -> getIsHuman();
+
+        if (isHuman) {
+            cout << "IT IS HUMANNNNNNN TURN" << endl;
+        } else {
+            cout << "IT IS COMPUTERRRR TURN" << endl;
+        }
+
+        if (isHuman) {
         // Ask the user if they want to save the game
         char saveChoice;
         cout << "Do you want to save the game? (y/n): ";
         cin >> saveChoice;
 
-        if (saveChoice == 'y' || saveChoice == 'Y') {
-            string filename;
-            cout << "Enter the filename to save: ";
-            cin >> filename;
-            tournament.saveGame(filename);
+            if (saveChoice == 'y' || saveChoice == 'Y') {
+                string filename;
+                cout << "Enter the filename to save: ";
+                cin >> filename;
+                tournament.saveGame(filename);
+                exit(0);
+            }
         }
+
+        isFirst = false;
     }
 }
 

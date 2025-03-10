@@ -6,6 +6,8 @@
 #define ROUND_H
 #include <string>
 
+#include "Computer.h"
+#include "Human.h"
 #include "Tournament.h"
 
 
@@ -20,6 +22,7 @@ private:
     bool isOver;
     bool isHumanTurn{};
     Tournament& tournament;
+    bool isANewGame;
 
 public:
     // Round(Player& p1, Player& p2); // Constructor
@@ -29,6 +32,11 @@ public:
     bool isRoundOver() const;
 
     void declareWinner() const;
+
+    Round(Player &p1, Player &p2, Tournament &tournament, bool &isANewGame);
+
+    Round(Player &p1, Player &p2, Tournament &tournament, bool isANewGame);
+
     Player& determineFirstPlayer() const; // Determine the first player
 };
 
