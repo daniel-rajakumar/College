@@ -18,6 +18,14 @@ Tournament::Tournament(Board& humanBoard, Board& computerBoard)
     : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(false) {
 }
 
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
 bool Tournament::getIsANewGame() const {
     return isANewGame;
 }
@@ -36,6 +44,7 @@ void Tournament::start() {
 
     // Ask the user if they want to load a saved game
     char loadChoice;
+    cout << "~~~~~~~~~~~~[LOAD?]~~~~~~~~~~~~" << endl;
     cout << "Do you want to load a saved game? (y/n): ";
     cin >> loadChoice;
 
@@ -48,7 +57,9 @@ void Tournament::start() {
             cout << "Starting a new game..." << endl;
         }
     }
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 
+    clearScreen();
     // Start the game loop
     char playAgain;
     do {
@@ -80,6 +91,11 @@ void Tournament::start() {
         // Ask the human player if they want to play another round
         cout << "Do you want to play another round? (y/n): ";
         cin >> playAgain;
+
+        if (playAgain == 'y' || playAgain == 'Y') {
+            clearScreen();
+            tournament.resetGame();
+        }
     } while (playAgain == 'y' || playAgain == 'Y');
 
     // Declare the tournament winner
@@ -87,9 +103,7 @@ void Tournament::start() {
 }
 
 
-void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByUncover,
-                             const bool computerWonByCover, const bool computerWonByUncover,
-                             const int humanScore, const int computerScore) {
+void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByUncover, const bool computerWonByCover, const bool computerWonByUncover, const int humanScore, const int computerScore) {
     if (humanWonByCover) {
         // Human wins by covering all their squares
         // Human's score increases by the sum of the computer's uncovered squares
@@ -123,7 +137,21 @@ void Tournament::declareTournamentWinner() const {
 }
 
 
+void Tournament::resetGame() {
+    // Reset the boards
+    humanBoard = Board(humanBoard.getSize()); // Reset human board
+    computerBoard = Board(computerBoard.getSize()); // Reset computer board
 
+    // Reset scores
+    // tournamentScoreHuman = 0;
+    // tournamentScoreComputer = 0;
+
+    // Reset turn and new game flag
+    isHumanTurn = true;
+    isANewGame = true;
+
+    cout << "Game state has been reset. Starting a new game..." << endl;
+}
 
 
 // Save the game state to a file

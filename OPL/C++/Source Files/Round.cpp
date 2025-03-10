@@ -29,12 +29,12 @@ Player& Round::determineFirstPlayer() const {
         if (player1Roll > player2Roll) {
             cout << "Human plays first!" << endl;
             return player1;
-        } else if (player2Roll > player1Roll) {
+        }
+        if (player2Roll > player1Roll) {
             cout << "Computer plays first!" << endl;
             return player2;
-        } else {
-            cout << "It's a tie! Rolling again..." << endl;
         }
+        cout << "It's a tie! Rolling again..." << endl;
     } while (player1Roll == player2Roll);
 
     // This line is never reached, but it's required to avoid a compiler warning
@@ -62,17 +62,8 @@ void Round::play() const {
 
         // Switch to the other player
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
-        cout << "~~~~~~~~~~~~~~~~~~" << endl;
 
-        bool isHuman = currentPlayer -> getIsHuman();
-
-        if (isHuman) {
-            cout << "IT IS HUMANNNNNNN TURN" << endl;
-        } else {
-            cout << "IT IS COMPUTERRRR TURN" << endl;
-        }
-
-        if (isHuman) {
+        if (currentPlayer -> getIsHuman()) {
         // Ask the user if they want to save the game
         char saveChoice;
         cout << "Do you want to save the game? (y/n): ";
@@ -113,7 +104,7 @@ void Round::declareWinner() const {
     } else if (player2.getBoard().allUncovered()) {
         cout << "Human wins by uncovering all the computer's squares!" << endl;
     } else if (player2.getBoard().allCovered()) {
-        cout << "Computer wins by covering all their squares!" << endl;
+        cout << "Computer wins by covering all its squares!" << endl;
     } else if (player1.getBoard().allUncovered()) {
         cout << "Computer wins by uncovering all the human's squares!" << endl;
     }

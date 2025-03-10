@@ -14,7 +14,6 @@ int Player::rollDie() const {
     int diceSum = 0;
 
     if (canThrowOneDie()) {
-        cout << "YOOOOOOOOOOOOOOOOOOO" << endl;
         if (isHuman) {
             // Ask the human player if they want to roll 1 die or 2 dice
             char choice;
@@ -22,20 +21,25 @@ int Player::rollDie() const {
             cin >> choice;
 
             if (choice == '1') {
+                cout << "[1 die] ";
                 diceSum = rand() % 6 + 1; // Roll one die (1-6)
             } else {
+                cout << "[2 dice] ";
                 diceSum = (rand() % 6 + 1) + (rand() % 6 + 1); // Roll two dice (2-12)
             }
         } else {
             // Computer chooses to roll 1 die or 2 dice randomly
             if (rand() % 2 == 0) {
+                cout << "[1 die] ";
                 diceSum = rand() % 6 + 1; // Roll one die (1-6)
             } else {
+                cout << "[2 dice] ";
                 diceSum = (rand() % 6 + 1) + (rand() % 6 + 1); // Roll two dice (2-12)
             }
         }
     } else {
         // Must roll two dice if any square from 7 to n is uncovered
+        cout << "[2 dice] ";
         diceSum = (rand() % 6 + 1) + (rand() % 6 + 1); // Roll two dice (2-12)
     }
 

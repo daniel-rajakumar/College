@@ -26,8 +26,10 @@ void Computer::takeTurn() {
         uncoverSquares(diceSum);
     }
 
+    cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
     humanBoardView.display(); // Use BoardView to display the board
     boardView.display(); // Use BoardView to display the board
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 }
 
 // Decide whether to cover or uncover

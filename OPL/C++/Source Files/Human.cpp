@@ -11,8 +11,8 @@ Human::Human(Board& b, Board& computerBoard)
 
 
 void Human::takeTurn() {
-    const int die = Player::rollDie();
-    cout << "Your rolled " << die << endl;;
+    const int die = rollDie();
+    cout << "You rolled " << die << endl;;
 
     // Choose to cover or uncover squares
     cout << "Do you want to cover your squares or uncover the opponent's squares? (c/u): ";
@@ -25,8 +25,10 @@ void Human::takeTurn() {
         uncoverSquares(die);
     }
 
+    cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
     boardView.display(); // Use BoardView to display the board
     computerBoardView.display(); // Computer's board (assuming you have access to it)
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 }
 
 
@@ -69,12 +71,12 @@ void Human::coverSquares(int sum) {
     const set<int> selectedCombination = *it;
 
     // Cover the selected squares
-    for (const int square : selectedCombination) {
+    for (const int square: selectedCombination) {
         board.coverSquare(square);
         // computerBoard.coverSquare(square);
     }
     cout << "Covered squares: ";
-    for (const int square : selectedCombination) {
+    for (const int square: selectedCombination) {
         cout << square << " ";
     }
     cout << endl;

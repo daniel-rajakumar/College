@@ -36,6 +36,7 @@ public:
     void declareTournamentWinner() const;
     void saveGame(const string& filename) const;
     bool loadGame(const string& filename);
+    void resetGame();
 };
 
 
