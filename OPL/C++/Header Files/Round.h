@@ -31,7 +31,7 @@ public:
     void play() const;
     bool isRoundOver() const;
 
-    void declareWinner() const;
+    void declareWinner(const Player *currentPlayer) const;
 
     Round(Player &p1, Player &p2, Tournament &tournament, bool &isANewGame);
 

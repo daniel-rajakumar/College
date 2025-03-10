@@ -20,12 +20,16 @@ private:
     Board& humanBoard; // Reference to the human's board
     Board& computerBoard; // Reference to the computer's board
     bool isANewGame;
+    bool winnerWasFirstPlayer = false; // Track if the winner was the first player
+    bool advantageApplied = false; // Track if the advantage has been applied
 
 
-    void applyHandicap(int winnerScore);
+
 
 public:
     Tournament(Board &humanBoard, Board &computerBoard);
+    void applyHandicap(bool winnerWasFirstPlayer, int winningScore); // Apply handicap for the next round
+    int calculateAdvantageSquare(int winningScore); // Calculate the advantage square
 
     bool getIsANewGame() const;
 
@@ -37,6 +41,9 @@ public:
     void saveGame(const string& filename) const;
     bool loadGame(const string& filename);
     void resetGame();
+
+    bool getWinnerWasFirstPlayer() const;
+    bool getAdvantageApplied() const;
 };
 
 

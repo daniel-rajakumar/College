@@ -37,7 +37,7 @@ void Tournament::start() {
 
     // Initialize players
     Human human(humanBoard, computerBoard);
-    Computer computer(computerBoard, humanBoard);
+    Computer computer(computerBoard, humanBoard, );
 
     // Initialize tournament
     Tournament tournament(humanBoard, computerBoard);
@@ -249,4 +249,43 @@ bool Tournament::loadGame(const string& filename) {
         cerr << "Unable to load game from " << filename << endl;
         return false;
     }
+}
+
+
+
+// Calculate the advantage square based on the sum of the digits of the winning score
+int Tournament::calculateAdvantageSquare(int winningScore) {
+    int sum = 0;
+    while (winningScore > 0) {
+        sum += winningScore % 10; // Add the last digit
+        winningScore /= 10; // Remove the last digit
+    }
+    return sum;
+}
+
+// Apply handicap for the next round
+void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
+    // Calculate the advantage square
+    advantageSquare = calculateAdvantageSquare(winningScore);
+
+    // Determine who gets the advantage
+    if (winnerWasFirstPlayer) {
+        // If the winner was the first player, the opponent gets the advantage
+        cout << "Opponent gets the advantage. Square " << advantageSquare << " will be covered." << endl;
+        if (isHumanTurn) {
+            computerBoard.coverSquare(advantageSquare); // Cover the square on the computer's board
+        } else {
+            humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
+        }
+    } else {
+        // If the winner was the second player, the winner keeps the advantage
+        cout << "Winner keeps the advantage. Square " << advantageSquare << " will be covered." << endl;
+        if (isHumanTurn) {
+            humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
+        } else {
+            computerBoard.coverSquare(advantageSquare); // Cover the square on the computer's board
+        }
+    }
+
+    advantageApplied = true; // Mark that the advantage has been applied
 }

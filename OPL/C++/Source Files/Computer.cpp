@@ -82,6 +82,17 @@ void Computer::uncoverSquares(int sum) {
         return;
     }
 
+    // Remove combinations that include the advantage square if the advantage has been applied
+    if (tournament.advantageApplied) {
+        for (auto it = validCombinations.begin(); it != validCombinations.end(); ) {
+            if (it->contains(tournament.advantageSquare)) {
+                it = validCombinations.erase(it); // Remove the combination
+            } else {
+                ++it;
+            }
+        }
+    }
+
     // Choose the combination with the most squares
     set<int> selectedCombination;
     int maxSquares = 0;
