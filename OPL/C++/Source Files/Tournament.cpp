@@ -206,17 +206,32 @@ void Tournament::saveGame(const string& filename) const {
     }
 }
 
-// Load the game state from a file
+// Tournament.cpp
 bool Tournament::loadGame(const string& filename) {
     if (ifstream file(filename); file.is_open()) {
         string line;
+        int boardSize = 0;
+
+        // Read the file line by line
         while (getline(file, line)) {
             if (line.find("Computer:") != string::npos) {
                 // Load computer's board
                 getline(file, line); // Read the squares line
                 stringstream ss(line.substr(11)); // Skip "   Squares: "
                 int square;
-                for (int i = 1; i <= computerBoard.getSize(); ++i) {
+                boardSize = 0; // Reset board size counter
+                while (ss >> square) {
+                    boardSize++;
+                }
+
+                // Initialize boards with the correct size
+                humanBoard = Board(boardSize);
+                computerBoard = Board(boardSize);
+
+                // Reset the stream and read the squares again
+                ss.clear();
+                ss.seekg(0);
+                for (int i = 1; i <= boardSize; ++i) {
                     ss >> square;
                     if (square == 0) {
                         computerBoard.coverSquare(i);
@@ -232,8 +247,8 @@ bool Tournament::loadGame(const string& filename) {
                 // Load human's board
                 getline(file, line); // Read the squares line
                 stringstream ss(line.substr(11)); // Skip "   Squares: "
-                int square;
-                for (int i = 1; i <= humanBoard.getSize(); ++i) {
+                for (int i = 1; i <= boardSize; ++i) {
+                    int square;
                     ss >> square;
                     if (square == 0) {
                         humanBoard.coverSquare(i);
@@ -256,18 +271,12 @@ bool Tournament::loadGame(const string& filename) {
         file.close();
         cout << "Game loaded successfully from " << filename << endl;
         isANewGame = false;
-
-
-
-
-
         return true;
     } else {
         cerr << "Unable to load game from " << filename << endl;
         return false;
     }
 }
-
 
 
 // Calculate the advantage square based on the sum of the digits of the winning score

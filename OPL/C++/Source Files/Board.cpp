@@ -6,7 +6,7 @@
 
 #include <set>
 
-Board::Board(const int n): squares(n, false), size(n) {}
+// Board::Board(const int n): squares(n, false), size(n) {}
 
 // Cover a square
 void Board::coverSquare(int square) {

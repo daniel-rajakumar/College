@@ -15,7 +15,7 @@ private:
     int size;
 
 public:
-    explicit Board(int n); // Constructor
+    explicit Board(int n) : squares(n, false), size(n) {}
     void coverSquare(int square);
     void uncoverSquare(int square);
     bool isSquareCovered(int square) const;
