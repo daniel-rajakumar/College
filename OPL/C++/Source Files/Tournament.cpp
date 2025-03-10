@@ -279,6 +279,7 @@ bool Tournament::loadGame(const string& filename) {
 }
 
 
+
 // Calculate the advantage square based on the sum of the digits of the winning score
 int Tournament::calculateAdvantageSquare(int winningScore) {
     int sum = 0;
