@@ -20,7 +20,7 @@ private:
     Player& player1;
     Player& player2;
     bool isOver;
-    bool isHumanTurn{};
+    bool isHumanTurn;
     Tournament& tournament;
     bool isANewGame;
 

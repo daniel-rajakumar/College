@@ -42,7 +42,17 @@ Player& Round::determineFirstPlayer() const {
 }
 
 void Round::play() const {
-    Player* currentPlayer = isHumanTurn ? &player1 : &player2;
+    // Player* currentPlayer = !isHumanTurn ? &player1 : &player2;
+    Player* currentPlayer = &player1;
+
+    cout << "is this human: " << isHumanTurn << endl;
+
+    if (!isHumanTurn)
+        currentPlayer = &player2;
+    else
+        currentPlayer = &player1;
+
+    // if (player1 )
 
     if (isANewGame) {
         cout << "~~~~~~~~[Who Goes First?]~~~~~~~~~" << endl;

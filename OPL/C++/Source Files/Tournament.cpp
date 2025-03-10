@@ -262,10 +262,11 @@ bool Tournament::loadGame(const string& filename) {
                 tournamentScoreHuman = stoi(line.substr(10)); // Skip "   Score: "
             } else if (line.find("First Turn:") != string::npos) {
                 // Load first turn information
+                isHumanTurn = false;
                 isHumanTurn = (line.find("Human") != string::npos);
             } else if (line.find("Next Turn:") != string::npos) {
                 // Load next turn information
-                isHumanTurn = (line.find("Human") != string::npos);
+                // isHumanTurn = !(line.find("Human") != string::npos);
             }
         }
         file.close();
@@ -277,7 +278,6 @@ bool Tournament::loadGame(const string& filename) {
         return false;
     }
 }
-
 
 
 // Calculate the advantage square based on the sum of the digits of the winning score
