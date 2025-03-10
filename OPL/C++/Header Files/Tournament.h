@@ -31,6 +31,8 @@ public:
 
     bool getIsANewGame() const;
 
+    bool getIsHumanTurn() const;
+
     static void start();
     void updateScores(bool humanWonByCover, bool humanWonByUncover, bool computerWonByCover, bool computerWonByUncover, int humanScore, int
                       computerScore);
@@ -40,9 +42,9 @@ public:
     bool loadGame(const string& filename);
     void resetGame();
 
-    static bool getAdvantageApplied(); // Static getter for advantageApplied
-    static int getAdvantageSquare();   // Static getter for advantageSquare
-    void applyHandicap(bool winnerWasFirstPlayer, int winningScore); // Static method to apply handicap
+    static bool getAdvantageApplied();
+    static int getAdvantageSquare();
+    void applyHandicap(bool winnerWasFirstPlayer, int winningScore);
 };
 
 

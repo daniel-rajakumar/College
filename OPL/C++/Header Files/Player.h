@@ -15,14 +15,14 @@ class Player {
 
 
     public:
-        Player(Board& b, bool human); // Constructor
+        Player(Board& b, bool human);
         int rollDie() const;
 
         Board &getBoard() const;
 
         bool canThrowOneDie() const;
 
-        virtual void takeTurn() = 0; // Pure virtual function
+        virtual void takeTurn() = 0;
         bool getIsHuman() const;
 };
 

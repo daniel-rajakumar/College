@@ -37,7 +37,7 @@ public:
 
     Round(Player &p1, Player &p2, Tournament &tournament, bool isANewGame);
 
-    Player& determineFirstPlayer() const; // Determine the first player
+    Player& determineFirstPlayer() const; // find the first player
 };
 
 

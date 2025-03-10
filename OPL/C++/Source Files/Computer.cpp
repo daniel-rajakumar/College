@@ -34,14 +34,13 @@ void Computer::takeTurn() {
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 }
 
-// Decide whether to cover or uncover
+// Decide whether to cover / uncover
 bool Computer::shouldCover(const int sum) const {
-    // Prefer covering if possible
+    // cover > uncover (most of the time)
     const set<set<int>> coverCombinations = board.findValidCombinations(sum, true);
     return !coverCombinations.empty();
 }
 
-// Cover squares
 void Computer::coverSquares(const int sum) const {
     const set<set<int>> validCombinations = board.findValidCombinations(sum, true);
 

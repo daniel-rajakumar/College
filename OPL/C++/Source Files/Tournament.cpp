@@ -18,7 +18,6 @@ Tournament::Tournament(Board& humanBoard, Board& computerBoard)
     : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(true) {
 }
 
-// Initialize static variables
 bool Tournament::advantageApplied = false;
 int Tournament::advantageSquare = 0;
 
@@ -42,23 +41,26 @@ bool Tournament::getIsANewGame() const {
     return isANewGame;
 }
 
+bool Tournament::getIsHumanTurn() const {
+    return isHumanTurn;
+}
+
 void Tournament::start() {
-    // Initialize boards
     Board humanBoard(11);
     Board computerBoard(11);
 
-    // Initialize players
     Human human(humanBoard, computerBoard);
     Computer computer(computerBoard, humanBoard);
 
-    // Initialize tournament
     Tournament tournament(humanBoard, computerBoard);
 
     // Ask the user if they want to load a saved game
     char loadChoice;
     cout << "~~~~~~~~~~~~[LOAD?]~~~~~~~~~~~~" << endl;
-    cout << "Do you want to load a saved game? (y/n): ";
-    cin >> loadChoice;
+    do {
+        cout << "Do you want to load a saved game? (y/n): ";
+        cin >> loadChoice;
+    } while (loadChoice != 'y' && loadChoice != 'n');
 
     if (loadChoice == 'y' || loadChoice == 'Y') {
         string filename;
@@ -75,7 +77,6 @@ void Tournament::start() {
             cin >> boardSize;
         } while (boardSize != 9 && boardSize != 10 && boardSize != 11);
 
-        // Initialize boards with the chosen size
         humanBoard = Board(boardSize);
         computerBoard = Board(boardSize);
     }
@@ -107,8 +108,10 @@ void Tournament::start() {
         cout << endl;
 
         // Ask the human player if they want to play another round
-        cout << "Do you want to play another round? (y/n): ";
-        cin >> playAgain;
+        do {
+            cout << "Do you want to play another round? (y/n): ";
+            cin >> playAgain;
+        } while (playAgain != 'y' || playAgain != 'n');
 
         if (playAgain == 'y' || playAgain == 'Y') {
             clearScreen();
@@ -123,22 +126,12 @@ void Tournament::start() {
 
 void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByUncover, const bool computerWonByCover, const bool computerWonByUncover, const int humanScore, const int computerScore) {
     if (humanWonByCover) {
-        // Human wins by covering all their squares
-        // Human's score increases by the sum of the computer's uncovered squares
         tournamentScoreHuman += computerScore;
-    } else if (humanWonByUncover) {
-        // Human wins by uncovering all the computer's squares
-        // Human's score increases by the sum of the human's covered squares
+    } if (humanWonByUncover) {
         tournamentScoreHuman += humanScore;
-    }
-
-    if (computerWonByCover) {
-        // Computer wins by covering all its squares
-        // Computer's score increases by the sum of the human's uncovered squares
+    } if (computerWonByCover) {
         tournamentScoreComputer += humanScore;
-    } else if (computerWonByUncover) {
-        // Computer wins by uncovering all the human's squares
-        // Computer's score increases by the sum of the computer's covered squares
+    } if (computerWonByUncover) {
         tournamentScoreComputer += computerScore;
     }
 }
@@ -156,19 +149,16 @@ void Tournament::declareTournamentWinner() const {
 
 
 void Tournament::resetGame() {
-    // Reset the boards
-    humanBoard = Board(humanBoard.getSize()); // Reset human board
-    computerBoard = Board(computerBoard.getSize()); // Reset computer board
+    humanBoard = Board(humanBoard.getSize());
+    computerBoard = Board(computerBoard.getSize());
 
-    // Reset scores
     // tournamentScoreHuman = 0;
     // tournamentScoreComputer = 0;
 
-    // Reset turn and new game flag
     isHumanTurn = true;
     isANewGame = true;
 
-    cout << "Game state has been reset. Starting a new game..." << endl;
+    cout << "Game state has been reset!! Starting a new game..." << endl;
 
     cout << "[ Human: " << tournamentScoreHuman << ", Computer: " << tournamentScoreComputer << " ]"<<  endl;
 
@@ -177,9 +167,9 @@ void Tournament::resetGame() {
 
 // Save the game state to a file
 void Tournament::saveGame(const string& filename) const {
-    string filePath = filename; // Save in the res folder
+    string filePath = filename;
     if (ofstream file(filename); file.is_open()) {
-        // Save computer's board and score
+
         file << "Computer:" << endl;
         file << "   Squares: ";
         for (int i = 1; i <= computerBoard.getSize(); ++i) {
@@ -192,7 +182,6 @@ void Tournament::saveGame(const string& filename) const {
         file << endl;
         file << "   Score: " << tournamentScoreComputer << endl;
 
-        // Save human's board and score
         file << "Human:" << endl;
         file << "   Squares: ";
         for (int i = 1; i <= humanBoard.getSize(); ++i) {
@@ -205,7 +194,6 @@ void Tournament::saveGame(const string& filename) const {
         file << endl;
         file << "   Score: " << tournamentScoreHuman << endl;
 
-        // Save turn information
         file << "First Turn: " << (isHumanTurn ? "Human" : "Computer") << endl;
         file << "Next Turn: " << (!isHumanTurn ? "Human" : "Computer") << endl;
 
@@ -222,23 +210,19 @@ bool Tournament::loadGame(const string& filename) {
         string line;
         int boardSize = 0;
 
-        // Read the file line by line
         while (getline(file, line)) {
             if (line.find("Computer:") != string::npos) {
-                // Load computer's board
-                getline(file, line); // Read the squares line
-                stringstream ss(line.substr(11)); // Skip "   Squares: "
+                getline(file, line);
+                stringstream ss(line.substr(11));
                 int square;
-                boardSize = 0; // Reset board size counter
+                boardSize = 0;
                 while (ss >> square) {
                     boardSize++;
                 }
 
-                // Initialize boards with the correct size
                 humanBoard = Board(boardSize);
                 computerBoard = Board(boardSize);
 
-                // Reset the stream and read the squares again
                 ss.clear();
                 ss.seekg(0);
                 for (int i = 1; i <= boardSize; ++i) {
@@ -250,13 +234,11 @@ bool Tournament::loadGame(const string& filename) {
                     }
                 }
 
-                // Load computer's score
-                getline(file, line); // Read the score line
-                tournamentScoreComputer = stoi(line.substr(10)); // Skip "   Score: "
+                getline(file, line);
+                tournamentScoreComputer = stoi(line.substr(10));
             } else if (line.find("Human:") != string::npos) {
-                // Load human's board
-                getline(file, line); // Read the squares line
-                stringstream ss(line.substr(11)); // Skip "   Squares: "
+                getline(file, line);
+                stringstream ss(line.substr(11));
                 for (int i = 1; i <= boardSize; ++i) {
                     int square;
                     ss >> square;
@@ -267,15 +249,12 @@ bool Tournament::loadGame(const string& filename) {
                     }
                 }
 
-                // Load human's score
-                getline(file, line); // Read the score line
-                tournamentScoreHuman = stoi(line.substr(10)); // Skip "   Score: "
+                getline(file, line);
+                tournamentScoreHuman = stoi(line.substr(10));
             } else if (line.find("First Turn:") != string::npos) {
-                // Load first turn information
                 isHumanTurn = false;
                 isHumanTurn = (line.find("Human") != string::npos);
             } else if (line.find("Next Turn:") != string::npos) {
-                // Load next turn information
                 isHumanTurn = !(line.find("Human") != string::npos);
             }
         }
@@ -301,12 +280,9 @@ int Tournament::calculateAdvantageSquare(int winningScore) {
 }
 
 void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
-    // Calculate the advantage square
     advantageSquare = calculateAdvantageSquare(winningScore);
 
-    // Determine who gets the advantage
     if (winnerWasFirstPlayer) {
-        // If the winner was the first player, the opponent gets the advantage
         if (isHumanTurn) {
             cout << "Computer gets the advantage. Square " << advantageSquare << " on the computer's board will be covered." << endl;
             computerBoard.coverSquare(advantageSquare); // Cover the square on the computer's board
@@ -315,7 +291,6 @@ void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
             humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
         }
     } else {
-        // If the winner was the second player, the winner keeps the advantage
         if (isHumanTurn) {
             cout << "Human keeps the advantage. Square " << advantageSquare << " on the human's board will be covered." << endl;
             humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
@@ -325,5 +300,5 @@ void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
         }
     }
 
-    advantageApplied = true; // Mark that the advantage has been applied
+    advantageApplied = true;
 }

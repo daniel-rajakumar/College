@@ -22,10 +22,12 @@ void Human::takeTurn() {
     boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
 
     computerBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
-    // Ask the player if they want help
+
     char helpChoice;
-    cout << "Do you want help from the computer? (y/n): ";
-    cin >> helpChoice;
+    do {
+        cout << "Do you want help from the computer? (y/n): ";
+        cin >> helpChoice;
+    } while (helpChoice != 'y' && helpChoice != 'n');
 
     if (helpChoice == 'y' || helpChoice == 'Y') {
         // Call the computer's provideHelp method
@@ -78,7 +80,6 @@ void Human::coverSquares(int sum) {
         index++;
     }
 
-    // Prompt the player to choose a combination
     int choice;
     cout << "Enter the number of the combination you want to use: ";
     cin >> choice;
@@ -89,15 +90,12 @@ void Human::coverSquares(int sum) {
         return;
     }
 
-    // Get the selected combination
     auto it = validCombinations.begin();
     advance(it, choice - 1);
     const set<int> selectedCombination = *it;
 
-    // Cover the selected squares
     for (const int square: selectedCombination) {
         board.coverSquare(square);
-        // computerBoard.coverSquare(square);
     }
     cout << "Covered squares: ";
     for (const int square: selectedCombination) {
@@ -127,23 +125,19 @@ void Human::uncoverSquares(int sum) {
         index++;
     }
 
-    // Prompt the player to choose a combination
     int choice;
     cout << "Enter the number of the combination you want to use: ";
     cin >> choice;
 
-    // Validate the choice
     if (choice < 1 || choice > validCombinations.size()) {
         cout << "Invalid choice. Turn ends." << endl;
         return;
     }
 
-    // Get the selected combination
     auto it = validCombinations.begin();
     advance(it, choice - 1);
     set<int> selectedCombination = *it;
 
-    // Uncover the selected squares on the computer's board
     for (int square : selectedCombination) {
         computerBoard.uncoverSquare(square);
     }

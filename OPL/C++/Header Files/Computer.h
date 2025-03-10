@@ -10,7 +10,7 @@
 
 class Computer: public Player {
 private:
-    BoardView boardView; // Add a BoardView object
+    BoardView boardView;
     BoardView humanBoardView;
     Board& humanBoard;
 

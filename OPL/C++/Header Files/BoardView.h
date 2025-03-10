@@ -9,8 +9,8 @@ using namespace std;
 
 class BoardView {
 private:
-    const Board& board; // Reference to the Board object
-    string playerName;  // Name of the player (Human or Computer)
+    const Board& board;
+    string playerName;
 
 public:
     BoardView(const Board &b, const string &name);

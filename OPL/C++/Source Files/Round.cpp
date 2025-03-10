@@ -37,7 +37,6 @@ Player& Round::determineFirstPlayer() const {
         cout << "It's a tie! Rolling again..." << endl;
     } while (player1Roll == player2Roll);
 
-    // This line is never reached, but it's required to avoid a compiler warning
     return player1;
 }
 
@@ -45,18 +44,14 @@ void Round::play() const {
     // Player* currentPlayer = !isHumanTurn ? &player1 : &player2;
     Player* currentPlayer = &player1;
 
-    cout << "is this human: " << isHumanTurn << endl;
-
-    if (!isHumanTurn)
+    if (tournament.getIsHumanTurn())
         currentPlayer = &player2;
     else
         currentPlayer = &player1;
 
-    // if (player1 )
-
     if (isANewGame) {
         cout << "~~~~~~~~[Who Goes First?]~~~~~~~~~" << endl;
-        currentPlayer = &determineFirstPlayer(); // Determine the first player
+        currentPlayer = &determineFirstPlayer();
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
     }
 
@@ -74,7 +69,6 @@ void Round::play() const {
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
 
         if (currentPlayer -> getIsHuman()) {
-        // Ask the user if they want to save the game
         char saveChoice;
         cout << "Do you want to save the game? (y/n): ";
         cin >> saveChoice;
@@ -94,12 +88,10 @@ void Round::play() const {
 
 // Check if the round is over
 bool Round::isRoundOver() const {
-    // Check if player1 has covered all their squares or uncovered all of player2's squares
     if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
         return true;
     }
 
-    // Check if player2 has covered all their squares or uncovered all of player1's squares
     if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
         return true;
     }

@@ -10,8 +10,8 @@
 
 class Human : public Player {
 private:
-    BoardView boardView; // Add a BoardView object
-    BoardView computerBoardView; // Computer's board view
+    BoardView boardView;
+    BoardView computerBoardView;
     Board& computerBoard;
 
 public:

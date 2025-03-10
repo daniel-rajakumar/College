@@ -17,8 +17,10 @@ int Player::rollDie() const {
         if (isHuman) {
             // Ask the human player if they want to roll 1 die or 2 dice
             char choice;
-            cout << "Do you want to roll 1 die or 2 dice? (1/2): ";
-            cin >> choice;
+            do {
+                cout << "Do you want to roll 1 die or 2 dice? (1/2): ";
+                cin >> choice;
+            } while (choice != '1' && choice != '2');
 
             if (choice == '1') {
                 cout << "[1 die] ";
@@ -55,10 +57,10 @@ Board& Player::getBoard() const {
 bool Player::canThrowOneDie() const {
     for (int i = 7; i <= board.getSize(); ++i) {
         if (!board.isSquareCovered(i)) {
-            return false; // At least one square from 7 to n is uncovered
+            return false;
         }
     }
-    return true; // All squares from 7 to n are covered
+    return true;
 }
 
 
