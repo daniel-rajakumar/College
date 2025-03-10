@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "../Header Files/Computer.h"
 #include "../Header Files/Tournament.h"
 
 Human::Human(Board& b, Board& computerBoard)
@@ -17,23 +18,21 @@ void Human::takeTurn() {
     cout << "Your rolled " << die << endl;;
 
     // Display boards with the advantage square highlighted
-    cout << "Current Board State:" << endl;
+    cout << "\n\nCurrent Board State:" << endl;
     boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
 
     computerBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
     // Ask the player if they want help
     char helpChoice;
-    // cout << "Do you want help from the computer? (y/n): ";
-    // cin >> helpChoice;
+    cout << "Do you want help from the computer? (y/n): ";
+    cin >> helpChoice;
 
     if (helpChoice == 'y' || helpChoice == 'Y') {
         // Call the computer's provideHelp method
-        // Computer computer(computerBoard, board);
-        // computer.provideHelp(die, humanBoard, computerBoard);
+        const Computer computer(computerBoard, board);
+        computer.provideHelp(die, board, computerBoard);
+        cout << endl;
     }
-
-
-
 
     // Choose to cover or uncover squares
     cout << "Do you want to cover your squares or uncover the opponent's squares? (c/u): ";
