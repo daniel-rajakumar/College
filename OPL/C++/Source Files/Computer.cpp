@@ -115,3 +115,62 @@ void Computer::uncoverSquares(int sum) {
     }
     cout << endl;
 }
+
+
+
+void Computer::provideHelp(int diceSum, Board& humanBoard, Board& computerBoard) const {
+    cout << "Computer's suggestion:" << endl;
+
+    // Decide whether to cover or uncover
+    if (shouldCover(diceSum)) {
+        cout << "You should cover your squares." << endl;
+
+        // Find valid combinations to cover
+        set<set<int>> coverCombinations = humanBoard.findValidCombinations(diceSum, true);
+
+        if (coverCombinations.empty()) {
+            cout << "No valid moves to cover squares." << endl;
+        } else {
+            // Suggest the combination with the most squares
+            set<int> bestCombination;
+            int maxSquares = 0;
+            for (const set<int>& combination : coverCombinations) {
+                if (combination.size() > maxSquares) {
+                    bestCombination = combination;
+                    maxSquares = combination.size();
+                }
+            }
+
+            cout << "You can cover the following squares: ";
+            for (int square : bestCombination) {
+                cout << square << " ";
+            }
+            cout << endl;
+        }
+    } else {
+        cout << "You should uncover the opponent's squares." << endl;
+
+        // Find valid combinations to uncover
+        set<set<int>> uncoverCombinations = computerBoard.findValidCombinations(diceSum, false);
+
+        if (uncoverCombinations.empty()) {
+            cout << "No valid moves to uncover squares." << endl;
+        } else {
+            // Suggest the combination with the most squares
+            set<int> bestCombination;
+            int maxSquares = 0;
+            for (const set<int>& combination : uncoverCombinations) {
+                if (combination.size() > maxSquares) {
+                    bestCombination = combination;
+                    maxSquares = combination.size();
+                }
+            }
+
+            cout << "You can uncover the following squares: ";
+            for (int square : bestCombination) {
+                cout << square << " ";
+            }
+            cout << endl;
+        }
+    }
+}

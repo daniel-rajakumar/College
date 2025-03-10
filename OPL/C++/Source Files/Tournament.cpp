@@ -15,7 +15,7 @@
 using namespace std;
 
 Tournament::Tournament(Board& humanBoard, Board& computerBoard)
-    : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(false) {
+    : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(true) {
 }
 
 // Initialize static variables
@@ -71,7 +71,7 @@ void Tournament::start() {
     }
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 
-    clearScreen();
+    // clearScreen();
     // Start the game loop
     char playAgain;
     do {

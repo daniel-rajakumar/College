@@ -25,6 +25,8 @@ public:
 
     void uncoverSquares(int sum);
 
+    void provideHelp(int diceSum, Board &humanBoard, Board &computerBoard) const;
+
     void uncoverSquares(int sum) const;
 };
 
