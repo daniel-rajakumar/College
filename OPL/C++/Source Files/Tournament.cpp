@@ -68,16 +68,12 @@ void Tournament::start() {
 
         // Update scores based on the round result
         if (human.getBoard().allCovered()) {
-            cout << "Human wins by covering all their squares!" << endl;
             tournament.updateScores(true, false, false, false, human.getBoard().getCoveredSum(), computer.getBoard().getUncoveredSum());
         } else if (computer.getBoard().allUncovered()) {
-            cout << "Human wins by uncovering all the computer's squares!" << endl;
             tournament.updateScores(false, true, false, false, human.getBoard().getCoveredSum(), computer.getBoard().getUncoveredSum());
         } else if (computer.getBoard().allCovered()) {
-            cout << "Computer wins by covering all their squares!" << endl;
             tournament.updateScores(false, false, true, false, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
         } else if (human.getBoard().allUncovered()) {
-            cout << "Computer wins by uncovering all the human's squares!" << endl;
             tournament.updateScores(false, false, false, true, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
         }
 
@@ -151,6 +147,9 @@ void Tournament::resetGame() {
     isANewGame = true;
 
     cout << "Game state has been reset. Starting a new game..." << endl;
+
+    cout << "[ Human: " << tournamentScoreHuman << ", Computer: " << tournamentScoreComputer << " ]"<<  endl;
+
 }
 
 
