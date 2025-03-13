@@ -13,7 +13,7 @@ Human::Human(Board& b, Board& computerBoard)
     : Player(b, true), boardView(b, "Human"), computerBoardView(computerBoard, "Computer"), computerBoard(computerBoard) {}
 
 
-void Human::takeTurn() {
+bool Human::takeTurn() {
     const int die = rollDie();
     cout << "Your rolled " << die << endl;;
 
@@ -22,7 +22,7 @@ void Human::takeTurn() {
 
     if (!canCover && !canUncover) {
         cout << "You cannot cover any of your squares or uncover any of the opponent's squares. Your turn ends." << endl;
-        return;
+        return true;
     }
 
     // Display boards with the advantage square highlighted
@@ -63,6 +63,7 @@ void Human::takeTurn() {
     boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
     computerBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
+    return false;
 }
 
 

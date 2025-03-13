@@ -17,7 +17,7 @@ private:
 public:
     Human(Board &b, Board &computerBoard);
 
-    void takeTurn() override;
+    bool takeTurn() override;
 
     void coverSquares(int sum);
 

@@ -17,7 +17,7 @@ private:
 public:
     Computer(Board &b, Board &humanBoard);
 
-    void takeTurn() override;
+    bool takeTurn() override;
 
     bool shouldCover(int sum) const;
 

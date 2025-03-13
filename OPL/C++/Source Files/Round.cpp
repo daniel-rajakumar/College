@@ -57,7 +57,7 @@ void Round::play() const {
 
     bool isFirst = true;
     while (!isOver) {
-        currentPlayer -> takeTurn();
+        const bool turnEnds = currentPlayer -> takeTurn();
 
         // Check if the round is over after the current player's turn
         if (isRoundOver() && !isFirst) {
@@ -66,7 +66,10 @@ void Round::play() const {
         }
 
         // Switch to the other player
-        currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
+        if (turnEnds) {
+            currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
+            isFirst = false;
+        }
 
         if (currentPlayer -> getIsHuman()) {
         char saveChoice;
@@ -82,7 +85,6 @@ void Round::play() const {
             }
         }
 
-        isFirst = false;
     }
 }
 
