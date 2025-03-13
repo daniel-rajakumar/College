@@ -51,7 +51,7 @@ build cmake_object_order_depends_target_C__: phony || .
 
 build CMakeFiles/C__.dir/Source_Files/main.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/main.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/main.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -59,7 +59,7 @@ build CMakeFiles/C__.dir/Source_Files/main.cpp.o: CXX_COMPILER__C___unscanned_De
 
 build CMakeFiles/C__.dir/Source_Files/Player.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Player.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/Player.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -67,7 +67,7 @@ build CMakeFiles/C__.dir/Source_Files/Player.cpp.o: CXX_COMPILER__C___unscanned_
 
 build CMakeFiles/C__.dir/Source_Files/Computer.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Computer.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/Computer.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -75,7 +75,7 @@ build CMakeFiles/C__.dir/Source_Files/Computer.cpp.o: CXX_COMPILER__C___unscanne
 
 build CMakeFiles/C__.dir/Source_Files/Human.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Human.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/Human.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -83,7 +83,7 @@ build CMakeFiles/C__.dir/Source_Files/Human.cpp.o: CXX_COMPILER__C___unscanned_D
 
 build CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Tournament.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -91,7 +91,7 @@ build CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o: CXX_COMPILER__C___unscan
 
 build CMakeFiles/C__.dir/Source_Files/Board.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Board.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/Board.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -99,7 +99,7 @@ build CMakeFiles/C__.dir/Source_Files/Board.cpp.o: CXX_COMPILER__C___unscanned_D
 
 build CMakeFiles/C__.dir/Source_Files/BoardView.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/BoardView.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/BoardView.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -107,7 +107,7 @@ build CMakeFiles/C__.dir/Source_Files/BoardView.cpp.o: CXX_COMPILER__C___unscann
 
 build CMakeFiles/C__.dir/Source_Files/Round.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Round.cpp || cmake_object_order_depends_target_C__
   DEP_FILE = CMakeFiles/C__.dir/Source_Files/Round.cpp.o.d
-  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fcolor-diagnostics
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/C__.dir
   OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
   TARGET_COMPILE_PDB = CMakeFiles/C__.dir/
@@ -122,7 +122,7 @@ build CMakeFiles/C__.dir/Source_Files/Round.cpp.o: CXX_COMPILER__C___unscanned_D
 # Link the executable C__
 
 build C__: CXX_EXECUTABLE_LINKER__C___Debug CMakeFiles/C__.dir/Source_Files/main.cpp.o CMakeFiles/C__.dir/Source_Files/Player.cpp.o CMakeFiles/C__.dir/Source_Files/Computer.cpp.o CMakeFiles/C__.dir/Source_Files/Human.cpp.o CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o CMakeFiles/C__.dir/Source_Files/Board.cpp.o CMakeFiles/C__.dir/Source_Files/BoardView.cpp.o CMakeFiles/C__.dir/Source_Files/Round.cpp.o
-  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk
+  FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1
   OBJECT_DIR = CMakeFiles/C__.dir
   POST_BUILD = :
   PRE_LINK = :
