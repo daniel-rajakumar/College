@@ -21,6 +21,15 @@ void Computer::takeTurn() {
     int diceSum = rollDie(); // Use the rollDie function
     cout << "Computer rolled: " << diceSum << endl;
 
+    bool canCover = !board.findValidCombinations(diceSum, true).empty();
+    bool canUncover = !humanBoard.findValidCombinations(diceSum, false).empty();
+
+    if (!canCover && !canUncover) {
+        cout << "Computer cannot cover any of its squares or uncover any of your squares. Its turn ends." << endl;
+        return;
+    }
+
+
     // Decide to cover or uncover squares
     if (shouldCover(diceSum)) {
         coverSquares(diceSum);

@@ -17,6 +17,14 @@ void Human::takeTurn() {
     const int die = rollDie();
     cout << "Your rolled " << die << endl;;
 
+    bool canCover = !board.findValidCombinations(die, true).empty();
+    bool canUncover = !computerBoard.findValidCombinations(die, false).empty();
+
+    if (!canCover && !canUncover) {
+        cout << "You cannot cover any of your squares or uncover any of the opponent's squares. Your turn ends." << endl;
+        return;
+    }
+
     // Display boards with the advantage square highlighted
     cout << "\n\nCurrent Board State:" << endl;
     boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
