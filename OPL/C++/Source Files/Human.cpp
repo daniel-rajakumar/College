@@ -3,19 +3,30 @@
 //
 
 #include "../Header Files/Human.h"
-
 #include <iostream>
-
 #include "../Header Files/Computer.h"
 #include "../Header Files/Tournament.h"
 
+using namespace std;
+
+/**
+ * @brief Constructs a Human object.
+ * 
+ * @param b Reference to the human player's board.
+ * @param computerBoard Reference to the computer's board.
+ */
 Human::Human(Board& b, Board& computerBoard)
     : Player(b, true), boardView(b, "Human"), computerBoardView(computerBoard, "Computer"), computerBoard(computerBoard) {}
 
-
+/**
+ * @brief Takes a turn for the human player.
+ * 
+ * @return True if the turn was successful, false otherwise.
+ */
 bool Human::takeTurn() {
+    // Roll dice
     const int die = rollDie();
-    cout << "Your rolled " << die << endl;;
+    cout << "You rolled " << die << endl;
 
     bool canCover = !board.findValidCombinations(die, true).empty();
     bool canUncover = !computerBoard.findValidCombinations(die, false).empty();
@@ -27,10 +38,10 @@ bool Human::takeTurn() {
 
     // Display boards with the advantage square highlighted
     cout << "\n\nCurrent Board State:" << endl;
-    boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
+    boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+    computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
 
-    computerBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
-
+    // Ask if the player wants help from the computer
     char helpChoice;
     do {
         cout << "Do you want help from the computer? (y/n): ";
@@ -56,19 +67,17 @@ bool Human::takeTurn() {
     }
 
     cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
-    // boardView.display(); // Use BoardView to display the board
-    // computerBoardView.display(); // Computer's board (assuming you have access to it)
-    // boardView.display(Tournament::getAdvantageApplied() && ournament.isHumanTurn, Tournament::getAdvantageSquare());
-    // computerBoardView.display(Tournament::getAdvantageApplied() && !tournament.isHumanTurn, Tournament::getAdvantageSquare());
-    boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
-    computerBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
+    boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+    computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
     return false;
 }
 
-
-
-// Cover squares
+/**
+ * @brief Covers squares on the board based on the sum.
+ * 
+ * @param sum The sum of the dice.
+ */
 void Human::coverSquares(int sum) {
     set<set<int>> validCombinations = board.findValidCombinations(sum, true);
 
@@ -103,17 +112,21 @@ void Human::coverSquares(int sum) {
     advance(it, choice - 1);
     const set<int> selectedCombination = *it;
 
-    for (const int square: selectedCombination) {
+    for (const int square : selectedCombination) {
         board.coverSquare(square);
     }
     cout << "Covered squares: ";
-    for (const int square: selectedCombination) {
+    for (const int square : selectedCombination) {
         cout << square << " ";
     }
     cout << endl;
 }
 
-// Uncover squares on the computer's board
+/**
+ * @brief Uncovers squares on the computer's board based on the sum.
+ * 
+ * @param sum The sum of the dice.
+ */
 void Human::uncoverSquares(int sum) {
     set<set<int>> validCombinations = computerBoard.findValidCombinations(sum, false);
 

@@ -3,19 +3,26 @@
 //
 
 #include "../Header Files/Computer.h"
-
 #include <iostream>
-
 #include "../Header Files/Tournament.h"
 
+using namespace std;
+
+/**
+ * @brief Constructs a Computer object.
+ * 
+ * @param b Reference to the computer's board.
+ * @param humanBoard Reference to the human player's board.
+ */
 Computer::Computer(Board& b, Board& humanBoard)
     : Player(b, false), boardView(b, "Computer"), humanBoardView(humanBoard, "Human"), humanBoard(humanBoard) {}
 
-
-
-
+/**
+ * @brief Takes a turn for the computer player.
+ * 
+ * @return True if the turn was successful, false otherwise.
+ */
 bool Computer::takeTurn() {
-
     // Roll dice
     int diceSum = rollDie();
     cout << "Computer rolled: " << diceSum << endl;
@@ -43,17 +50,28 @@ bool Computer::takeTurn() {
     }
 
     cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
-    boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
-    humanBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
+    boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+    humanBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
     return false;
 }
 
+/**
+ * @brief Determines if the computer should cover squares based on the sum.
+ * 
+ * @param sum The sum of the dice.
+ * @return True if the computer should cover squares, false otherwise.
+ */
 bool Computer::shouldCover(const int sum) const {
     const set<set<int>> coverCombinations = board.findValidCombinations(sum, true);
     return !coverCombinations.empty();
 }
 
+/**
+ * @brief Covers squares on the board based on the sum.
+ * 
+ * @param sum The sum of the dice.
+ */
 void Computer::coverSquares(const int sum) const {
     const set<set<int>> validCombinations = board.findValidCombinations(sum, true);
 
@@ -75,7 +93,6 @@ void Computer::coverSquares(const int sum) const {
     // Cover the selected squares
     for (const int square : selectedCombination) {
         board.coverSquare(square);
-        // humanBoard.coverSquare(square);
     }
     cout << "Computer covered squares: ";
     for (const int square : selectedCombination) {
@@ -84,10 +101,11 @@ void Computer::coverSquares(const int sum) const {
     cout << endl;
 }
 
-
-
-
-// Uncover squares on the human's board
+/**
+ * @brief Uncovers squares on the human's board based on the sum.
+ * 
+ * @param sum The sum of the dice.
+ */
 void Computer::uncoverSquares(int sum) {
     set<set<int>> validCombinations = humanBoard.findValidCombinations(sum, false);
 
@@ -128,8 +146,13 @@ void Computer::uncoverSquares(int sum) {
     cout << endl;
 }
 
-
-
+/**
+ * @brief Provides help to the human player by suggesting moves.
+ * 
+ * @param diceSum The sum of the dice.
+ * @param humanBoard Reference to the human player's board.
+ * @param computerBoard Reference to the computer's board.
+ */
 void Computer::provideHelp(int diceSum, Board& humanBoard, Board& computerBoard) const {
     cout << "Computer's suggestion:" << endl;
 

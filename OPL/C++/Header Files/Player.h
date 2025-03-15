@@ -7,26 +7,64 @@
 using namespace std;
 #include "Board.h"
 
+/**
+ * @class Player
+ * @brief Represents a player in the game.
+ * 
+ * The Player class is an abstract base class that provides common functionality
+ * for both human and computer players.
+ */
 class Player {
-    protected:
-        Board& board;
-        bool isHuman;
-        int input{};
+protected:
+    Board& board; ///< Reference to the player's board.
+    bool isHuman; ///< Flag indicating if the player is human.
+    int input{}; ///< Input value for the player.
 
+public:
+    /**
+     * @brief Constructs a Player object.
+     * 
+     * @param b Reference to the player's board.
+     * @param human Flag indicating if the player is human.
+     */
+    Player(Board& b, bool human);
 
-    public:
-        Player(Board& b, bool human);
-        int rollDie() const;
+    /**
+     * @brief Rolls a die and returns the result.
+     * 
+     * @return The result of the die roll.
+     */
+    int rollDie() const;
 
-        Board &getBoard() const;
+    /**
+     * @brief Gets the player's board.
+     * 
+     * @return Reference to the player's board.
+     */
+    Board &getBoard() const;
 
-        bool canThrowOneDie() const;
+    /**
+     * @brief Determines if the player can throw one die.
+     * 
+     * @return True if the player can throw one die, false otherwise.
+     */
+    bool canThrowOneDie() const;
 
-        virtual bool takeTurn() = 0;
-        bool getIsHuman() const;
+    /**
+     * @brief Takes a turn for the player.
+     * 
+     * This is a pure virtual function that must be implemented by derived classes.
+     * 
+     * @return True if the turn was successful, false otherwise.
+     */
+    virtual bool takeTurn() = 0;
+
+    /**
+     * @brief Gets whether the player is human.
+     * 
+     * @return True if the player is human, false otherwise.
+     */
+    bool getIsHuman() const;
 };
-
-
-
 
 #endif //PLAYER_H

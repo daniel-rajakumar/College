@@ -3,16 +3,29 @@
 //
 
 #include "../Header Files/Round.h"
-
 #include <iostream>
 #include <stdlib.h>
-
 #include "../Header Files/Player.h"
 #include "../Header Files/Tournament.h"
 
+using namespace std;
+
+/**
+ * @brief Constructs a Round object.
+ * 
+ * @param p1 Reference to the first player.
+ * @param p2 Reference to the second player.
+ * @param tournament Reference to the tournament.
+ * @param isANewGame Flag indicating if it is a new game.
+ */
 Round::Round(Player& p1, Player& p2, Tournament& tournament, const bool isANewGame)
     : player1(p1), player2(p2), isOver(false), tournament(tournament), isANewGame(isANewGame) {}
 
+/**
+ * @brief Determines the first player for the round.
+ * 
+ * @return Reference to the first player.
+ */
 Player& Round::determineFirstPlayer() const {
     int player1Roll, player2Roll;
 
@@ -39,8 +52,10 @@ Player& Round::determineFirstPlayer() const {
     return player1;
 }
 
+/**
+ * @brief Plays the round.
+ */
 void Round::play() const {
-    // Player* currentPlayer = !isHumanTurn ? &player1 : &player2;
     Player* currentPlayer = &player1;
 
     if (tournament.getIsHumanTurn())
@@ -56,7 +71,7 @@ void Round::play() const {
 
     bool isFirst = true;
     while (!isOver) {
-        const bool turnEnds = currentPlayer -> takeTurn();
+        const bool turnEnds = currentPlayer->takeTurn();
 
         // Check if the round is over after the current player's turn
         if (isRoundOver() && !isFirst) {
@@ -70,10 +85,11 @@ void Round::play() const {
             isFirst = false;
         }
 
-        if (currentPlayer -> getIsHuman()) {
-        char saveChoice;
-        cout << "Do you want to save the game? (y/n): ";
-        cin >> saveChoice;
+        // Prompt to save the game if it's the human player's turn
+        if (currentPlayer->getIsHuman()) {
+            char saveChoice;
+            cout << "Do you want to save the game? (y/n): ";
+            cin >> saveChoice;
 
             if (saveChoice == 'y' || saveChoice == 'Y') {
                 string filename;
@@ -83,11 +99,14 @@ void Round::play() const {
                 exit(0);
             }
         }
-
     }
 }
 
-// Check if the round is over
+/**
+ * @brief Checks if the round is over.
+ * 
+ * @return True if the round is over, false otherwise.
+ */
 bool Round::isRoundOver() const {
     if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
         return true;
@@ -100,6 +119,11 @@ bool Round::isRoundOver() const {
     return false;
 }
 
+/**
+ * @brief Declares the winner of the round.
+ * 
+ * @param currentPlayer Pointer to the current player.
+ */
 void Round::declareWinner(const Player* currentPlayer) const {
     const bool winnerWasFirstPlayer = (currentPlayer == &determineFirstPlayer());
 

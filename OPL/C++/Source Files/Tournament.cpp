@@ -12,23 +12,44 @@
 #include <ostream>
 #include <fstream>
 #include <sstream>
+
 using namespace std;
 
+/**
+ * @brief Constructs a Tournament object.
+ * 
+ * @param humanBoard Reference to the human's board.
+ * @param computerBoard Reference to the computer's board.
+ */
 Tournament::Tournament(Board& humanBoard, Board& computerBoard)
     : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(true) {
 }
 
+// Static member initialization
 bool Tournament::advantageApplied = false;
 int Tournament::advantageSquare = 0;
 
+/**
+ * @brief Gets whether the advantage has been applied.
+ * 
+ * @return True if the advantage has been applied, false otherwise.
+ */
 bool Tournament::getAdvantageApplied() {
     return advantageApplied;
 }
 
+/**
+ * @brief Gets the advantage square.
+ * 
+ * @return The advantage square.
+ */
 int Tournament::getAdvantageSquare() {
     return advantageSquare;
 }
 
+/**
+ * @brief Clears the console screen.
+ */
 void clearScreen() {
 #ifdef _WIN32
     system("cls");
@@ -37,14 +58,27 @@ void clearScreen() {
 #endif
 }
 
+/**
+ * @brief Gets whether it is a new game.
+ * 
+ * @return True if it is a new game, false otherwise.
+ */
 bool Tournament::getIsANewGame() const {
     return isANewGame;
 }
 
+/**
+ * @brief Gets whether it is the human player's turn.
+ * 
+ * @return True if it is the human player's turn, false otherwise.
+ */
 bool Tournament::getIsHumanTurn() const {
     return isHumanTurn;
 }
 
+/**
+ * @brief Starts the tournament.
+ */
 void Tournament::start() {
     Board humanBoard(11);
     Board computerBoard(11);
@@ -82,7 +116,6 @@ void Tournament::start() {
     }
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 
-    // clearScreen();
     // Start the game loop
     char playAgain;
     do {
@@ -111,7 +144,7 @@ void Tournament::start() {
         do {
             cout << "Do you want to play another round? (y/n): ";
             cin >> playAgain;
-        } while (playAgain != 'y' || playAgain != 'n');
+        } while (playAgain != 'y' && playAgain != 'n');
 
         if (playAgain == 'y' || playAgain == 'Y') {
             clearScreen();
@@ -123,20 +156,34 @@ void Tournament::start() {
     tournament.declareTournamentWinner();
 }
 
-
+/**
+ * @brief Updates the scores based on the outcome of the round.
+ * 
+ * @param humanWonByCover True if the human won by covering squares.
+ * @param humanWonByUncover True if the human won by uncovering squares.
+ * @param computerWonByCover True if the computer won by covering squares.
+ * @param computerWonByUncover True if the computer won by uncovering squares.
+ * @param humanScore The human player's score.
+ * @param computerScore The computer player's score.
+ */
 void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByUncover, const bool computerWonByCover, const bool computerWonByUncover, const int humanScore, const int computerScore) {
     if (humanWonByCover) {
         tournamentScoreHuman += computerScore;
-    } if (humanWonByUncover) {
+    } 
+    if (humanWonByUncover) {
         tournamentScoreHuman += humanScore;
-    } if (computerWonByCover) {
+    } 
+    if (computerWonByCover) {
         tournamentScoreComputer += humanScore;
-    } if (computerWonByUncover) {
+    } 
+    if (computerWonByUncover) {
         tournamentScoreComputer += computerScore;
     }
 }
 
-// Declare the tournament winner
+/**
+ * @brief Declares the winner of the tournament.
+ */
 void Tournament::declareTournamentWinner() const {
     if (tournamentScoreHuman > tournamentScoreComputer) {
         cout << "You win the tournament with a score of " << tournamentScoreHuman << "!" << endl;
@@ -147,29 +194,27 @@ void Tournament::declareTournamentWinner() const {
     }
 }
 
-
+/**
+ * @brief Resets the game state.
+ */
 void Tournament::resetGame() {
     humanBoard = Board(humanBoard.getSize());
     computerBoard = Board(computerBoard.getSize());
 
-    // tournamentScoreHuman = 0;
-    // tournamentScoreComputer = 0;
-
     isHumanTurn = true;
     isANewGame = true;
 
-    cout << "Game state has been reset!! Starting a new game..." << endl;
-
-    cout << "[ Human: " << tournamentScoreHuman << ", Computer: " << tournamentScoreComputer << " ]"<<  endl;
-
+    cout << "Game state has been reset! Starting a new game..." << endl;
+    cout << "[ Human: " << tournamentScoreHuman << ", Computer: " << tournamentScoreComputer << " ]" << endl;
 }
 
-
-// Save the game state to a file
+/**
+ * @brief Saves the game state to a file.
+ * 
+ * @param filename The name of the file to save the game state to.
+ */
 void Tournament::saveGame(const string& filename) const {
-    string filePath = filename;
     if (ofstream file(filename); file.is_open()) {
-
         file << "Computer:" << endl;
         file << "   Squares: ";
         for (int i = 1; i <= computerBoard.getSize(); ++i) {
@@ -204,7 +249,12 @@ void Tournament::saveGame(const string& filename) const {
     }
 }
 
-// Tournament.cpp
+/**
+ * @brief Loads the game state from a file.
+ * 
+ * @param filename The name of the file to load the game state from.
+ * @return True if the game state was successfully loaded, false otherwise.
+ */
 bool Tournament::loadGame(const string& filename) {
     if (ifstream file(filename); file.is_open()) {
         string line;
@@ -252,7 +302,6 @@ bool Tournament::loadGame(const string& filename) {
                 getline(file, line);
                 tournamentScoreHuman = stoi(line.substr(10));
             } else if (line.find("First Turn:") != string::npos) {
-                isHumanTurn = false;
                 isHumanTurn = (line.find("Human") != string::npos);
             } else if (line.find("Next Turn:") != string::npos) {
                 isHumanTurn = !(line.find("Human") != string::npos);
@@ -268,8 +317,12 @@ bool Tournament::loadGame(const string& filename) {
     }
 }
 
-
-// Calculate the advantage square based on the sum of the digits of the winning score
+/**
+ * @brief Calculates the advantage square based on the sum of the digits of the winning score.
+ * 
+ * @param winningScore The winning score.
+ * @return The calculated advantage square.
+ */
 int Tournament::calculateAdvantageSquare(int winningScore) {
     int sum = 0;
     while (winningScore > 0) {
@@ -279,6 +332,12 @@ int Tournament::calculateAdvantageSquare(int winningScore) {
     return sum;
 }
 
+/**
+ * @brief Applies a handicap based on the winner and winning score.
+ * 
+ * @param winnerWasFirstPlayer True if the winner was the first player.
+ * @param winningScore The winning score.
+ */
 void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
     advantageSquare = calculateAdvantageSquare(winningScore);
 
