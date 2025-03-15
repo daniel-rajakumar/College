@@ -14,31 +14,27 @@ int Player::rollDie() const {
     char choice, isManual;
     int choiceOne, choiceTwo;
 
-    // Ask if the player wants to roll 1 die or 2 dice (only for human players)
     if (canThrowOneDie() && isHuman) {
         do {
             cout << "Do you want to roll 1 die or 2 dice? (1/2): ";
             cin >> choice;
         } while (choice != '1' && choice != '2');
     } else {
-        choice = '2'; // Default to 2 dice for computer or if canThrowOneDie() is false
+        choice = '2';
     }
 
-    // Ask if the player wants to enter the die manually (for both human and computer)
     if (isHuman) {
         do {
             cout << "Do you want to enter the die manually? (y/n): ";
             cin >> isManual;
         } while (isManual != 'y' && isManual != 'n');
     } else {
-        // For the computer, ask the user if they want to enter the dice manually
         do {
             cout << "Do you want to enter the die manually for the computer? (y/n): ";
             cin >> isManual;
         } while (isManual != 'y' && isManual != 'n');
     }
 
-    // Handle manual input
     if (isManual == 'y') {
         if (choice == '1') {
             do {
@@ -62,7 +58,6 @@ int Player::rollDie() const {
             diceSum = choiceOne + choiceTwo;
         }
     } else {
-        // Handle automatic rolling
         if (choice == '1') {
             diceSum = rand() % 6 + 1;
             if (!isHuman) {
@@ -79,7 +74,6 @@ int Player::rollDie() const {
     return diceSum;
 }
 
-// Get the player's board
 Board& Player::getBoard() const {
     return board;
 }

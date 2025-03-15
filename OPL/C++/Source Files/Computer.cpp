@@ -15,10 +15,9 @@ Computer::Computer(Board& b, Board& humanBoard)
 
 
 bool Computer::takeTurn() {
-    // cout << "Computer's turn!" << endl;
 
     // Roll dice
-    int diceSum = rollDie(); // Use the rollDie function
+    int diceSum = rollDie();
     cout << "Computer rolled: " << diceSum << endl;
 
     bool canCover = !board.findValidCombinations(diceSum, true).empty();
@@ -29,8 +28,7 @@ bool Computer::takeTurn() {
         return true;
     }
 
-    // Choose to cover or uncover squares
-    cout << "Do you want to cover your squares or uncover the opponent's squares? (c/u): ";
+    cout << "[computer] Do you want to cover your squares or uncover the opponent's squares? (c/u): ";
     char choice;
     cin >> choice;
 
@@ -44,8 +42,6 @@ bool Computer::takeTurn() {
         uncoverSquares(diceSum);
     }
 
-    // Decide to cover or uncover squares
-
     cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
     boardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
     humanBoardView.display(Tournament::getAdvantageApplied() && true, Tournament::getAdvantageSquare());
@@ -53,9 +49,7 @@ bool Computer::takeTurn() {
     return false;
 }
 
-// Decide whether to cover / uncover
 bool Computer::shouldCover(const int sum) const {
-    // cover > uncover (most of the time)
     const set<set<int>> coverCombinations = board.findValidCombinations(sum, true);
     return !coverCombinations.empty();
 }

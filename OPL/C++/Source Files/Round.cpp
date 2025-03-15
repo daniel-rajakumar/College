@@ -13,7 +13,6 @@
 Round::Round(Player& p1, Player& p2, Tournament& tournament, const bool isANewGame)
     : player1(p1), player2(p2), isOver(false), tournament(tournament), isANewGame(isANewGame) {}
 
-// Determine the first player
 Player& Round::determineFirstPlayer() const {
     int player1Roll, player2Roll;
 
