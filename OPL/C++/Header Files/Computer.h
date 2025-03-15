@@ -65,7 +65,7 @@ public:
      * @param humanBoard Reference to the human player's board.
      * @param computerBoard Reference to the computer's board.
      */
-    void provideHelp(int diceSum, Board &humanBoard, Board &computerBoard) const;
+    void provideHelp(int diceSum, const Board &humanBoard, const Board &computerBoard) const;
 
     /**
      * @brief Uncovers squares on the board based on the sum.

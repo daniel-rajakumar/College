@@ -24,29 +24,21 @@ Computer::Computer(Board& b, Board& humanBoard)
  */
 bool Computer::takeTurn() {
     // Roll dice
-    int diceSum = rollDie();
-    cout << "Computer rolled: " << diceSum << endl;
+    const int sum = rollDie();
+    cout << "Computer rolled: " << sum << endl;
 
-    bool canCover = !board.findValidCombinations(diceSum, true).empty();
-    bool canUncover = !humanBoard.findValidCombinations(diceSum, false).empty();
+    const bool canCover = !board.findValidCombinations(sum, true).empty();
+    bool canUncover = !humanBoard.findValidCombinations(sum, false).empty();
 
     if (!canCover && !canUncover) {
         cout << "Computer cannot cover any of its squares or uncover any of your squares. Its turn ends." << endl;
         return true;
     }
 
-    cout << "[computer] Do you want to cover your squares or uncover the opponent's squares? (c/u): ";
-    char choice;
-    cin >> choice;
-
-    if (choice == 'c') {
-        coverSquares(diceSum);
-    } else if (choice == 'u') {
-        uncoverSquares(diceSum);
-    } else if (shouldCover(diceSum)) {
-        coverSquares(diceSum);
+    if (shouldCover(sum)) {
+        coverSquares(sum);
     } else {
-        uncoverSquares(diceSum);
+        uncoverSquares(sum);
     }
 
     cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
@@ -106,7 +98,7 @@ void Computer::coverSquares(const int sum) const {
  * 
  * @param sum The sum of the dice.
  */
-void Computer::uncoverSquares(int sum) {
+void Computer::uncoverSquares(const int sum) {
     set<set<int>> validCombinations = humanBoard.findValidCombinations(sum, false);
 
     if (validCombinations.empty()) {
@@ -140,7 +132,7 @@ void Computer::uncoverSquares(int sum) {
         humanBoard.uncoverSquare(square);
     }
     cout << "Computer uncovered squares: ";
-    for (int square : selectedCombination) {
+    for (const int square : selectedCombination) {
         cout << square << " ";
     }
     cout << endl;
@@ -153,7 +145,7 @@ void Computer::uncoverSquares(int sum) {
  * @param humanBoard Reference to the human player's board.
  * @param computerBoard Reference to the computer's board.
  */
-void Computer::provideHelp(int diceSum, Board& humanBoard, Board& computerBoard) const {
+void Computer::provideHelp(const int diceSum, const Board& humanBoard, const Board& computerBoard) const {
     cout << "Computer's suggestion:" << endl;
 
     // Decide whether to cover or uncover
@@ -161,9 +153,8 @@ void Computer::provideHelp(int diceSum, Board& humanBoard, Board& computerBoard)
         cout << "You should cover your squares." << endl;
 
         // Find valid combinations to cover
-        set<set<int>> coverCombinations = humanBoard.findValidCombinations(diceSum, true);
 
-        if (coverCombinations.empty()) {
+        if (set<set<int>> coverCombinations = humanBoard.findValidCombinations(diceSum, true); coverCombinations.empty()) {
             cout << "No valid moves to cover squares." << endl;
         } else {
             // Suggest the combination with the most squares
@@ -177,7 +168,7 @@ void Computer::provideHelp(int diceSum, Board& humanBoard, Board& computerBoard)
             }
 
             cout << "You can cover the following squares: ";
-            for (int square : bestCombination) {
+            for (const int square : bestCombination) {
                 cout << square << " ";
             }
             cout << endl;
@@ -186,9 +177,7 @@ void Computer::provideHelp(int diceSum, Board& humanBoard, Board& computerBoard)
         cout << "You should uncover the opponent's squares." << endl;
 
         // Find valid combinations to uncover
-        set<set<int>> uncoverCombinations = computerBoard.findValidCombinations(diceSum, false);
-
-        if (uncoverCombinations.empty()) {
+        if (const set<set<int>> uncoverCombinations = computerBoard.findValidCombinations(diceSum, false); uncoverCombinations.empty()) {
             cout << "No valid moves to uncover squares." << endl;
         } else {
             // Suggest the combination with the most squares
@@ -202,7 +191,7 @@ void Computer::provideHelp(int diceSum, Board& humanBoard, Board& computerBoard)
             }
 
             cout << "You can uncover the following squares: ";
-            for (int square : bestCombination) {
+            for (const int square : bestCombination) {
                 cout << square << " ";
             }
             cout << endl;

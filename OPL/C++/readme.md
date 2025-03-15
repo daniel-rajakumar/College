@@ -1,7 +1,16 @@
-Feb 10th:
-- Create Project and structure it. 
-(20 mins)
- 
-- Create and define all the classes: player, Computer, Human, Game, Tournament, Dice, Serializer
-(30 mins)
+# Tools:
 
+---
+
+## AI (Copilot)
+- Creating all the documentation code
+- Help with implementing computer's strategy 
+- Cleaning up code (for example simplifying nested conditional statements)
+- Writing comments
+---
+
+## Other
+- StackOverflow 
+- Google 
+
+---

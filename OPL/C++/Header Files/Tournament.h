@@ -40,7 +40,7 @@ public:
      * @param winningScore The winning score.
      * @return The calculated advantage square.
      */
-    int calculateAdvantageSquare(int winningScore);
+    static int calculateAdvantageSquare(int winningScore);
 
     /**
      * @brief Gets whether it is a new game.
