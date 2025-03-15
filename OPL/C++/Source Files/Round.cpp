@@ -56,7 +56,7 @@ Player& Round::determineFirstPlayer() const {
  * @brief Plays the round.
  */
 void Round::play() const {
-    Player* currentPlayer = &player1;
+    Player* currentPlayer;
 
     if (tournament.getIsHumanTurn())
         currentPlayer = &player2;

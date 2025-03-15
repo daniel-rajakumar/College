@@ -338,7 +338,7 @@ int Tournament::calculateAdvantageSquare(int winningScore) {
  * @param winnerWasFirstPlayer True if the winner was the first player.
  * @param winningScore The winning score.
  */
-void Tournament::applyHandicap(bool winnerWasFirstPlayer, int winningScore) {
+void Tournament::applyHandicap(const bool winnerWasFirstPlayer, const int winningScore) const {
     advantageSquare = calculateAdvantageSquare(winningScore);
 
     if (winnerWasFirstPlayer) {

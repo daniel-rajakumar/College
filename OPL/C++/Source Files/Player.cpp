@@ -65,8 +65,8 @@ int Player::rollDie() const {
                 cout << "Computer rolls 1 die: " << diceSum << endl;
             }
         } else {
-            int die1 = rand() % 6 + 1;
-            int die2 = rand() % 6 + 1;
+            const int die1 = rand() % 6 + 1;
+            const int die2 = rand() % 6 + 1;
             diceSum = die1 + die2;
             if (!isHuman) {
                 cout << "Computer rolls 2 dice: " << die1 << " and " << die2 << endl;

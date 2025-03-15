@@ -12,7 +12,7 @@ using namespace std;
  * @return 0 on successful execution.
  */
 int main() {
-    srand(static_cast<unsigned int>(time(0))); // Seed the random number generator
+    srand(static_cast<unsigned int>(time(nullptr))); // Seed the random number generator
     Tournament::start(); // Start the tournament
     return 0;
 }

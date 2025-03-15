@@ -4,9 +4,7 @@
 
 #ifndef ROUND_H
 #define ROUND_H
-#include <string>
 
-#include "Computer.h"
 #include "Human.h"
 #include "Tournament.h"
 
@@ -25,20 +23,11 @@ private:
     Player& player1; ///< Reference to the first player.
     Player& player2; ///< Reference to the second player.
     bool isOver; ///< Flag indicating if the round is over.
-    bool isHumanTurn; ///< Flag indicating if it is the human player's turn.
+    bool isHumanTurn{}; ///< Flag indicating if it is the human player's turn.
     Tournament& tournament; ///< Reference to the tournament.
     bool isANewGame; ///< Flag indicating if it is a new game.
 
 public:
-    /**
-     * @brief Constructs a Round object.
-     * 
-     * @param p1 Reference to the first player.
-     * @param p2 Reference to the second player.
-     * @param tournament Reference to the tournament.
-     */
-    Round(Player &p1, Player &p2, Tournament &tournament);
-
     /**
      * @brief Constructs a Round object with an additional flag for a new game.
      * 

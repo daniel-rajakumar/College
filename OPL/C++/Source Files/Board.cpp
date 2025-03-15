@@ -10,7 +10,7 @@
  * 
  * @param square The index of the square to cover.
  */
-void Board::coverSquare(int square) {
+void Board::coverSquare(const int square) {
     if (square >= 1 && square <= size) {
         squares[square - 1] = true;
     }
@@ -21,7 +21,7 @@ void Board::coverSquare(int square) {
  * 
  * @param square The index of the square to uncover.
  */
-void Board::uncoverSquare(int square) {
+void Board::uncoverSquare(const int square) {
     if (square >= 1 && square <= size) {
         squares[square - 1] = false;
     }
@@ -33,7 +33,7 @@ void Board::uncoverSquare(int square) {
  * @param square The index of the square to check.
  * @return True if the square is covered, false otherwise.
  */
-bool Board::isSquareCovered(int square) const {
+bool Board::isSquareCovered(const int square) const {
     if (square >= 1 && square <= size) {
         return squares[square - 1];
     }
@@ -110,15 +110,14 @@ int Board::getCoveredSum() const {
  * @param forCovering Whether the combinations are for covering squares.
  * @return A set of valid combinations of squares that sum to the given value.
  */
-set<set<int>> Board::findValidCombinations(int sum, bool forCovering) const {
+set<set<int>> Board::findValidCombinations(const int sum, const bool forCovering) const {
     set<set<int>> combinations;
     for (int i = 1; i <= size; ++i) {
         if ((forCovering && !isSquareCovered(i)) || (!forCovering && isSquareCovered(i))) {
             if (i == sum) {
                 combinations.insert({i});
             } else if (i < sum) {
-                set<set<int>> subCombinations = findValidCombinations(sum - i, forCovering);
-                for (const set<int>& subCombination : subCombinations) {
+                for (set<set<int>> subCombinations = findValidCombinations(sum - i, forCovering); const set<int>& subCombination : subCombinations) {
                     if (!subCombination.contains(i)) {
                         set<int> combination = subCombination;
                         combination.insert(i);

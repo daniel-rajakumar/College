@@ -14,7 +14,7 @@
  * The Human class inherits from the Player class and provides
  * functionality specific to a human-controlled player.
  */
-class Human : public Player {
+class Human final : public Player {
 private:
     BoardView boardView; ///< The human player's view of their own board.
     BoardView computerBoardView; ///< The human player's view of the computer's board.
@@ -35,20 +35,6 @@ public:
      * @return True if the turn was successful, false otherwise.
      */
     bool takeTurn() override;
-
-    /**
-     * @brief Covers squares on the board based on the sum.
-     * 
-     * @param sum The sum of the dice.
-     */
-    void coverSquares(int sum);
-
-    /**
-     * @brief Uncovers squares on the board based on the sum.
-     * 
-     * @param sum The sum of the dice.
-     */
-    void uncoverSquares(int sum);
 
     /**
      * @brief Covers squares on the board based on the sum.

@@ -26,7 +26,7 @@ public:
      * @param b Reference to the board.
      * @param name Name of the player who owns the board.
      */
-    BoardView(const Board &b, const string &name);
+    BoardView(const Board &b, string name);
 
     /**
      * @brief Displays the board.

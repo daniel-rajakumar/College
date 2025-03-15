@@ -14,7 +14,7 @@
  * The Computer class inherits from the Player class and provides
  * functionality specific to a computer-controlled player.
  */
-class Computer: public Player {
+class Computer final : public Player {
 private:
     BoardView boardView; ///< The computer's view of its own board.
     BoardView humanBoardView; ///< The computer's view of the human player's board.
@@ -56,7 +56,7 @@ public:
      * 
      * @param sum The sum of the dice.
      */
-    void uncoverSquares(int sum);
+    void uncoverSquares(int sum) const;
 
     /**
      * @brief Provides help to the human player by suggesting moves.
@@ -66,13 +66,6 @@ public:
      * @param computerBoard Reference to the computer's board.
      */
     void provideHelp(int diceSum, const Board &humanBoard, const Board &computerBoard) const;
-
-    /**
-     * @brief Uncovers squares on the board based on the sum.
-     * 
-     * @param sum The sum of the dice.
-     */
-    void uncoverSquares(int sum) const;
 };
 
 #endif //COMPUTER_H

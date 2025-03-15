@@ -28,9 +28,8 @@ bool Computer::takeTurn() {
     cout << "Computer rolled: " << sum << endl;
 
     const bool canCover = !board.findValidCombinations(sum, true).empty();
-    bool canUncover = !humanBoard.findValidCombinations(sum, false).empty();
 
-    if (!canCover && !canUncover) {
+    if (bool canUncover = !humanBoard.findValidCombinations(sum, false).empty(); !canCover && !canUncover) {
         cout << "Computer cannot cover any of its squares or uncover any of your squares. Its turn ends." << endl;
         return true;
     }
@@ -98,7 +97,7 @@ void Computer::coverSquares(const int sum) const {
  * 
  * @param sum The sum of the dice.
  */
-void Computer::uncoverSquares(const int sum) {
+void Computer::uncoverSquares(const int sum) const {
     set<set<int>> validCombinations = humanBoard.findValidCombinations(sum, false);
 
     if (validCombinations.empty()) {
@@ -128,7 +127,7 @@ void Computer::uncoverSquares(const int sum) {
     }
 
     // Uncover the selected squares on the human's board
-    for (int square : selectedCombination) {
+    for (const int square : selectedCombination) {
         humanBoard.uncoverSquare(square);
     }
     cout << "Computer uncovered squares: ";
@@ -154,7 +153,7 @@ void Computer::provideHelp(const int diceSum, const Board& humanBoard, const Boa
 
         // Find valid combinations to cover
 
-        if (set<set<int>> coverCombinations = humanBoard.findValidCombinations(diceSum, true); coverCombinations.empty()) {
+        if (const set<set<int>> coverCombinations = humanBoard.findValidCombinations(diceSum, true); coverCombinations.empty()) {
             cout << "No valid moves to cover squares." << endl;
         } else {
             // Suggest the combination with the most squares

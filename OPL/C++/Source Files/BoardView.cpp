@@ -13,7 +13,7 @@ using namespace std;
  * @param b Reference to the board.
  * @param name Name of the player who owns the board.
  */
-BoardView::BoardView(const Board& b, const string& name) : board(b), playerName(name) {}
+BoardView::BoardView(const Board& b, string  name) : board(b), playerName(std::move(name)) {}
 
 /**
  * @brief Displays the board.

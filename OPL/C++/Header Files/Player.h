@@ -21,6 +21,8 @@ protected:
     int input{}; ///< Input value for the player.
 
 public:
+    virtual ~Player() = default;
+
     /**
      * @brief Constructs a Player object.
      * 

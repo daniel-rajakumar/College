@@ -118,7 +118,7 @@ public:
      * @param winnerWasFirstPlayer True if the winner was the first player.
      * @param winningScore The winning score.
      */
-    void applyHandicap(bool winnerWasFirstPlayer, int winningScore);
+    void applyHandicap(bool winnerWasFirstPlayer, int winningScore) const;
 };
 
 #endif //TOURNAMENT_H

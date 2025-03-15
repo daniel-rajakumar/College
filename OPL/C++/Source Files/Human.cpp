@@ -28,10 +28,9 @@ bool Human::takeTurn() {
     const int die = rollDie();
     cout << "You rolled " << die << endl;
 
-    bool canCover = !board.findValidCombinations(die, true).empty();
-    bool canUncover = !computerBoard.findValidCombinations(die, false).empty();
+    const bool canCover = !board.findValidCombinations(die, true).empty();
 
-    if (!canCover && !canUncover) {
+    if (bool canUncover = !computerBoard.findValidCombinations(die, false).empty(); !canCover && !canUncover) {
         cout << "You cannot cover any of your squares or uncover any of the opponent's squares. Your turn ends." << endl;
         return true;
     }
@@ -78,7 +77,7 @@ bool Human::takeTurn() {
  * 
  * @param sum The sum of the dice.
  */
-void Human::coverSquares(int sum) {
+void Human::coverSquares(const int sum) const {
     set<set<int>> validCombinations = board.findValidCombinations(sum, true);
 
     if (validCombinations.empty()) {
@@ -127,7 +126,7 @@ void Human::coverSquares(int sum) {
  * 
  * @param sum The sum of the dice.
  */
-void Human::uncoverSquares(int sum) {
+void Human::uncoverSquares(const int sum) const {
     set<set<int>> validCombinations = computerBoard.findValidCombinations(sum, false);
 
     if (validCombinations.empty()) {
@@ -140,7 +139,7 @@ void Human::uncoverSquares(int sum) {
     int index = 1;
     for (const set<int>& combination : validCombinations) {
         cout << index << ": ";
-        for (int square : combination) {
+        for (const int square : combination) {
             cout << square << " ";
         }
         cout << endl;
@@ -158,13 +157,13 @@ void Human::uncoverSquares(int sum) {
 
     auto it = validCombinations.begin();
     advance(it, choice - 1);
-    set<int> selectedCombination = *it;
+    const set<int> selectedCombination = *it;
 
-    for (int square : selectedCombination) {
+    for (const int square : selectedCombination) {
         computerBoard.uncoverSquare(square);
     }
     cout << "Uncovered squares: ";
-    for (int square : selectedCombination) {
+    for (const int square : selectedCombination) {
         cout << square << " ";
     }
     cout << endl;
