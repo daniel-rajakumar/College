@@ -10,12 +10,13 @@ const computerScoreElement = document.getElementById("computer-score");
 const diceRollElement = document.getElementById("dice-roll");
 const gameMessageElement = document.getElementById("game-message");
 const rollDiceButton = document.getElementById("roll-dice");
-const newRoundButton = document.getElementById("new-round");
 const helpButton = document.getElementById("help");
 const rewindButton = document.getElementById("rewind");
 const saveGameButton = document.getElementById("save-game");
 const boardSizeSelect = document.getElementById("board-size");
 const applyConfigButton = document.getElementById("apply-config");
+const preGameElement = document.getElementById("pre-game")
+const liveGameElement = document.getElementById("live-game")
 
 // Game state
 let gameState = [];
@@ -139,17 +140,30 @@ function main() {
   newGameInitialButton.addEventListener("click", () => {
     initializeGame();
     showRegularUI();
+    liveGameElement.classList.add("hidden");
+    preGameElement.classList.remove("hidden");
   });
 
   // Event listeners for regular UI
-  rollDiceButton.addEventListener("click", rollDice);
-  newRoundButton.addEventListener("click", newRound);
+  rollDiceButton.addEventListener("click", () => {
+    console.log("Rolling dice...");
+    helpButton.classList.remove("hidden");
+    rewindButton.classList.remove("hidden");
+    rollDiceButton.classList.add("hidden");
+    saveGameButton.classList.add("hidden");
+    rewindButton.classList.add("hidden");
+  });
   helpButton.addEventListener("click", () => {
     gameMessageElement.textContent = "Help: Try to cover your squares or uncover the opponent's squares!";
   });
   rewindButton.addEventListener("click", rewind);
   saveGameButton.addEventListener("click", saveGame);
-  applyConfigButton.addEventListener("click", applyConfig);
+  applyConfigButton.addEventListener("click", () => {
+    preGameElement.classList.add("hidden");
+    liveGameElement.classList.remove("hidden");
+    helpButton.classList.add("hidden");
+    rewindButton.classList.add("hidden");
+  });
 
   initialUI.classList.remove("hidden");
   regularUI.classList.add("hidden");
