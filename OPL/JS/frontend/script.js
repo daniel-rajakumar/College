@@ -159,7 +159,15 @@ applyConfigButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Apply config response:", data); // Log the result
-    updateUI();
+
+    if (data.screen === "PLAY") {
+        console.log("Showing live game UI");
+        showLiveGameUI();
+        // updateUI();
+    } else {
+        console.error("Unknown screen:", data.screen);
+    }
+    // updateUI();
   }
 });
 
@@ -177,6 +185,9 @@ function showConfigUI() {
 }
 
 function showLiveGameUI() {
+  initialUI.classList.add("hidden");
+  regularUI.classList.remove("hidden");
+
   preGameElement.classList.add("hidden");
   liveGameElement.classList.remove("hidden");
 }

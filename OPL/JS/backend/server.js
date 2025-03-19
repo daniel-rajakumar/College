@@ -105,12 +105,15 @@ app.post("/api/game/rewind", (req, res) => {
 
 app.post("/api/game/save", (req, res) => {
   saveGame();
+
   res.json(gameState);
 });
 
 app.post("/api/game/config", (req, res) => {
   const { boardSize } = req.body;
   initializeGame(boardSize);
+
+  gameState.screen = GAME_SCREEN.PLAY;
   res.json(gameState);
 });
 
