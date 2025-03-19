@@ -15,33 +15,15 @@ const rewindButton = document.getElementById("rewind");
 const saveGameButton = document.getElementById("save-game");
 const boardSizeSelect = document.getElementById("board-size");
 const applyConfigButton = document.getElementById("apply-config");
-const preGameElement = document.getElementById("pre-game")
-const liveGameElement = document.getElementById("live-game")
 
-// Game state
-let gameState = [];
-let currentStateIndex = -1;
-
-// Initialize the game
-function initializeGame(boardSize = 11) {
-  const humanSquares = Array.from({ length: boardSize }, (_, i) => i + 1);
-  const computerSquares = Array.from({ length: boardSize }, (_, i) => i + 1);
-  gameState = [{ humanSquares, computerSquares, humanScore: 0, computerScore: 0 }];
-  currentStateIndex = 0;
-  renderGame();
-}
-
-// Render the game
-function renderGame() {
-  const state = gameState[currentStateIndex];
-  renderSquares(humanSquaresElement, state.humanSquares, "human");
-  renderSquares(computerSquaresElement, state.computerSquares, "computer");
-  humanScoreElement.textContent = state.humanScore;
-  computerScoreElement.textContent = state.computerScore;
+// Show the regular UI and hide the initial UI
+function showRegularUI() {
+  initialUI.classList.add("hidden");
+  regularUI.classList.remove("hidden");
 }
 
 // Render squares in the format [ x, x, x, ..., x ]
-function renderSquares(container, squares, player) {
+function renderSquares(container, squares) {
   container.innerHTML = "";
   const squaresWrapper = document.createElement("div");
   squaresWrapper.classList.add("squares-wrapper");
@@ -70,106 +52,110 @@ function renderSquares(container, squares, player) {
   container.appendChild(squaresWrapper);
 }
 
-// Roll dice
-async function rollDice() {
+// Fetch game state from the backend
+async function fetchGameState() {
+  const response = await fetch("http://localhost:3000/api/game/state");
+  const data = await response.json();
+  console.log("Game state from backend:", data); // Log the result
+  return data;
+}
+
+// Update the UI with the game state
+async function updateUI() {
+  const state = await fetchGameState();
+  renderSquares(humanSquaresElement, state.humanSquares);
+  renderSquares(computerSquaresElement, state.computerSquares);
+  humanScoreElement.textContent = state.humanScore;
+  computerScoreElement.textContent = state.computerScore;
+  diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";
+  gameMessageElement.textContent = state.message || "";
+}
+
+// Event listeners
+loadGameInitialButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/load", {
+    method: "POST",
+  });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Load game response:", data); // Log the result
+    showRegularUI();
+    updateUI();
+  }
+});
+
+newGameInitialButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/new", {
+    method: "POST",
+  });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("New game response:", data); // Log the result
+    showRegularUI();
+    updateUI();
+  }
+});
+
+rollDiceButton.addEventListener("click", async () => {
   const response = await fetch("http://localhost:3000/api/game/roll-dice", {
     method: "POST",
   });
-  const data = await response.json();
-  diceRollElement.textContent = `${data.dice1} + ${data.dice2} = ${data.total}`;
-  gameMessageElement.textContent = `You rolled a ${data.total}.`;
-}
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Roll dice response:", data); // Log the result
+    updateUI();
+  }
+});
 
-// Start a new round
-async function newRound() {
-  const response = await fetch("http://localhost:3000/api/game/new-round", {
+helpButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/help", {
     method: "POST",
   });
-  const data = await response.json();
-  gameState.push({ ...data, humanScore: 0, computerScore: 0 });
-  currentStateIndex = gameState.length - 1;
-  renderGame();
-  gameMessageElement.textContent = "New round started!";
-}
-
-// Rewind to a previous state
-function rewind() {
-  if (currentStateIndex > 0) {
-    currentStateIndex--;
-    renderGame();
-    gameMessageElement.textContent = "Rewound to a previous state.";
-  } else {
-    gameMessageElement.textContent = "Cannot rewind further.";
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Help response:", data); // Log the result
+    updateUI();
   }
-}
+});
 
-// Save the game state
-function saveGame() {
-  const state = gameState[currentStateIndex];
-  localStorage.setItem("savedGameState", JSON.stringify(state));
-  gameMessageElement.textContent = "Game saved!";
-}
-
-// Load the game state
-function loadGame() {
-  const savedState = localStorage.getItem("savedGameState");
-  if (savedState) {
-    const state = JSON.parse(savedState);
-    gameState = [state];
-    currentStateIndex = 0;
-    renderGame();
-    gameMessageElement.textContent = "Game loaded!";
-  } else {
-    gameMessageElement.textContent = "No saved game found.";
+rewindButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/rewind", {
+    method: "POST",
+  });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Rewind response:", data); // Log the result
+    updateUI();
   }
-}
+});
 
-// Show the regular UI and hide the initial UI
-function showRegularUI() {
-  initialUI.classList.add("hidden");
-  regularUI.classList.remove("hidden");
-}
-
-function main() {
-  // Event listeners for initial UI
-  loadGameInitialButton.addEventListener("click", () => {
-    loadGame();
-    showRegularUI();
+saveGameButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/save", {
+    method: "POST",
   });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Save game response:", data); // Log the result
+    updateUI();
+  }
+});
 
-  newGameInitialButton.addEventListener("click", () => {
-    initializeGame();
-    showRegularUI();
-    liveGameElement.classList.add("hidden");
-    preGameElement.classList.remove("hidden");
+applyConfigButton.addEventListener("click", async () => {
+  const boardSize = boardSizeSelect.value;
+  const response = await fetch("http://localhost:3000/api/game/config", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ boardSize }),
   });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Apply config response:", data); // Log the result
+    updateUI();
+  }
+});
 
-  // Event listeners for regular UI
-  rollDiceButton.addEventListener("click", () => {
-    console.log("Rolling dice...");
-    helpButton.classList.remove("hidden");
-    rewindButton.classList.remove("hidden");
-    rollDiceButton.classList.add("hidden");
-    saveGameButton.classList.add("hidden");
-    rewindButton.classList.add("hidden");
-  });
-  helpButton.addEventListener("click", () => {
-    gameMessageElement.textContent = "Help: Try to cover your squares or uncover the opponent's squares!";
-  });
-  rewindButton.addEventListener("click", rewind);
-  saveGameButton.addEventListener("click", saveGame);
-  applyConfigButton.addEventListener("click", () => {
-    preGameElement.classList.add("hidden");
-    liveGameElement.classList.remove("hidden");
-    helpButton.classList.add("hidden");
-    rewindButton.classList.add("hidden");
-  });
-
-  initialUI.classList.remove("hidden");
-  regularUI.classList.add("hidden");
-}
-
-main();
-
-
-// Initialize the initial UI
+// Initialize the UI
+initialUI.classList.remove("hidden");
+regularUI.classList.add("hidden");
