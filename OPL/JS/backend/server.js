@@ -74,6 +74,7 @@ app.get("/api/game/state", (req, res) => {
 
 app.post("/api/game/new", (req, res) => {
   initializeGame();
+  gameState.screen = GAME_SCREEN.CONFIG;
   res.json(gameState);
 });
 

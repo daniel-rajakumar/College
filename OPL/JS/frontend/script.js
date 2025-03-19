@@ -15,6 +15,8 @@ const rewindButton = document.getElementById("rewind");
 const saveGameButton = document.getElementById("save-game");
 const boardSizeSelect = document.getElementById("board-size");
 const applyConfigButton = document.getElementById("apply-config");
+const preGameElement = document.getElementById("pre-game");
+const liveGameElement = document.getElementById("live-game");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -91,8 +93,13 @@ newGameInitialButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("New game response:", data); // Log the result
-    showRegularUI();
-    updateUI();
+
+    if (data.screen === "CONFIG") {
+        showConfigUI();
+        // updateUI();
+    } else {
+        console.error("Unknown screen:", data.screen);
+    }
   }
 });
 
@@ -156,6 +163,24 @@ applyConfigButton.addEventListener("click", async () => {
   }
 });
 
+function showStartUI() {
+  // initialUI.classList.remove("hidden");
+  // regularUI.classList.add("hidden");
+}
+
+function showConfigUI() {
+  initialUI.classList.add("hidden");
+  regularUI.classList.remove("hidden");
+
+  preGameElement.classList.remove("hidden");
+  liveGameElement.classList.add("hidden");
+}
+
+function showLiveGameUI() {
+  preGameElement.classList.add("hidden");
+  liveGameElement.classList.remove("hidden");
+}
+
 // Initialize the UI
-initialUI.classList.remove("hidden");
-regularUI.classList.add("hidden");
+// initialUI.classList.remove("hidden");
+// regularUI.classList.add("hidden");
