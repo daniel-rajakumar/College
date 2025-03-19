@@ -9,28 +9,49 @@
 <body>
   <div class="container">
     <h1>Canoga Game</h1>
-    <div class="game-board">
-      <div class="player-board" id="human-board">
-        <h2>Human Player</h2>
-        <div class="squares" id="human-squares"></div>
-        <p>Score: <span id="human-score">0</span></p>
+
+    <!-- Initial UI -->
+    <div id="initial-ui">
+      <button id="load-game-initial">Load Game</button>
+      <button id="new-game-initial">New Game</button>
+    </div>
+
+    <!-- Regular Game UI (hidden by default) -->
+    <div id="regular-ui" class="hidden">
+      <div class="config">
+        <label for="board-size">Board Size:</label>
+        <select id="board-size">
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+        </select>
+        <button id="apply-config">Apply Configuration</button>
       </div>
-      <div class="player-board" id="computer-board">
-        <h2>Computer Player</h2>
-        <div class="squares" id="computer-squares"></div>
-        <p>Score: <span id="computer-score">0</span></p>
+      <div class="game-board">
+        <div class="player-board" id="human-board">
+          <h2>Human Player</h2>
+          <div class="squares" id="human-squares"></div>
+          <p>Score: <span id="human-score">0</span></p>
+        </div>
+        <div class="player-board" id="computer-board">
+          <h2>Computer Player</h2>
+          <div class="squares" id="computer-squares"></div>
+          <p>Score: <span id="computer-score">0</span></p>
+        </div>
       </div>
-    </div>
-    <div class="controls">
-      <button id="roll-dice">Roll Dice</button>
-      <button id="new-round">New Round</button>
-      <button id="help">Help</button>
-    </div>
-    <div class="dice-result">
-      <p>Dice Roll: <span id="dice-roll"></span></p>
-    </div>
-    <div class="messages">
-      <p id="game-message"></p>
+      <div class="controls">
+        <button id="roll-dice">Roll Dice</button>
+        <button id="new-round">New Round</button>
+        <button id="help">Help</button>
+        <button id="rewind">Rewind</button>
+        <button id="save-game">Save Game</button>
+      </div>
+      <div class="dice-result">
+        <p>Dice Roll: <span id="dice-roll"></span></p>
+      </div>
+      <div class="messages">
+        <p id="game-message"></p>
+      </div>
     </div>
   </div>
   <script src="script.js"></script>
