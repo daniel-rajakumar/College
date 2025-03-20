@@ -128,6 +128,7 @@ app.post("/api/game/config", (req, res) => {
 app.post("/api/game/input-dice", (req, res) => {
   const { inputDice } = req.body;
   gameState.message = `You entered: ${inputDice}`;
+  gameState.diceRoll = inputDice;
   log(gameState.message);
   res.json(gameState);
 });

@@ -49,7 +49,7 @@
           <button id="rewind">Rewind</button>
           <button id="save-game">Save Game</button>
         </div>
-        <div class="dice-result hidden">
+        <div id="dice-result" class="dice-result hidden">
           <p>Dice Roll: <span id="dice-roll"></span></p>
         </div>
         <div class="messages">
@@ -64,7 +64,7 @@
     <!-- Modal for inputting dice values -->
     <div id="dice-modal" class="modal hidden">
       <div class="modal-content">
-        <span class="close-button">&times;</span>
+        <span id="close-button" class="close-button">&times;</span>
         <h2>Input Dice Values</h2>
         <label for="dice1">Dice 1:</label>
         <input type="number" id="dice1" min="1" max="6">

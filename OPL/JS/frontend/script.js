@@ -21,6 +21,9 @@ const currentTurnElement = document.getElementById("current-turn");
 const inputDiceButton = document.getElementById("input-dice");
 const diceModalElement = document.getElementById("dice-modal");
 const gameUIElement = document.getElementById("game-ui");
+const diceResultElement = document.getElementById("dice-result");
+const submitDiceButton = document.getElementById("submit-dice");
+const closeButton = document.getElementById("close-button");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -76,6 +79,7 @@ async function updateUI() {
   diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";
   gameMessageElement.textContent = state.message || "";
   currentTurnElement.textContent = state.GAME_TURN || "Unknown";
+  diceResultElement.textContent = "Dice: " + state.diceRoll || "No dice rolled yet.";
 
   if (state.GAME_TURN == "HUMAN") {
     rollDiceButton.classList.remove("hidden");
@@ -129,6 +133,9 @@ rollDiceButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Roll dice response:", data); // Log the result
+
+    diceResultElement.classList.remove("hidden");
+
     updateUI();
   }
 });
@@ -203,29 +210,15 @@ applyConfigButton.addEventListener("click", async () => {
 inputDiceButton.addEventListener("click", async () => {
   regularUI.classList.add("hidden");
   diceModalElement.classList.remove("hidden");
-
-  const inputDice = [6, 4];
-  const response = await fetch("http://localhost:3000/api/game/input-dice", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ inputDice }),
-  });
-  if (response.ok) {
-    const data = await response.json();
-    console.log("Input dice response:", data); // Log the result
-    updateUI();
-  }
 });
 
 
-document.querySelector(".close-button").addEventListener("click", () => {
+closeButton.addEventListener("click", () => {
   regularUI.classList.remove("hidden")
   diceModalElement.classList.add("hidden");
 });
 
-document.getElementById("submit-dice").addEventListener("click", async () => {
+submitDiceButton.addEventListener("click", async () => {
   const dice1 = document.getElementById("dice1").value;
   const dice2 = document.getElementById("dice2").value;
   const inputDice = [parseInt(dice1), parseInt(dice2)];
@@ -241,8 +234,11 @@ document.getElementById("submit-dice").addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Input dice response:", data); // Log the result
+    regularUI.classList.remove("hidden")
+    diceModalElement.classList.add("hidden");
+    diceResultElement.classList.remove("hidden");
+
     updateUI();
-    hideModal();
   }
 });
 
