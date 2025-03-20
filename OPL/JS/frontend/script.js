@@ -81,19 +81,6 @@ async function updateUI() {
   currentTurnElement.textContent = state.GAME_TURN || "Unknown";
   diceResultElement.textContent = "Dice: " + state.diceRoll || "No dice rolled yet.";
 
-  if (state.GAME_TURN == "HUMAN") {
-    rollDiceButton.classList.remove("hidden");
-    helpButton.classList.remove("hidden");
-    rewindButton.classList.remove("hidden");
-    saveGameButton.classList.add("hidden");
-  } else if (state.GAME_TURN == "COMPUTER") {
-    rollDiceButton.classList.remove("hidden");
-    helpButton.classList.add("hidden");
-    rewindButton.classList.remove("hidden");
-    saveGameButton.classList.add("hidden");
-  } else {
-
-  }
 }
 
 // Event listeners
@@ -135,6 +122,10 @@ rollDiceButton.addEventListener("click", async () => {
     console.log("Roll dice response:", data); // Log the result
 
     diceResultElement.classList.remove("hidden");
+    rollDiceButton.classList.add("hidden");
+    inputDiceButton.classList.add("hidden");
+
+    helpButton.classList.remove("hidden");
 
     updateUI();
   }
@@ -198,6 +189,18 @@ applyConfigButton.addEventListener("click", async () => {
         console.log("Showing live game UI");
         showLiveGameUI();
         updateUI();
+
+      if (data.GAME_TURN == "HUMAN") {
+        rollDiceButton.classList.remove("hidden");
+        helpButton.classList.remove("hidden");
+        rewindButton.classList.add("hidden");
+        saveGameButton.classList.add("hidden");
+      } else if (data.GAME_TURN == "COMPUTER") {
+        rollDiceButton.classList.remove("hidden");
+        helpButton.classList.add("hidden");
+        saveGameButton.classList.add("hidden");
+        rewindButton.classList.add("hidden");
+      } 
     } else {
         console.error("Unknown screen:", data.screen);
     }
@@ -238,7 +241,11 @@ submitDiceButton.addEventListener("click", async () => {
     diceModalElement.classList.add("hidden");
     diceResultElement.classList.remove("hidden");
 
+    rollDiceButton.classList.add("hidden");
+    inputDiceButton.classList.add("hidden");
+
     updateUI();
+    
   }
 });
 
