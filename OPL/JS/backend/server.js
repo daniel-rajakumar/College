@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const { log } = require("console");
 
 const app = express();
 const PORT = 3000;
@@ -30,7 +31,7 @@ let gameState = {
   computerSquares: [],
   humanScore: 0,
   computerScore: 0,
-  diceRoll: null,
+  diceRoll: [0, 0],
   message: "",
   screen: null,
   GAME_TURN: null,
@@ -42,17 +43,26 @@ function initializeGame(boardSize = 11, isHumanTurn = true) {
   gameState.computerSquares = Array.from({ length: boardSize }, (_, i) => i + 1);
   gameState.humanScore = 0;
   gameState.computerScore = 0;
-  gameState.diceRoll = null;
+  gameState.diceRoll = [0, 0];
   gameState.message = "New game started!";
   gameState.screen = GAME_SCREEN.START;
   gameState.GAME_TURN = isHumanTurn ? GAME_TURN.HUMAN : GAME_TURN.COMPUTER;
+
+  rollDice();
+  gameState.GAME_TURN = checkWhoGoesFirst();
+  log(gameState.GAME_TURN);
+}
+
+function checkWhoGoesFirst() {
+  const random = Math.floor(Math.random() * 2);
+  return random === 0 ? GAME_TURN.HUMAN : GAME_TURN.COMPUTER;
 }
 
 // Roll dice
 function rollDice() {
   const dice1 = Math.floor(Math.random() * 6) + 1;
   const dice2 = Math.floor(Math.random() * 6) + 1;
-  gameState.diceRoll = `${dice1} + ${dice2} = ${dice1 + dice2}`;
+  gameState.diceRoll = [dice1, dice2];
   gameState.message = `You rolled a ${dice1 + dice2}.`;
 }
 
@@ -79,7 +89,7 @@ app.get("/api/game/state", (req, res) => {
 });
 
 app.post("/api/game/new", (req, res) => {
-  initializeGame();
+  // initializeGame();
   gameState.screen = GAME_SCREEN.CONFIG;
   res.json(gameState);
 });
@@ -91,11 +101,6 @@ app.post("/api/game/load", (req, res) => {
 
 app.post("/api/game/roll-dice", (req, res) => {
   rollDice();
-  res.json(gameState);
-});
-
-app.post("/api/game/new-round", (req, res) => {
-  initializeGame();
   res.json(gameState);
 });
 
@@ -117,7 +122,8 @@ app.post("/api/game/save", (req, res) => {
 
 app.post("/api/game/config", (req, res) => {
   const { boardSize } = req.body;
-  initializeGame(boardSize );
+  initializeGame(boardSize);
+
   gameState.screen = GAME_SCREEN.PLAY;
   res.json(gameState);
 });

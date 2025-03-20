@@ -160,6 +160,14 @@ applyConfigButton.addEventListener("click", async () => {
     const data = await response.json();
     console.log("Apply config response:", data); // Log the result
 
+    if (data.GAME_TURN == "HUMAN") {
+      console.log("Human's turn");
+    } else if (data.GAME_TURN == "COMPUTER") {
+      console.log("Computer's turn");
+    } else {
+      console.error("Unknown turn:", data.GAME_TURN);
+    }
+
     if (data.screen === "PLAY") {
         console.log("Showing live game UI");
         showLiveGameUI();
@@ -167,6 +175,8 @@ applyConfigButton.addEventListener("click", async () => {
     } else {
         console.error("Unknown screen:", data.screen);
     }
+
+
     // updateUI();
   }
 });
