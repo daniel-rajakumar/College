@@ -221,7 +221,7 @@ inputDiceButton.addEventListener("click", async () => {
 
 
 document.querySelector(".close-button").addEventListener("click", () => {
-  regularUI.classList.remove("hidden");
+  regularUI.classList.remove("hidden")
   diceModalElement.classList.add("hidden");
 });
 
