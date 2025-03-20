@@ -18,6 +18,7 @@ const applyConfigButton = document.getElementById("apply-config");
 const preGameElement = document.getElementById("pre-game");
 const liveGameElement = document.getElementById("live-game");
 const currentTurnElement = document.getElementById("current-turn");
+const inputDiceElement = document.getElementById("input-dice");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -194,6 +195,22 @@ applyConfigButton.addEventListener("click", async () => {
 
 
     // updateUI();
+  }
+});
+
+inputDiceElement.addEventListener("click", async () => {
+  const inputDice = [6, 4];
+  const response = await fetch("http://localhost:3000/api/game/input-dice", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ inputDice }),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Input dice response:", data); // Log the result
+    updateUI();
   }
 });
 

@@ -125,6 +125,13 @@ app.post("/api/game/config", (req, res) => {
   res.json(gameState);
 });
 
+app.post("/api/game/input-dice", (req, res) => {
+  const { inputDice } = req.body;
+  gameState.message = `You entered: ${inputDice}`;
+  log(gameState.message);
+  res.json(gameState);
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
