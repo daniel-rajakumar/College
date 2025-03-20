@@ -54,3 +54,10 @@ button {
 button:hover {
   background-color: #005f73;
 }
+
+.current-turn {
+  margin-top: 20px;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #d9534f; /* Red color to make it stand out */
+}

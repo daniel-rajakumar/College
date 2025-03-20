@@ -17,6 +17,7 @@ const boardSizeSelect = document.getElementById("board-size");
 const applyConfigButton = document.getElementById("apply-config");
 const preGameElement = document.getElementById("pre-game");
 const liveGameElement = document.getElementById("live-game");
+const currentTurnElement = document.getElementById("current-turn");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -71,6 +72,7 @@ async function updateUI() {
   computerScoreElement.textContent = state.computerScore;
   diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";
   gameMessageElement.textContent = state.message || "";
+  currentTurnElement.textContent = state.GAME_TURN || "Unknown";
 }
 
 // Event listeners
@@ -171,7 +173,7 @@ applyConfigButton.addEventListener("click", async () => {
     if (data.screen === "PLAY") {
         console.log("Showing live game UI");
         showLiveGameUI();
-        // updateUI();
+        updateUI();
     } else {
         console.error("Unknown screen:", data.screen);
     }
