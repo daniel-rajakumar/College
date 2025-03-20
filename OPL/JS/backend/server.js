@@ -19,6 +19,10 @@ const GAME_SCREEN = {
   END: 'END',
 };
 
+const GAME_TURN = {
+  HUMAN: 'HUMAN',
+  COMPUTER: 'COMPUTER',
+}
 
 // Game state
 let gameState = {
@@ -28,11 +32,12 @@ let gameState = {
   computerScore: 0,
   diceRoll: null,
   message: "",
-  screen: null
+  screen: null,
+  GAME_TURN: null,
 };
 
 // Initialize the game
-function initializeGame(boardSize = 11) {
+function initializeGame(boardSize = 11, isHumanTurn = true) {
   gameState.humanSquares = Array.from({ length: boardSize }, (_, i) => i + 1);
   gameState.computerSquares = Array.from({ length: boardSize }, (_, i) => i + 1);
   gameState.humanScore = 0;
@@ -40,6 +45,7 @@ function initializeGame(boardSize = 11) {
   gameState.diceRoll = null;
   gameState.message = "New game started!";
   gameState.screen = GAME_SCREEN.START;
+  gameState.GAME_TURN = isHumanTurn ? GAME_TURN.HUMAN : GAME_TURN.COMPUTER;
 }
 
 // Roll dice
@@ -111,8 +117,7 @@ app.post("/api/game/save", (req, res) => {
 
 app.post("/api/game/config", (req, res) => {
   const { boardSize } = req.body;
-  initializeGame(boardSize);
-
+  initializeGame(boardSize );
   gameState.screen = GAME_SCREEN.PLAY;
   res.json(gameState);
 });
