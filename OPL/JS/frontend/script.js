@@ -18,7 +18,9 @@ const applyConfigButton = document.getElementById("apply-config");
 const preGameElement = document.getElementById("pre-game");
 const liveGameElement = document.getElementById("live-game");
 const currentTurnElement = document.getElementById("current-turn");
-const inputDiceElement = document.getElementById("input-dice");
+const inputDiceButton = document.getElementById("input-dice");
+const diceModalElement = document.getElementById("dice-modal");
+const gameUIElement = document.getElementById("game-ui");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -198,7 +200,10 @@ applyConfigButton.addEventListener("click", async () => {
   }
 });
 
-inputDiceElement.addEventListener("click", async () => {
+inputDiceButton.addEventListener("click", async () => {
+  regularUI.classList.add("hidden");
+  diceModalElement.classList.remove("hidden");
+
   const inputDice = [6, 4];
   const response = await fetch("http://localhost:3000/api/game/input-dice", {
     method: "POST",
@@ -213,6 +218,35 @@ inputDiceElement.addEventListener("click", async () => {
     updateUI();
   }
 });
+
+
+document.querySelector(".close-button").addEventListener("click", () => {
+  console.log("Close button clicked");
+  regularUI.classList.remove("hidden");
+  diceModalElement.classList.add("hidden");
+});
+
+document.getElementById("submit-dice").addEventListener("click", async () => {
+  const dice1 = document.getElementById("dice1").value;
+  const dice2 = document.getElementById("dice2").value;
+  const inputDice = [parseInt(dice1), parseInt(dice2)];
+
+  const response = await fetch("http://localhost:3000/api/game/input-dice", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ inputDice }),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Input dice response:", data); // Log the result
+    updateUI();
+    hideModal();
+  }
+});
+
 
 function showStartUI() {
   // initialUI.classList.remove("hidden");
@@ -238,3 +272,4 @@ function showLiveGameUI() {
 // Initialize the UI
 // initialUI.classList.remove("hidden");
 // regularUI.classList.add("hidden");
+
