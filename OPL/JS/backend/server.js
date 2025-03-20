@@ -47,10 +47,7 @@ function initializeGame(boardSize = 11, isHumanTurn = true) {
   gameState.message = "New game started!";
   gameState.screen = GAME_SCREEN.START;
   gameState.GAME_TURN = isHumanTurn ? GAME_TURN.HUMAN : GAME_TURN.COMPUTER;
-
-  rollDice();
   gameState.GAME_TURN = checkWhoGoesFirst();
-  log(gameState.GAME_TURN);
 }
 
 function checkWhoGoesFirst() {

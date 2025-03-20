@@ -73,6 +73,20 @@ async function updateUI() {
   diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";
   gameMessageElement.textContent = state.message || "";
   currentTurnElement.textContent = state.GAME_TURN || "Unknown";
+
+  if (state.GAME_TURN == "HUMAN") {
+    rollDiceButton.classList.remove("hidden");
+    helpButton.classList.remove("hidden");
+    rewindButton.classList.remove("hidden");
+    saveGameButton.classList.add("hidden");
+  } else if (state.GAME_TURN == "COMPUTER") {
+    rollDiceButton.classList.remove("hidden");
+    helpButton.classList.add("hidden");
+    rewindButton.classList.remove("hidden");
+    saveGameButton.classList.add("hidden");
+  } else {
+
+  }
 }
 
 // Event listeners
