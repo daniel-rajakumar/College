@@ -25,6 +25,8 @@ const diceResultElement = document.getElementById("dice-result");
 const submitDiceButton = document.getElementById("submit-dice");
 const closeButton = document.getElementById("close-button");
 const validRollsElement = document.getElementById("valid-rolls");
+const confirmValidRollsButton = document.getElementById("confirm-valid-rolls");
+
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -236,6 +238,24 @@ submitDiceButton.addEventListener("click", async () => {
   }
 });
 
+confirmValidRollsButton.addEventListener("click", async () => {
+  const validMove = validRollsElement.value;
+  const response = await fetch("http://localhost:3000/api/game/valid-move", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ validMove }),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    console.log("User selected dice response:", validMove); // Log the result
+    afterDieRoll();
+  }
+});
+
+
 
 function showStartUI() {
   // initialUI.classList.remove("hidden");
@@ -266,7 +286,7 @@ function afterDieRoll(){
     inputDiceButton.classList.add("hidden");
     helpButton.classList.remove("hidden");
     validRollsElement.classList.remove("hidden");
-
+    confirmValidRollsButton.classList.remove("hidden");
     const validRolls = ["one", "two", "three"];
     populateStringSelect(validRolls);
 

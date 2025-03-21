@@ -133,6 +133,13 @@ app.post("/api/game/input-dice", (req, res) => {
   res.json(gameState);
 });
 
+app.post("/api/game/valid-move", (req, res) => {
+  const { validMove } = req.body;
+  gameState.message = `You selected: ${validMove}`;
+  log(gameState.message);
+  res.json(gameState);
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
