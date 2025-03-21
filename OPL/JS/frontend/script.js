@@ -26,6 +26,7 @@ const submitDiceButton = document.getElementById("submit-dice");
 const closeButton = document.getElementById("close-button");
 const validRollsElement = document.getElementById("valid-rolls");
 const confirmValidRollsButton = document.getElementById("confirm-valid-rolls");
+const coverSwitchElement = document.getElementById("cover-switch");
 
 
 // Show the regular UI and hide the initial UI
@@ -191,6 +192,7 @@ applyConfigButton.addEventListener("click", async () => {
       rewindButton.classList.add("hidden");
       saveGameButton.classList.add("hidden");
       helpButton.classList.add("hidden");
+      coverSwitchElement.classList.add("hidden");
 
     } else {
         console.error("Unknown screen:", data.screen);
@@ -279,6 +281,7 @@ function afterDieRoll(data){
     inputDiceButton.classList.add("hidden");
     validRollsElement.classList.remove("hidden");
     confirmValidRollsButton.classList.remove("hidden");
+    coverSwitchElement.classList.remove("hidden");
     const validRolls = ["one", "two", "three"];
     populateStringSelect(validRolls);
 
