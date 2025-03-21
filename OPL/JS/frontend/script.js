@@ -95,8 +95,8 @@ loadGameInitialButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Load game response:", data); // Log the result
-    showRegularUI();
-    updateUI();
+    // showRegularUI();
+    // updateUI();
   }
 });
 
