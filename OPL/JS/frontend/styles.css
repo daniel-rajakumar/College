@@ -113,7 +113,7 @@ button:hover {
 .switch {
   position: relative;
   display: inline-block;
-  width: 60px;
+  width: 150px;
   height: 34px;
 }
 
@@ -153,7 +153,7 @@ input:checked + .slider {
 
 /* Move the slider circle when the checkbox is checked */
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(116px);
 }
 
 /* The circle inside the slider */
@@ -167,3 +167,27 @@ input:checked + .slider:before {
   background-color: white;
   transition: 0.4s;
 }
+
+
+
+.on
+{
+  display: none;
+}
+
+.on, .off
+{
+  color: white;
+  position: absolute;
+  transform: translate(-50%,-50%);
+  top: 50%;
+  left: 50%;
+  font-size: 10px;
+  font-family: Verdana, sans-serif;
+}
+
+input:checked+ .slider .on
+{display: block;}
+
+input:checked + .slider .off
+{display: none;}
