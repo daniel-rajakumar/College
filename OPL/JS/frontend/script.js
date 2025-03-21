@@ -257,7 +257,15 @@ confirmValidRollsButton.addEventListener("click", async () => {
 fileInput.addEventListener("change", async (event) => {
   console.log("File input changed:", event.target.files);
   fileInput.classList.add("hidden");
+
   showLiveGameUI();
+  updateUI();
+
+  rollDiceButton.classList.remove("hidden");
+  rewindButton.classList.add("hidden");
+  saveGameButton.classList.add("hidden");
+  helpButton.classList.add("hidden");
+  coverSwitchElement.classList.add("hidden");
 });
 
 
