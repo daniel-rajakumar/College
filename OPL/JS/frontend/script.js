@@ -124,7 +124,7 @@ rollDiceButton.addEventListener("click", async () => {
     const data = await response.json();
     console.log("Roll dice response:", data); // Log the result
 
-    afterDieRoll();
+    afterDieRoll(data);
   }
 });
 
@@ -183,21 +183,15 @@ applyConfigButton.addEventListener("click", async () => {
     }
 
     if (data.screen === "PLAY") {
-        console.log("Showing live game UI");
-        showLiveGameUI();
-        updateUI();
+      console.log("Showing live game UI");
+      showLiveGameUI();
+      updateUI();
 
-      if (data.GAME_TURN == "HUMAN") {
-        rollDiceButton.classList.remove("hidden");
-        helpButton.classList.remove("hidden");
-        rewindButton.classList.add("hidden");
-        saveGameButton.classList.add("hidden");
-      } else if (data.GAME_TURN == "COMPUTER") {
-        rollDiceButton.classList.remove("hidden");
-        helpButton.classList.add("hidden");
-        saveGameButton.classList.add("hidden");
-        rewindButton.classList.add("hidden");
-      } 
+      rollDiceButton.classList.remove("hidden");
+      rewindButton.classList.add("hidden");
+      saveGameButton.classList.add("hidden");
+      helpButton.classList.add("hidden");
+
     } else {
         console.error("Unknown screen:", data.screen);
     }
@@ -234,7 +228,7 @@ submitDiceButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Input dice response:", data); // Log the result
-    afterDieRoll();
+    afterDieRoll(data);
   }
 });
 
@@ -251,7 +245,6 @@ confirmValidRollsButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("User selected dice response:", validMove); // Log the result
-    afterDieRoll();
   }
 });
 
@@ -278,17 +271,26 @@ function showLiveGameUI() {
   liveGameElement.classList.remove("hidden");
 }
 
-function afterDieRoll(){
+function afterDieRoll(data){
     regularUI.classList.remove("hidden")
     diceModalElement.classList.add("hidden");
     diceResultElement.classList.remove("hidden");
     rollDiceButton.classList.add("hidden");
     inputDiceButton.classList.add("hidden");
-    helpButton.classList.remove("hidden");
     validRollsElement.classList.remove("hidden");
     confirmValidRollsButton.classList.remove("hidden");
     const validRolls = ["one", "two", "three"];
     populateStringSelect(validRolls);
+
+    console.log("Data from afterDieRoll:", data);
+
+    if (data.GAME_TURN == "HUMAN") {
+      helpButton.classList.remove("hidden");
+    } else if (data.GAME_TURN == "COMPUTER") {
+      helpButton.classList.add("hidden");
+    } else {
+      console.error("Unknown turn:", data.GAME_TURN);
+    }
 
     updateUI();
 }
