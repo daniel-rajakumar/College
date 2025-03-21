@@ -16,6 +16,7 @@ app.use(express.static(path.join(__dirname, "../frontend")));
 const GAME_SCREEN = {
   START: 'START',
   CONFIG: 'CONFIG',
+  LOAD: 'LOAD',
   PLAY: 'PLAY',
   END: 'END',
 };
@@ -92,7 +93,9 @@ app.post("/api/game/new", (req, res) => {
 });
 
 app.post("/api/game/load", (req, res) => {
-  loadGame();
+  // loadGame();
+  gameState.screen = GAME_SCREEN.LOAD;
+  console.log(gameState);
   res.json(gameState);
 });
 

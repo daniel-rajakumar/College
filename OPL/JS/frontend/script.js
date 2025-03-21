@@ -27,6 +27,7 @@ const closeButton = document.getElementById("close-button");
 const validRollsElement = document.getElementById("valid-rolls");
 const confirmValidRollsButton = document.getElementById("confirm-valid-rolls");
 const coverSwitchElement = document.getElementById("cover-switch");
+const fileInput = document.getElementById("file-input");
 
 
 // Show the regular UI and hide the initial UI
@@ -95,8 +96,12 @@ loadGameInitialButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Load game response:", data); // Log the result
-    // showRegularUI();
-    // updateUI();
+
+    if (data.screen === "LOAD") {
+      showConfigUI(data.screen);
+    } else {
+        console.error("Unknown screen:", data.screen);
+    }
   }
 });
 
@@ -109,8 +114,7 @@ newGameInitialButton.addEventListener("click", async () => {
     console.log("New game response:", data); // Log the result
 
     if (data.screen === "CONFIG") {
-        showConfigUI();
-        // updateUI();
+        showConfigUI(data.screen);
     } else {
         console.error("Unknown screen:", data.screen);
     }
@@ -250,6 +254,11 @@ confirmValidRollsButton.addEventListener("click", async () => {
   }
 });
 
+fileInput.addEventListener("change", async (event) => {
+  console.log("File input changed:", event.target.files);
+  fileInput.classList.add("hidden");
+  showLiveGameUI();
+});
 
 
 function showStartUI() {
@@ -257,12 +266,18 @@ function showStartUI() {
   // regularUI.classList.add("hidden");
 }
 
-function showConfigUI() {
-  initialUI.classList.add("hidden");
-  regularUI.classList.remove("hidden");
+function showConfigUI(screen) {
+  if (screen === "CONFIG") {
+    initialUI.classList.add("hidden");
+    regularUI.classList.remove("hidden");
 
-  preGameElement.classList.remove("hidden");
-  liveGameElement.classList.add("hidden");
+    preGameElement.classList.remove("hidden");
+    liveGameElement.classList.add("hidden");
+
+  } else if (screen === "LOAD") {
+    initialUI.classList.add("hidden");
+    fileInput.classList.remove("hidden");
+  }
 }
 
 function showLiveGameUI() {
