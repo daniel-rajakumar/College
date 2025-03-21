@@ -24,6 +24,7 @@ const gameUIElement = document.getElementById("game-ui");
 const diceResultElement = document.getElementById("dice-result");
 const submitDiceButton = document.getElementById("submit-dice");
 const closeButton = document.getElementById("close-button");
+const validRollsElement = document.getElementById("valid-rolls");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -121,13 +122,7 @@ rollDiceButton.addEventListener("click", async () => {
     const data = await response.json();
     console.log("Roll dice response:", data); // Log the result
 
-    diceResultElement.classList.remove("hidden");
-    rollDiceButton.classList.add("hidden");
-    inputDiceButton.classList.add("hidden");
-
-    helpButton.classList.remove("hidden");
-
-    updateUI();
+    afterDieRoll();
   }
 });
 
@@ -237,15 +232,7 @@ submitDiceButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Input dice response:", data); // Log the result
-    regularUI.classList.remove("hidden")
-    diceModalElement.classList.add("hidden");
-    diceResultElement.classList.remove("hidden");
-
-    rollDiceButton.classList.add("hidden");
-    inputDiceButton.classList.add("hidden");
-
-    updateUI();
-    
+    afterDieRoll();
   }
 });
 
@@ -271,6 +258,30 @@ function showLiveGameUI() {
   liveGameElement.classList.remove("hidden");
 }
 
+function afterDieRoll(){
+    regularUI.classList.remove("hidden")
+    diceModalElement.classList.add("hidden");
+    diceResultElement.classList.remove("hidden");
+    rollDiceButton.classList.add("hidden");
+    inputDiceButton.classList.add("hidden");
+    helpButton.classList.remove("hidden");
+    validRollsElement.classList.remove("hidden");
+
+    const validRolls = ["one", "two", "three"];
+    populateStringSelect(validRolls);
+
+    updateUI();
+}
+
+function populateStringSelect(strings) {
+  validRollsElement.innerHTML = "";
+  strings.forEach(str => {
+    const option = document.createElement("option");
+    option.value = str;
+    option.textContent = str;
+    validRollsElement.appendChild(option);
+  });
+}
 // Initialize the UI
 // initialUI.classList.remove("hidden");
 // regularUI.classList.add("hidden");
