@@ -148,7 +148,7 @@ button:hover {
 
 /* When the checkbox is checked, change the background color of the slider */
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: #008cba;
 }
 
 /* Move the slider circle when the checkbox is checked */
@@ -191,3 +191,10 @@ input:checked+ .slider .on
 
 input:checked + .slider .off
 {display: none;}
+
+.controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px; /* Add some space between the items */
+}
