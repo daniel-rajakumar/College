@@ -12,7 +12,7 @@ class Tournament {
     this.game.computerBoard.squares = state.computerSquares;
     this.game.humanPlayer.score = state.humanScore;
     this.game.computerPlayer.score = state.computerScore;
-    this.game.currentPlayer = state.GAME_TURN === "HUMAN" ? "human" : "computer";
+    this.game.currentPlayer = state.GAME_TURN === "HUMAN" ? "human_p1" : "computer";
     this.game.setScreen(state.screen); // Set the screen from the loaded state
     this.isANewGame = false;
   }

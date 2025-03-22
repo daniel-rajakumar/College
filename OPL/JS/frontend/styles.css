@@ -16,27 +16,40 @@ body {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   text-align: center;
+  width: 90%;
+  max-width: 600px;
 }
 
 h1 {
   margin-bottom: 20px;
+  color: #333;
 }
 
-.config, .game-board, .controls, .dice-result, .messages {
-  /* display: none; */
+.config {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-.container > *:not(h1):not(#initial-ui) {
-  /* display: none; */
+.config label {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
-/* Regular UI styles (hidden by default) */
-.hidden {
-  display: none !important;
+.config select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
 }
 
+.player-select {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
-/* Button styles */
 button {
   background-color: #008cba;
   color: white;
@@ -45,6 +58,7 @@ button {
   border-radius: 5px;
   cursor: pointer;
   margin: 5px;
+  font-size: 16px;
 }
 
 button:hover {
@@ -55,24 +69,17 @@ button:hover {
   margin-top: 20px;
   font-size: 1.5em;
   font-weight: bold;
-  color: #d9534f; /* Red color to make it stand out */
+  color: #d9534f;
 }
 
-
-
-
-/* ...existing code... */
-
-/* Modal styles */
 .modal {
-  /* position: fixed; */
+  position: fixed;
   z-index: 1;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   overflow: auto;
-
   background-color: rgba(0, 0, 0, 0.4);
 }
 
@@ -101,11 +108,6 @@ button:hover {
   cursor: pointer;
 }
 
-
-
-
-
-/* The switch container */
 .switch {
   position: relative;
   display: inline-block;
@@ -113,14 +115,12 @@ button:hover {
   height: 34px;
 }
 
-/* Hide the default checkbox */
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-/* The slider (the visible part of the switch) */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -132,27 +132,10 @@ button:hover {
   transition: 0.4s;
 }
 
-/* Rounded slider */
 .slider.round {
   border-radius: 34px;
 }
 
-/* Slider circle */
-.slider.round:before {
-  border-radius: 50%;
-}
-
-/* When the checkbox is checked, change the background color of the slider */
-input:checked + .slider {
-  background-color: #008cba;
-}
-
-/* Move the slider circle when the checkbox is checked */
-input:checked + .slider:before {
-  transform: translateX(116px);
-}
-
-/* The circle inside the slider */
 .slider:before {
   position: absolute;
   content: "";
@@ -162,36 +145,44 @@ input:checked + .slider:before {
   bottom: 4px;
   background-color: white;
   transition: 0.4s;
+  border-radius: 50%;
 }
 
-
-
-.on
-{
-  display: none;
+input:checked + .slider {
+  background-color: #008cba;
 }
 
-.on, .off
-{
+input:checked + .slider:before {
+  transform: translateX(116px);
+}
+
+.on, .off {
   color: white;
   position: absolute;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   top: 50%;
   left: 50%;
   font-size: 10px;
   font-family: Verdana, sans-serif;
 }
 
-input:checked+ .slider .on
-{display: block;}
+input:checked + .slider .on {
+  display: block;
+}
 
-input:checked + .slider .off
-{display: none;}
+input:checked + .slider .off {
+  display: none;
+}
 
 .controls {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 10px; /* Add some space between the items */
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.hidden {
+  display: none !important;
 }
