@@ -144,7 +144,18 @@ app.post("/api/game/valid-move", (req, res) => {
 });
 
 app.post('/api/game/load-file', (req, res) => {
-  const gameState = req.body;
+  const body = req.body;
+
+
+  gameState.humanSquares = body.humanSquares.map(Number);
+  gameState.computerSquares = body.computerSquares.map(Number);
+  gameState.humanScore = Number(body.humanScore);
+  gameState.computerScore = Number(body.computerScore);
+  gameState.GAME_TURN = body.GAME_TURN;
+
+  console.log(gameState);
+
+
   // Update the game state in your backend logic
   // ...
 
