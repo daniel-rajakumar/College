@@ -29,7 +29,8 @@ app.post("/api/game/new", (req, res) => {
 
 app.post("/api/game/load", (req, res) => {
   const state = req.body;
-  tournament.loadGame(state);
+  // tournament.loadGame(state);
+  tournament.game.setScreen("LOAD"); // Set the screen to PLAY after loading the game
   res.json(tournament.getState());
 });
 
@@ -68,6 +69,16 @@ app.post("/api/game/input-dice", (req, res) => {
 app.post("/api/game/valid-move", (req, res) => {
   const { validMove } = req.body;
   res.json({ message: `You selected: ${validMove}` });
+});
+
+app.post("/api/game/load-file", (req, res) => {
+  const { body } = req;
+
+  tournament.loadGame(body);
+
+  tournament.game.setScreen("PLAY"); // Set the screen to PLAY after loading the game
+
+  res.json(tournament.getState());
 });
 
 // Start the server
