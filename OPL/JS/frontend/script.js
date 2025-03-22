@@ -193,8 +193,8 @@ applyConfigButton.addEventListener("click", async () => {
       updateUI();
 
       rollDiceButton.classList.remove("hidden");
-      rewindButton.classList.add("hidden");
-      saveGameButton.classList.add("hidden");
+      // rewindButton.classList.add("hidden");
+      // saveGameButton.classList.add("hidden");
       helpButton.classList.add("hidden");
       coverSwitchElement.classList.add("hidden");
 
@@ -251,6 +251,15 @@ confirmValidRollsButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("User selected dice response:", validMove); // Log the result
+
+    diceResultElement.classList.add("hidden");
+    rollDiceButton.classList.remove("hidden");
+    inputDiceButton.classList.remove("hidden");
+    validRollsElement.classList.add("hidden");
+    confirmValidRollsButton.classList.add("hidden");
+    coverSwitchElement.classList.add("hidden");
+    rewindButton.classList.remove("hidden");
+    saveGameButton.classList.remove("hidden");
   }
 });
 
@@ -305,6 +314,8 @@ function afterDieRoll(data){
     validRollsElement.classList.remove("hidden");
     confirmValidRollsButton.classList.remove("hidden");
     coverSwitchElement.classList.remove("hidden");
+    rewindButton.classList.add("hidden");
+    saveGameButton.classList.add("hidden");
     const validRolls = ["one", "two", "three"];
     populateStringSelect(validRolls);
 
