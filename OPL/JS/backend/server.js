@@ -115,7 +115,7 @@ app.post("/api/game/rewind", (req, res) => {
 });
 
 app.post("/api/game/save", (req, res) => {
-  saveGame();
+  // saveGame();
 
   res.json(gameState);
 });
@@ -140,6 +140,30 @@ app.post("/api/game/valid-move", (req, res) => {
   const { validMove } = req.body;
   gameState.message = `You selected: ${validMove}`;
   log(gameState.message);
+  res.json(gameState);
+});
+
+app.post('/api/game/load-file', (req, res) => {
+  const gameState = req.body;
+  // Update the game state in your backend logic
+  // ...
+
+  // Return the updated game state
+  res.json({
+    humanSquares: gameState.humanSquares,
+    computerSquares: gameState.computerSquares,
+    humanScore: gameState.humanScore,
+    computerScore: gameState.computerScore,
+    GAME_TURN: gameState.GAME_TURN,
+    message: "Game state loaded from file."
+  });
+});
+
+app.post("/api/game/config", (req, res) => {
+  const { boardSize } = req.body;
+  initializeGame(boardSize);
+
+  gameState.screen = GAME_SCREEN.PLAY;
   res.json(gameState);
 });
 

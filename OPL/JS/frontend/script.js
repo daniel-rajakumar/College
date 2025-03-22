@@ -162,7 +162,8 @@ saveGameButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Save game response:", data); // Log the result
-    updateUI();
+    saveGame();
+    // updateUI();
   }
 });
 
@@ -264,19 +265,47 @@ confirmValidRollsButton.addEventListener("click", async () => {
 });
 
 fileInput.addEventListener("change", async (event) => {
-  console.log("File input changed:", event.target.files);
-  fileInput.classList.add("hidden");
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target.result;
+      try {
+        // Parse the file content
+        const gameState = parseGameState(content);
 
-  showLiveGameUI();
-  updateUI();
+        // Send the parsed game state to the backend
+        const response = await fetch("http://localhost:3000/api/game/load-file", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(gameState),
+        });
 
-  rollDiceButton.classList.remove("hidden");
-  rewindButton.classList.add("hidden");
-  saveGameButton.classList.add("hidden");
-  helpButton.classList.add("hidden");
-  coverSwitchElement.classList.add("hidden");
+        if (response.ok) {
+          const data = await response.json();
+          console.log("File load response:", data);
+
+          // Update the UI with the new game state
+          showLiveGameUI();
+          updateUI();
+
+          rollDiceButton.classList.remove("hidden");
+          rewindButton.classList.add("hidden");
+          saveGameButton.classList.add("hidden");
+          helpButton.classList.add("hidden");
+          coverSwitchElement.classList.add("hidden");
+        } else {
+          console.error("Failed to load game state from file");
+        }
+      } catch (error) {
+        console.error("Error parsing or loading game state:", error);
+      }
+    };
+    reader.readAsText(file);
+  }
 });
-
 
 function showStartUI() {
   // initialUI.classList.remove("hidden");
@@ -341,7 +370,114 @@ function populateStringSelect(strings) {
     validRollsElement.appendChild(option);
   });
 }
-// Initialize the UI
-// initialUI.classList.remove("hidden");
-// regularUI.classList.add("hidden");
+
+
+
+async function saveGame() {
+  try {
+    // Fetch the current game state
+    const humanSquares = Array.from(humanSquaresElement.querySelectorAll('.square')).map(square => square.textContent).join(' ');
+    const computerSquares = Array.from(computerSquaresElement.querySelectorAll('.square')).map(square => square.textContent).join(' ');
+    const humanScore = humanScoreElement.textContent;
+    const computerScore = computerScoreElement.textContent;
+    const currentTurn = currentTurnElement.textContent;
+
+    // Determine the next turn
+    const nextTurn = currentTurn === "HUMAN" ? "COMPUTER" : "HUMAN";
+
+    // Format the game state as a string
+    const gameStateString = `Computer:
+                              Squares: ${computerSquares}
+                              Score: ${computerScore}
+
+                            Human:
+                              Squares: ${humanSquares}
+                              Score: ${humanScore}
+
+                            First Turn: ${currentTurn}
+                            Next Turn: ${nextTurn}`;
+
+    // Create a Blob with the game state string
+    const blob = new Blob([gameStateString], { type: "text/plain;charset=utf-8" });
+
+    // Prompt the user to save the file
+    const fileHandle = await window.showSaveFilePicker({
+      suggestedName: "savegame.txt", // Default file name
+      types: [
+        {
+          description: "Text Files",
+          accept: { "text/plain": [".txt"] },
+        },
+      ],
+    });
+
+    // Write the Blob to the file
+    const writableStream = await fileHandle.createWritable();
+    await writableStream.write(blob);
+    await writableStream.close();
+
+    console.log("Game saved successfully!");
+  } catch (error) {
+    console.error("Error saving the game:", error);
+    alert("Failed to save the game. Please try again.");
+  }
+}
+
+
+function parseGameState(content) {
+  const lines = content.split("\n");
+  const gameState = {
+    humanSquares: [],
+    computerSquares: [],
+    humanScore: 0,
+    computerScore: 0,
+    GAME_TURN: "",
+  };
+
+  let boardSize = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    if (line.includes("Computer:")) {
+      // Read the next line for computer squares
+      const squaresLine = lines[++i].trim();
+      const squares = squaresLine
+        .split("Squares:")[1]
+        .trim()
+        .split(" ")
+        .map(Number);
+
+      boardSize = squares.length;
+      gameState.computerSquares = squares;
+
+      // Read the next line for computer score
+      const scoreLine = lines[++i].trim();
+      gameState.computerScore = parseInt(scoreLine.split("Score:")[1].trim());
+    } else if (line.includes("Human:")) {
+      // Read the next line for human squares
+      const squaresLine = lines[++i].trim();
+      const squares = squaresLine
+        .split("Squares:")[1]
+        .trim()
+        .split(" ")
+        .map(Number);
+
+      gameState.humanSquares = squares;
+
+      // Read the next line for human score
+      const scoreLine = lines[++i].trim();
+      gameState.humanScore = parseInt(scoreLine.split("Score:")[1].trim());
+    } else if (line.includes("First Turn:")) {
+      // Determine the first turn
+      gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "COMPUTER";
+    } else if (line.includes("Next Turn:")) {
+      // Determine the next turn (optional, depending on your game logic)
+      // This can be used to set the current turn after loading the game
+      gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "COMPUTER";
+    }
+  }
+
+  return gameState;
+}
 
