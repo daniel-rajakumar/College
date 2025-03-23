@@ -1,4 +1,5 @@
 const Game = require("../models/Game");
+const Board = require("./Board");
 
 class Tournament {
   constructor() {
@@ -10,8 +11,11 @@ class Tournament {
     this.game = new Game(state.player1Squares.length);
 
     // Set the squares for both players
-    this.game.players.player1.squares = state.player1Squares;
-    this.game.players.player2.squares = state.player2Squares;
+    this.game.players.player1.squares = new Board(state.player1Squares.length);
+    this.game.players.player2.squares = new Board(state.player2Squares.length);
+
+    this.game.players.player1.squares.setSquareValues(state.player1Squares);
+    this.game.players.player2.squares.setSquareValues(state.player2Squares);
 
     // Set the scores for both players
     this.game.players.player1.score = state.player1Score;
