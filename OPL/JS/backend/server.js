@@ -80,7 +80,10 @@ app.post("/api/game/load-file", (req, res) => {
 
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after loading the game
 
-  res.json(tournament.getState());
+  console.log("Loading game state: ", tournament.getState());
+
+  let stats = tournament.getState();
+  res.json(stats);
 });
 
 // Start the server

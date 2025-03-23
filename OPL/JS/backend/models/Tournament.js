@@ -25,6 +25,8 @@ class Tournament {
 
     // Mark the game as not new
     this.isANewGame = false;
+
+    console.log("Game loaded successfully!", this.game.getState());
   }
 
   getState() {

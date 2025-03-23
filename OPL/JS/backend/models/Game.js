@@ -5,11 +5,11 @@ const Computer = require("../models/Computer");
 class Game {
 
   constructor(boardSize = 11, player1Type = "human", player2Type = "computer") {
-    this.humanBoard = new Board(boardSize);
-    this.computerBoard = new Board(boardSize);
+    let humanBoard = new Board(boardSize);
+    let computerBoard = new Board(boardSize);
     this.players = {
-      player1: { type: player1Type, board: this.humanBoard, score: 0 },
-      player2: { type: player2Type, board: this.computerBoard, score: 0 },
+      player1: { type: player1Type, board: humanBoard, score: 0 },
+      player2: { type: player2Type, board: computerBoard, score: 0 },
     };
     this.currentPlayer = "player1"; // Start with Player 1
     this.screen = "START";
@@ -33,12 +33,12 @@ class Game {
     return {
       player1: {
         type: this.players.player1.type,
-        squares: this.players.player1.board.getSquares(),
+        squares: this.players.player1.squares,
         score: this.players.player1.score,
       },
       player2: {
         type: this.players.player2.type,
-        squares: this.players.player2.board.getSquares(),
+        squares: this.players.player2.squares,
         score: this.players.player2.score,
       },
       currentPlayer: this.currentPlayer,
