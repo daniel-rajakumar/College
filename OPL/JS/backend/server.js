@@ -74,6 +74,8 @@ app.post("/api/game/valid-move", (req, res) => {
 app.post("/api/game/load-file", (req, res) => {
   const { body } = req;
 
+  console.log("Loading game state: ", body);
+
   tournament.loadGame(body);
 
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after loading the game

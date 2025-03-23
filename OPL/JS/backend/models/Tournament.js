@@ -7,13 +7,25 @@ class Tournament {
   }
 
   loadGame(state) {
-    this.game = new Game(state.humanSquares.length);
-    this.game.humanBoard.squares = state.humanSquares;
-    this.game.computerBoard.squares = state.computerSquares;
-    this.game.humanPlayer.score = state.humanScore;
-    this.game.computerPlayer.score = state.computerScore;
-    this.game.currentPlayer = state.GAME_TURN;
-    this.game.setScreen(state.screen); // Set the screen from the loaded state
+    this.game = new Game(state.player1Squares.length);
+
+    console.log("Loading game state: ", this.game);
+
+    // Set the squares for both players
+    this.game.players.player1.squares = state.player1Squares;
+    this.game.players.player2.squares = state.player2Squares;
+
+    // Set the scores for both players
+    this.game.players.player1.score = state.player1Score;
+    this.game.players.player2.score = state.player2Score;
+
+    // Set the current player
+    this.game.currentPlayer = state.currentPlayer;
+
+    // Set the screen from the loaded state
+    this.game.setScreen(state.screen);
+
+    // Mark the game as not new
     this.isANewGame = false;
   }
 

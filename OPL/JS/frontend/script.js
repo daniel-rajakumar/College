@@ -188,12 +188,12 @@ applyConfigButton.addEventListener("click", async () => {
     const data = await response.json();
     console.log("Apply config response:", data); // Log the result
 
-    if (data.GAME_TURN == "HUMAN") {
+    if (data.currentPlayer == "HUMAN") {
       console.log("Human's turn");
-    } else if (data.GAME_TURN == "COMPUTER") {
+    } else if (data.currentPlayer == "COMPUTER") {
       console.log("Computer's turn");
     } else {
-      console.error("Unknown turn:", data.GAME_TURN);
+      console.error("Unknown turn:", data.currentPlayer);
     }
 
     if (data.screen === "PLAY") {
@@ -389,7 +389,7 @@ async function saveGame() {
     const currentTurn = currentTurnElement.textContent;
 
     // Determine the next turn
-    const nextTurn = currentTurn === "HUMAN" ? "COMPUTER" : "HUMAN";
+    const nextTurn = currentTurn === "player1" ? "player1" : "player2";
 
     // Format the game state as a string
     const gameStateString = `Computer:
@@ -433,11 +433,6 @@ async function saveGame() {
 function parseGameState(content) {
   const lines = content.split("\n");
   const gameState = {
-    humanSquares: [],
-    computerSquares: [],
-    humanScore: 0,
-    computerScore: 0,
-    GAME_TURN: "",
   };
 
   let boardSize = 0;
@@ -455,11 +450,11 @@ function parseGameState(content) {
         .map(Number);
 
       boardSize = squares.length;
-      gameState.computerSquares = squares;
+      gameState.player2Squares = squares;
 
       // Read the next line for computer score
       const scoreLine = lines[++i].trim();
-      gameState.computerScore = parseInt(scoreLine.split("Score:")[1].trim());
+      gameState.player2Score = parseInt(scoreLine.split("Score:")[1].trim());
     } else if (line.includes("Human:")) {
       // Read the next line for human squares
       const squaresLine = lines[++i].trim();
@@ -469,18 +464,20 @@ function parseGameState(content) {
         .split(" ")
         .map(Number);
 
-      gameState.humanSquares = squares;
+      gameState.player1Squares = squares;
 
       // Read the next line for human score
       const scoreLine = lines[++i].trim();
-      gameState.humanScore = parseInt(scoreLine.split("Score:")[1].trim());
+      gameState.player1Score = parseInt(scoreLine.split("Score:")[1].trim());
     } else if (line.includes("First Turn:")) {
       // Determine the first turn
-      gameState.GAME_TURN = line.includes("Human") ? "human" : "computer";
+      // gameState.GAME_TURN = line.includes("Human") ? "human" : "computer";
+      gameState.currentPlayer = line.includes("Human") ? "human" : "computer";
     } else if (line.includes("Next Turn:")) {
       // Determine the next turn (optional, depending on your game logic)
       // This can be used to set the current turn after loading the game
-      gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "computer";
+      // gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "computer";
+      gameState.currentPlayer = line.includes("Human") ? "human" : "computer";
     }
   }
 
