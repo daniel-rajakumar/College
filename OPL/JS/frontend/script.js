@@ -472,12 +472,12 @@ function parseGameState(content) {
     } else if (line.includes("First Turn:")) {
       // Determine the first turn
       // gameState.GAME_TURN = line.includes("Human") ? "human" : "computer";
-      gameState.currentPlayer = line.includes("Human") ? "human" : "computer";
+      gameState.currentPlayer = line.includes("Human") ? "player1" : "player2";
     } else if (line.includes("Next Turn:")) {
       // Determine the next turn (optional, depending on your game logic)
       // This can be used to set the current turn after loading the game
       // gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "computer";
-      gameState.currentPlayer = line.includes("Human") ? "human" : "computer";
+      gameState.currentPlayer = line.includes("Human") ? "player1" : "player2";
     }
   }
 

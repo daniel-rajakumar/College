@@ -9,8 +9,6 @@ class Tournament {
   loadGame(state) {
     this.game = new Game(state.player1Squares.length);
 
-    console.log("Loading game state: ", this.game);
-
     // Set the squares for both players
     this.game.players.player1.squares = state.player1Squares;
     this.game.players.player2.squares = state.player2Squares;
