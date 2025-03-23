@@ -21,12 +21,6 @@ app.get("/api/game/state", (req, res) => {
   res.json(tournament.getState());
 });
 
-app.post("/api/game/new", (req, res) => {
-  tournament.game = new Game();
-  tournament.game.setScreen("CONFIG"); // Set the screen to CONFIG for a new game
-  res.json(tournament.getState());
-});
-
 app.post("/api/game/load", (req, res) => {
   const state = req.body;
   // tournament.loadGame(state);
@@ -54,7 +48,7 @@ app.post("/api/game/save", (req, res) => {
   res.json(tournament.getState());
 });
 
-app.post("/api/game/config", (req, res) => {
+app.post("/api/game/new", (req, res) => {
   const { boardSize, player1Type, player2Type } = req.body;
   tournament.game = new Game(boardSize, player1Type, player2Type);
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
@@ -73,8 +67,6 @@ app.post("/api/game/valid-move", (req, res) => {
 
 app.post("/api/game/load-file", (req, res) => {
   const { body } = req;
-
-  console.log("Loading game state: ", body);
 
   tournament.loadGame(body);
 

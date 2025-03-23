@@ -112,19 +112,20 @@ loadGameInitialButton.addEventListener("click", async () => {
 });
 
 newGameInitialButton.addEventListener("click", async () => {
-  const response = await fetch("http://localhost:3000/api/game/new", {
-    method: "POST",
-  });
-  if (response.ok) {
-    const data = await response.json();
-    console.log("New game response:", data); // Log the result
+  showConfigUI("CONFIG");
+  // const response = await fetch("http://localhost:3000/api/game/new", {
+  //   method: "POST",
+  // });
+  // if (response.ok) {
+  //   const data = await response.json();
+  //   console.log("New game response:", data); // Log the result
 
-    if (data.screen === "CONFIG") {
-        showConfigUI(data.screen);
-    } else {
-        console.error("Unknown screen:", data.screen);
-    }
-  }
+  //   if (data.screen === "CONFIG") {
+  //       showConfigUI(data.screen);
+  //   } else {
+  //       console.error("Unknown screen:", data.screen);
+  //   }
+  // }
 });
 
 rollDiceButton.addEventListener("click", async () => {
@@ -177,7 +178,7 @@ applyConfigButton.addEventListener("click", async () => {
   const boardSize = boardSizeSelect.value;
   const player1Type = player1TypeElement.value;
   const player2Type = player2TypeElement.value;
-  const response = await fetch("http://localhost:3000/api/game/config", {
+  const response = await fetch("http://localhost:3000/api/game/new", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -188,10 +189,10 @@ applyConfigButton.addEventListener("click", async () => {
     const data = await response.json();
     console.log("Apply config response:", data); // Log the result
 
-    if (data.currentPlayer == "HUMAN") {
-      console.log("Human's turn");
-    } else if (data.currentPlayer == "COMPUTER") {
-      console.log("Computer's turn");
+    if (data.currentPlayer == "player1") {
+      console.log("Player1's turn");
+    } else if (data.currentPlayer == "player2") {
+      console.log("Player2's turn");
     } else {
       console.error("Unknown turn:", data.currentPlayer);
     }
@@ -353,6 +354,7 @@ function afterDieRoll(data){
     coverSwitchElement.classList.remove("hidden");
     rewindButton.classList.add("hidden");
     saveGameButton.classList.add("hidden");
+
     const validRolls = ["one", "two", "three"];
     populateStringSelect(validRolls);
 
