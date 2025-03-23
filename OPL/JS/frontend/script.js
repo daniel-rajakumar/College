@@ -28,7 +28,10 @@ const validRollsElement = document.getElementById("valid-rolls");
 const confirmValidRollsButton = document.getElementById("confirm-valid-rolls");
 const coverSwitchElement = document.getElementById("cover-switch");
 const fileInput = document.getElementById("file-input");
-
+const computerBoardElement = document.getElementById("computer-board");
+const humanBoardElement = document.getElementById("human-board");
+const player1TypeElement = document.getElementById("player1-type-select");
+const player2TypeElement = document.getElementById("player2-type-select");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -77,15 +80,18 @@ async function fetchGameState() {
 // Update the UI with the game state
 async function updateUI() {
   const state = await fetchGameState();
-  renderSquares(humanSquaresElement, state.humanSquares);
-  renderSquares(computerSquaresElement, state.computerSquares);
-  humanScoreElement.textContent = state.humanScore;
-  computerScoreElement.textContent = state.computerScore;
+
+  renderSquares(humanSquaresElement, state.player1.squares);
+  renderSquares(computerSquaresElement, state.player2.squares);
+  humanScoreElement.textContent = state.player1.score;
+  computerScoreElement.textContent = state.player2.score;
   diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";
   gameMessageElement.textContent = state.message || "";
-  currentTurnElement.textContent = state.GAME_TURN || "Unknown";
+  currentTurnElement.textContent = state.currentPlayer || "Unknown";
   diceResultElement.textContent = "Dice: " + state.diceRoll || "No dice rolled yet.";
 
+  document.querySelector("#human-board > h2").innerHTML = "Player 1: " + state.player1.type;
+  document.querySelector("#computer-board > h2").innerHTML = "Player 2: " + state.player2.type;
 }
 
 // Event listeners
@@ -169,12 +175,14 @@ saveGameButton.addEventListener("click", async () => {
 
 applyConfigButton.addEventListener("click", async () => {
   const boardSize = boardSizeSelect.value;
+  const player1Type = player1TypeElement.value;
+  const player2Type = player2TypeElement.value;
   const response = await fetch("http://localhost:3000/api/game/config", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ boardSize }),
+    body: JSON.stringify({ boardSize, player1Type, player2Type }),
   });
   if (response.ok) {
     const data = await response.json();
@@ -350,12 +358,10 @@ function afterDieRoll(data){
 
     console.log("Data from afterDieRoll:", data);
 
-    if (data.GAME_TURN == "HUMAN") {
+    if (data.player1.type === "human" || data.player2.type === "human") {
       helpButton.classList.remove("hidden");
-    } else if (data.GAME_TURN == "COMPUTER") {
+    } else if (data.player1.type === "computer" || data.player2.type === "computer") {
       helpButton.classList.add("hidden");
-    } else {
-      console.error("Unknown turn:", data.GAME_TURN);
     }
 
     updateUI();
@@ -470,11 +476,11 @@ function parseGameState(content) {
       gameState.humanScore = parseInt(scoreLine.split("Score:")[1].trim());
     } else if (line.includes("First Turn:")) {
       // Determine the first turn
-      gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "COMPUTER";
+      gameState.GAME_TURN = line.includes("Human") ? "human" : "computer";
     } else if (line.includes("Next Turn:")) {
       // Determine the next turn (optional, depending on your game logic)
       // This can be used to set the current turn after loading the game
-      gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "COMPUTER";
+      gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "computer";
     }
   }
 

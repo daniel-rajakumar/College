@@ -55,8 +55,8 @@ app.post("/api/game/save", (req, res) => {
 });
 
 app.post("/api/game/config", (req, res) => {
-  const { boardSize } = req.body;
-  tournament.game = new Game(boardSize);
+  const { boardSize, player1Type, player2Type } = req.body;
+  tournament.game = new Game(boardSize, player1Type, player2Type);
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
 });

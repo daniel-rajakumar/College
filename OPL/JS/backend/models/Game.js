@@ -3,13 +3,16 @@ const Human = require("../models/Human");
 const Computer = require("../models/Computer");
 
 class Game {
-  constructor(boardSize = 11) {
+
+  constructor(boardSize = 11, player1Type = "human", player2Type = "computer") {
     this.humanBoard = new Board(boardSize);
     this.computerBoard = new Board(boardSize);
-    this.humanPlayer = new Human(this.humanBoard);
-    this.computerPlayer = new Computer(this.computerBoard);
-    this.currentPlayer = "human"; // human or computer
-    this.screen = "START"; // Initialize the screen variable
+    this.players = {
+      player1: { type: player1Type, board: this.humanBoard, score: 0 },
+      player2: { type: player2Type, board: this.computerBoard, score: 0 },
+    };
+    this.currentPlayer = "player1"; // Start with Player 1
+    this.screen = "START";
   }
 
   rollDice() {
@@ -19,7 +22,7 @@ class Game {
   }
 
   switchTurn() {
-    this.currentPlayer = this.currentPlayer === "human" ? "computer" : "human";
+    this.currentPlayer = this.currentPlayer === "player1" ? "player1" : "player2";
   }
 
   setScreen(screen) {
@@ -28,12 +31,18 @@ class Game {
 
   getState() {
     return {
-      humanSquares: this.humanBoard.getSquares(),
-      computerSquares: this.computerBoard.getSquares(),
-      humanScore: this.humanPlayer.getScore(),
-      computerScore: this.computerPlayer.getScore(),
+      player1: {
+        type: this.players.player1.type,
+        squares: this.players.player1.board.getSquares(),
+        score: this.players.player1.score,
+      },
+      player2: {
+        type: this.players.player2.type,
+        squares: this.players.player2.board.getSquares(),
+        score: this.players.player2.score,
+      },
       currentPlayer: this.currentPlayer,
-      screen: this.screen, // Include the screen variable in the state
+      screen: this.screen,
     };
   }
 }
