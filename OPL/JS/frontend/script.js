@@ -141,7 +141,6 @@ rollDiceButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Roll dice response:", data); // Log the result
-
     afterDieRoll(data);
   }
 });

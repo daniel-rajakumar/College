@@ -37,6 +37,7 @@ app.post("/api/game/roll-dice", (req, res) => {
     } else {
       tournament.game.rollDice();
     }
+
     tournament.game.setScreen("PLAY"); // Set the screen to PLAY after rolling dice
   
     // Get the current player's board and the opponent's board
@@ -55,7 +56,31 @@ app.post("/api/game/roll-dice", (req, res) => {
     validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
     validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
 
-    // Find valid combinations for covering and uncovering
+    if (currentPlayer === "player1" && tournament.game.players.player1.type === "computer") {
+      const move = tournament.game.players.player1.chooseMove(tournament.game.getDice().total, opponentBoard);
+      console.log("Computer move: ", move);
+      if (move.action === "cover") {
+        for (const square of move.combination) {
+          currentPlayerBoard.coverSquare(square);
+        }
+      } else if (move.action === "uncover") {
+        for (const square of move.combination) {
+          opponentBoard.uncoverSquare(square);
+        }
+      }
+    } else if (currentPlayer === "player2" && tournament.game.players.player2.type === "computer") {
+      const move = tournament.game.players.player2.chooseMove(tournament.game.getDice().total, opponentBoard);
+      console.log("Computer move: ", move);
+      if (move.action === "cover") {
+        for (const square of move.combination) {
+          currentPlayerBoard.coverSquare(square);
+        }
+      } else if (move.action === "uncover") {
+        for (const square of move.combination) {
+          opponentBoard.uncoverSquare(square);
+        }
+      }
+    }
   
     // Prepare the response
     const response = {
@@ -124,9 +149,6 @@ app.post("/api/game/valid-move", (req, res) => {
     }
   }
     
-
-
-
   if (toCover) {
     for (const square of validMove) {
       currentPlayerBoard.coverSquare(square);

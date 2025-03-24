@@ -12,6 +12,55 @@ class Player {
   updateScore(points) {
     this.score += points;
   }
+
+  chooseMove(diceSum, opponentBoard) {
+    const coverOptions = this.findBestCombination(this.board, diceSum, true);
+    
+    if (coverOptions.length > 0) {
+      return {
+        action: 'cover',
+        combination: this.selectBestCombination(coverOptions),
+        reason: "Covering my squares to maximize my advantage"
+      };
+    }
+
+    const uncoverOptions = this.findBestCombination(opponentBoard, diceSum, false);
+    
+    if (uncoverOptions.length > 0) {
+      return {
+        action: 'uncover',
+        combination: this.selectBestCombination(uncoverOptions),
+        reason: "Uncovering opponent's squares to minimize their advantage"
+      };
+    }
+
+    return {
+      action: 'none',
+      combination: [],
+      reason: "No valid moves available"
+    };
+  }
+
+  findBestCombination(board, sum, forCovering) {
+    const validCombinations = board.findValidCombinations(sum, forCovering);
+    
+    if (Tournament.getAdvantageApplied()) {
+      const advantageSquare = Tournament.getAdvantageSquare();
+      return validCombinations.filter(combo => !combo.includes(advantageSquare));
+    }
+    
+    return validCombinations;
+  }
+
+  selectBestCombination(combinations) {
+    return combinations.reduce((best, current) => {
+      if (current.length > best.length) return current;
+      if (current.length === best.length) {
+        return current.reduce((a, b) => a + b, 0) > best.reduce((a, b) => a + b, 0) ? current : best;
+      }
+      return best;
+    }, []);
+  }
 }
 
 module.exports = Player;
