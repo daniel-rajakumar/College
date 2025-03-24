@@ -106,9 +106,9 @@ app.post("/api/game/valid-move", (req, res) => {
     }
   } else {
     if (currentPlayer === "player1") {
-      opponentBoard = tournament.game.players.player1.squares;
-    } else {
       opponentBoard = tournament.game.players.player2.squares;
+    } else {
+      opponentBoard = tournament.game.players.player1.squares;
     }
 
     for (const square of validMove) {
@@ -131,6 +131,29 @@ app.post("/api/game/load-file", (req, res) => {
 
   let stats = tournament.getState();
   res.json(stats);
+});
+
+app.post("/api/game/toggle", (req, res) => {
+  const { checked } = req.body;
+  let currentPlayerBoard, opponentBoard;
+  let validCoverCombinations, validUncoverCombinations;
+
+  if (tournament.game.currentPlayer === "player1") {
+    currentPlayerBoard = tournament.game.players.player1.squares;
+    opponentBoard = tournament.game.players.player2.squares;
+    validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
+    validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
+  } else {
+    currentPlayerBoard = tournament.game.players.player2.squares;
+    opponentBoard = tournament.game.players.player1.squares
+    validCoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, true);
+    validUncoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, false);
+  }
+
+  if (checked)
+    res.json(validCoverCombinations);
+  else 
+    res.json(validUncoverCombinations);
 });
 
 // Start the server

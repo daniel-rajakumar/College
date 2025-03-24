@@ -32,6 +32,7 @@ const computerBoardElement = document.getElementById("computer-board");
 const humanBoardElement = document.getElementById("human-board");
 const player1TypeElement = document.getElementById("player1-type-select");
 const player2TypeElement = document.getElementById("player2-type-select");
+const toggleSwitchElement = document.getElementById("toggle-switch");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -251,7 +252,7 @@ submitDiceButton.addEventListener("click", async () => {
 
 confirmValidRollsButton.addEventListener("click", async () => {
   const validMove = validRollsElement.value;
-  const toCover = document.getElementById("toggle-switch").checked;
+  const toCover = toggleSwitchElement.checked;
   console.log("Valid move:",toCover);
   const response = await fetch("http://localhost:3000/api/game/valid-move", {
     method: "POST",
@@ -317,6 +318,25 @@ fileInput.addEventListener("change", async (event) => {
       }
     };
     reader.readAsText(file);
+  }
+});
+
+toggleSwitchElement.addEventListener("change", async () => {
+  const checked = toggleSwitchElement.checked;
+  const response = await fetch("http://localhost:3000/api/game/toggle", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ checked }),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Toggle response:", data); // Log the result
+    
+    populateStringSelect(data);
+   
+    updateUI();
   }
 });
 
