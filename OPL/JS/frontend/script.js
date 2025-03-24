@@ -208,6 +208,10 @@ applyConfigButton.addEventListener("click", async () => {
       ExitGameButton.classList.add("hidden");
       playAgainGameButton.classList.add("hidden");
       currentTurnElement.classList.remove("hidden");
+      inputDiceButton.classList.remove("hidden");
+      rewindButton.classList.remove("hidden");
+      saveGameButton.classList.remove("hidden");  
+
     } else {
         console.error("Unknown screen:", data.screen);
     }
@@ -323,6 +327,9 @@ ExitGameButton.addEventListener("click", async () => {
 
 playAgainGameButton.addEventListener("click", async () => {
   console.log("Playing again");
+  boardSizeSelect.disabled = true;
+  player1TypeElement.disabled = true;
+  player2TypeElement.disabled = true;
   isNewGame = false;
   showConfigUI("CONFIG");
 });
