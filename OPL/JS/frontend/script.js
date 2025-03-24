@@ -46,29 +46,35 @@ function showRegularUI() {
 }
 
 // Render squares in the format [ x, x, x, ..., x ]
-function renderSquares(container, squares) {
+function renderSquares(container, squares, advantage) {
   container.innerHTML = "";
   const squaresWrapper = document.createElement("div");
   squaresWrapper.classList.add("squares-wrapper");
 
   const openBracket = document.createElement("span");
   openBracket.textContent = "[";
+  openBracket.classList.add("square-num");
   squaresWrapper.appendChild(openBracket);
 
   squares.forEach((square, index) => {
     const squareElement = document.createElement("span");
     squareElement.classList.add("square");
+    if (advantage === index) {
+      squareElement.classList.add("advantage");
+    }
     squareElement.textContent = square;
+    squareElement.classList.add("square-num");
     squaresWrapper.appendChild(squareElement);
 
     if (index !== squares.length - 1) {
       const comma = document.createElement("span");
-      comma.textContent = ",";
+      comma.textContent = " ";
       squaresWrapper.appendChild(comma);
     }
   });
 
   const closeBracket = document.createElement("span");
+  closeBracket.classList.add("square-num");
   closeBracket.textContent = "]";
   squaresWrapper.appendChild(closeBracket);
 
@@ -87,10 +93,16 @@ async function fetchGameState() {
 async function updateUI() {
   const state = await fetchGameState();
 
-  console.log("State from updateUI:", state);
+  if (state.advantage.player === "player1")
+    renderSquares(humanSquaresElement, state.player1.squares, state.advantage.square);
+  else 
+    renderSquares(humanSquaresElement, state.player1.squares, -1);
 
-  renderSquares(humanSquaresElement, state.player1.squares);
-  renderSquares(computerSquaresElement, state.player2.squares);
+  if (state.advantage.player === "player2")
+    renderSquares(computerSquaresElement, state.player2.squares, state.advantage.square);
+  else
+    renderSquares(computerSquaresElement, state.player2.squares, -1);
+
   humanScoreElement.textContent = state.player1.score;
   computerScoreElement.textContent = state.player2.score;
   diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";

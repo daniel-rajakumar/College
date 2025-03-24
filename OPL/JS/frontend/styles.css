@@ -186,3 +186,12 @@ input:checked + .slider .off {
 .hidden {
   display: none !important;
 }
+
+.advantage {
+  color: #9d3232;
+  font-weight: bold;
+}
+
+.square-num {
+  font-size: 1.5em;
+}
