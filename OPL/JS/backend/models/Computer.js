@@ -1,8 +1,10 @@
 const Player = require("../models/Player");
+const Tournament = require("../models/Tournament");
 
 class Computer extends Player {
   constructor(board) {
     super(board);
+    this.type = "computer";
   }
 
   decideDiceThrow() {
@@ -46,9 +48,14 @@ class Computer extends Player {
   findBestCombination(board, sum, forCovering) {
     const validCombinations = board.findValidCombinations(sum, forCovering);
     
-    if (Tournament.getAdvantageApplied()) {
-      const advantageSquare = Tournament.getAdvantageSquare();
-      return validCombinations.filter(combo => !combo.includes(advantageSquare));
+    if (this.tournament?.getAdvantageApplied()) {
+      const advantageSquare = this.tournament.getAdvantageSquare();
+      const advantagePlayer = this.tournament.getAdvantagePlayer();
+      const currentPlayer = this === this.tournament.game.players.player1 ? 'player1' : 'player2';
+      
+      if (advantagePlayer !== currentPlayer) {
+        return validCombinations.filter(combo => !combo.includes(advantageSquare));
+      }
     }
     
     return validCombinations;

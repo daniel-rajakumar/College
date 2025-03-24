@@ -141,6 +141,8 @@ rollDiceButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Roll dice response:", data); // Log the result
+
+
     afterDieRoll(data);
   }
 });
@@ -269,28 +271,7 @@ confirmValidRollsButton.addEventListener("click", async () => {
     const data = await response.json();
     console.log("User selected dice response:", data); // Log the result
 
-    diceResultElement.classList.add("hidden");
-    rollDiceButton.classList.remove("hidden");
-    inputDiceButton.classList.remove("hidden");
-    validRollsElement.classList.add("hidden");
-    confirmValidRollsButton.classList.add("hidden");
-    coverSwitchElement.classList.add("hidden");
-    rewindButton.classList.remove("hidden");
-    saveGameButton.classList.remove("hidden");
-
-    if (data.gameOver) {
-      console.log("Game over!");
-      rewindButton.classList.add("hidden");
-      saveGameButton.classList.add("hidden");
-      rewindButton.classList.add("hidden");
-      inputDiceButton.classList.add("hidden");
-      rollDiceButton.classList.add("hidden");
-      ExitGameButton.classList.remove("hidden");
-      playAgainGameButton.classList.remove("hidden");
-      helpButton.classList.add("hidden");
-      currentTurnElement.classList.add("hidden");
-      alert("Winner: " + data.winner);
-    }
+    afterValidRoll(data);
 
     updateUI();
 
@@ -371,6 +352,31 @@ ExitGameButton.addEventListener("click", async () => {
   showStartUI();
 });
 
+function afterValidRoll(data) {
+  diceResultElement.classList.add("hidden");
+  rollDiceButton.classList.remove("hidden");
+  inputDiceButton.classList.remove("hidden");
+  validRollsElement.classList.add("hidden");
+  confirmValidRollsButton.classList.add("hidden");
+  coverSwitchElement.classList.add("hidden");
+  rewindButton.classList.remove("hidden");
+  saveGameButton.classList.remove("hidden");
+
+  if (data.gameOver) {
+    console.log("Game over!");
+    rewindButton.classList.add("hidden");
+    saveGameButton.classList.add("hidden");
+    rewindButton.classList.add("hidden");
+    inputDiceButton.classList.add("hidden");
+    rollDiceButton.classList.add("hidden");
+    ExitGameButton.classList.remove("hidden");
+    playAgainGameButton.classList.remove("hidden");
+    helpButton.classList.add("hidden");
+    currentTurnElement.classList.add("hidden");
+    alert("Winner: " + data.winner);
+  }
+}
+
 function showStartUI() {
   initialUI.classList.remove("hidden");
   regularUI.classList.add("hidden");
@@ -429,6 +435,13 @@ function afterDieRoll(data){
     if (data.currentPlayer === "player2" && data.player2.type === "computer") {
       helpButton.classList.add("hidden");
     }
+
+    
+    if ((data.currentPlayer === "player1" && data.player1.type === "computer") 
+    ||  (data.currentPlayer === "player2" && data.player2.type === "computer")) {
+      afterValidRoll(data);
+    }
+
 
     updateUI();
 }

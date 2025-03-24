@@ -46,18 +46,37 @@ app.post("/api/game/roll-dice", (req, res) => {
     let validCoverCombinations, validUncoverCombinations;
 
     if (currentPlayer === "player1") {
-      currentPlayerBoard = tournament.game.players.player1.squares;
-      opponentBoard = tournament.game.players.player2.squares;
+      currentPlayerBoard = tournament.game.players.player1.board;
+      opponentBoard = tournament.game.players.player2.board;
     } else {
-      currentPlayerBoard = tournament.game.players.player2.squares;
-      opponentBoard = tournament.game.players.player1.squares;
+      currentPlayerBoard = tournament.game.players.player2.board;
+      opponentBoard = tournament.game.players.player1.board;
     }
 
     validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
     validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
 
+
+    // Check if trying to uncover advantage square
+    // if (!isCover && tournament.getAdvantageApplied()) {
+    //   const advantageSquare = tournament.getAdvantageSquare();
+    //   if (combination.includes(advantageSquare)) {
+    //       const currentPlayer = tournament.game.currentPlayer;
+    //       const advantagePlayer = tournament.getAdvantagePlayer();
+          
+    //       if (currentPlayer !== advantagePlayer) {
+    //           return res.status(400).json({
+    //               error: `Cannot uncover advantage square ${advantageSquare} yet!`,
+    //               valid: false
+    //           });
+    //       }
+    //     }
+    //   }
+
+    let move;
+
     if (currentPlayer === "player1" && tournament.game.players.player1.type === "computer") {
-      const move = tournament.game.players.player1.chooseMove(tournament.game.getDice().total, opponentBoard);
+      move = tournament.game.players.player1.chooseMove(tournament.game.getDice().total, opponentBoard);
       console.log("Computer move: ", move);
       if (move.action === "cover") {
         for (const square of move.combination) {
@@ -69,7 +88,7 @@ app.post("/api/game/roll-dice", (req, res) => {
         }
       }
     } else if (currentPlayer === "player2" && tournament.game.players.player2.type === "computer") {
-      const move = tournament.game.players.player2.chooseMove(tournament.game.getDice().total, opponentBoard);
+      move = tournament.game.players.player2.chooseMove(tournament.game.getDice().total, opponentBoard);
       console.log("Computer move: ", move);
       if (move.action === "cover") {
         for (const square of move.combination) {
@@ -81,6 +100,11 @@ app.post("/api/game/roll-dice", (req, res) => {
         }
       }
     }
+
+    tournament.game.message = `
+    ${currentPlayer} rolled ${tournament.game.getDice().total} (${tournament.game.getDice().dice1} + ${tournament.game.getDice().dice2}) 
+    and chooses to ${move.action}: ${move.combination}
+    `; 
   
     // Prepare the response
     const response = {
@@ -109,7 +133,7 @@ app.post("/api/game/save", (req, res) => {
 
 app.post("/api/game/new", (req, res) => {
   const { boardSize, player1Type, player2Type } = req.body;
-  tournament.game = new Game(boardSize, player1Type, player2Type);
+  tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
 });
@@ -136,16 +160,16 @@ app.post("/api/game/valid-move", (req, res) => {
 
   if (toCover) {
     if (currentPlayer === "player1") {
-      currentPlayerBoard = tournament.game.players.player1.squares;
+      currentPlayerBoard = tournament.game.players.player1.board;
     } else {
-      currentPlayerBoard = tournament.game.players.player2.squares;
+      currentPlayerBoard = tournament.game.players.player2.board;
     }
 
   } else {
     if (currentPlayer === "player1") {
-      opponentBoard = tournament.game.players.player2.squares;
+      opponentBoard = tournament.game.players.player2.board;
     } else {
-      opponentBoard = tournament.game.players.player1.squares;
+      opponentBoard = tournament.game.players.player1.board;
     }
   }
     
@@ -189,12 +213,12 @@ app.post("/api/game/toggle", (req, res) => {
   let validCoverCombinations, validUncoverCombinations;
 
   if (tournament.game.currentPlayer === "player1") {
-    currentPlayerBoard = tournament.game.players.player1.squares;
-    opponentBoard = tournament.game.players.player2.squares;
+    currentPlayerBoard = tournament.game.players.player1.board;
+    opponentBoard = tournament.game.players.player2.board;
 
   } else {
-    currentPlayerBoard = tournament.game.players.player2.squares;
-    opponentBoard = tournament.game.players.player1.squares
+    currentPlayerBoard = tournament.game.players.player2.board;
+    opponentBoard = tournament.game.players.player1.board;
   }
 
   validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);

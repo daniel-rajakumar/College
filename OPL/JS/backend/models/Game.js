@@ -1,23 +1,30 @@
 const Board = require("../models/Board");
 const Human = require("../models/Human");
 const Computer = require("../models/Computer");
+const Tournament = require("../models/Tournament");
 
 class Game {
 
-  constructor(boardSize = 11, player1Type = "human", player2Type = "computer") {
+  constructor(tournament, boardSize = 11, player1Type = "human", player2Type = "computer") {
     // let player1board = Array.from({ length: boardSize }, (_, i) => i + 1);
     // let player2board = Array.from({ length: boardSize }, (_, i) => i + 1);
+    this.tournament = tournament;
 
-    let player1board = new Board(boardSize);
-    let player2board = new Board(boardSize);
+    let player1Board = new Board(boardSize);
+    let player2Board = new Board(boardSize);
 
     this.players = {
-      player1: { type: player1Type, squares: player1board, score: 0 },
-      player2: { type: player2Type, squares: player2board, score: 0 },
+      player1: player1Type === "human" 
+        ? new Human(player1Board, tournament) 
+        : new Computer(player1Board, tournament),
+      player2: player2Type === "human" 
+        ? new Human(player2Board, tournament) 
+        : new Computer(player2Board, tournament)
     };
     this.currentPlayer = "player1"; // Start with Player 1
     this.screen = "START";
     this.dice = { dice1: 0, dice2: 0, total: 0 };
+    this.message = "";
   }
 
   rollDice() {
@@ -89,8 +96,8 @@ class Game {
     const winner = this.isGameOver();
 
     if (winner) {
-      const player1Board = this.players.player1.squares;
-      const player2Board = this.players.player2.squares;
+      const player1Board = this.players.player1.board.squares;
+      const player2Board = this.players.player2.board.squares;
 
       let winnerPoints = 0;
 
@@ -116,6 +123,8 @@ class Game {
         this.players.player2.score += winnerPoints;
       }
 
+      tournament.applyAdvantage(winner, winnerPoints);
+
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);
       this.resetGame(); // Reset the game for a new round
       return winner;
@@ -133,6 +142,7 @@ class Game {
 
 
   resetGame() {
+    tournament.clearAdvantage();
     this.players.player1.board = new Board(this.boardSize);
     this.players.player2.board = new Board(this.boardSize);
     this.currentPlayer = "player1";
@@ -145,17 +155,23 @@ class Game {
     return {
       player1: {
         type: this.players.player1.type,
-        squares: this.players.player1.squares.getSquares(),
+        squares: this.players.player1.board.squares,
         score: this.players.player1.score,
       },
       player2: {
         type: this.players.player2.type,
-        squares: this.players.player2.squares.getSquares(),
+        squares: this.players.player2.board.squares,
         score: this.players.player2.score,
       },
       currentPlayer: this.currentPlayer,
       dice: this.dice,
       screen: this.screen,
+      advantage: {
+        square: this.tournament.advantage.square,
+        applied: this.tournament.advantage.applied,
+        player: this.tournament.advantage.player
+      },
+      message: this.message,
     };
   }
 }

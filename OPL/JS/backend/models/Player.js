@@ -1,5 +1,6 @@
 class Player {
-  constructor(board) {
+  constructor(board, tournament) {
+    this.tournament = tournament;
     this.board = board;
     this.score = 0;
     this.hasFirstTurnBeenPlayed = false;

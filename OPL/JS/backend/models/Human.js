@@ -3,6 +3,7 @@ const Player = require("../models/Player");
 class Human extends Player {
   constructor(board) {
     super(board);
+    this.type = "human";
   }
 
   requestHelp(diceSum, opponentBoard) {
