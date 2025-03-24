@@ -37,6 +37,8 @@ const playAgainGameButton = document.getElementById("play-again-game");
 const roundWinnerElement = document.getElementById("round-winner");
 const currentTurnElement = document.getElementById("current-turn");
 const roundWinnerTextElement = document.getElementById("round-winner-text");
+const currentTurnBlock = document.querySelector("#live-game > div.current-turn");
+
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -217,7 +219,7 @@ applyConfigButton.addEventListener("click", async () => {
       playAgainGameButton.classList.add("hidden");
       currentTurnElement.classList.remove("hidden");
       roundWinnerElement.classList.add("hidden");
-
+      currentTurnBlock.classList.remove("hidden");
     } else {
         console.error("Unknown screen:", data.screen);
     }
@@ -293,7 +295,7 @@ confirmValidRollsButton.addEventListener("click", async () => {
       ExitGameButton.classList.remove("hidden");
       playAgainGameButton.classList.remove("hidden");
       helpButton.classList.add("hidden");
-      document.querySelector("#live-game > div.current-turn").classList.add("hidden");
+      currentTurnBlock.classList.add("hidden");
       roundWinnerElement.classList.remove("hidden");
       roundWinnerTextElement.textContent = data.winner + " wins!";
     }
