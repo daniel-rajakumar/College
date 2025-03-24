@@ -251,12 +251,14 @@ submitDiceButton.addEventListener("click", async () => {
 
 confirmValidRollsButton.addEventListener("click", async () => {
   const validMove = validRollsElement.value;
+  const toCover = document.getElementById("toggle-switch").checked;
+  console.log("Valid move:",toCover);
   const response = await fetch("http://localhost:3000/api/game/valid-move", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ validMove }),
+    body: JSON.stringify({ validMove, toCover }),
   });
 
   if (response.ok) {
