@@ -5,11 +5,8 @@ const Tournament = require("../models/Tournament");
 
 class Game {
 
-  constructor(tournamentRef, boardSize = 11, player1Type = "human", player2Type = "computer") {
-    // let player1board = Array.from({ length: boardSize }, (_, i) => i + 1);
-    // let player2board = Array.from({ length: boardSize }, (_, i) => i + 1);
-    this.tournament = tournamentRef;
-
+  constructor(tournament, boardSize = 11, player1Type = "human", player2Type = "computer") {
+    this.tournament = tournament;
 
     let player1Board = new Board(boardSize);
     let player2Board = new Board(boardSize);
@@ -127,9 +124,7 @@ class Game {
       }
 
           // Apply advantage through tournament reference
-    if (this.tournament && typeof this.tournament.applyAdvantage === 'function') {
       this.tournament.applyAdvantage(winner, winnerPoints);
-    }
 
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);
       this.resetGame(); // Reset the game for a new round

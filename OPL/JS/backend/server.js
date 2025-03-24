@@ -105,7 +105,9 @@ app.post("/api/game/save", (req, res) => {
 
 app.post("/api/game/new", (req, res) => {
   const { boardSize, player1Type, player2Type } = req.body;
-  tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
+
+  console.log("new game: " + tournament)
+  tournament.game = new Game(boardSize, player1Type, player2Type);
   tournament.game.players.player1.score = 0;  // Explicitly reset scores
   tournament.game.players.player2.score = 0;
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
@@ -116,9 +118,11 @@ app.post("/api/game/play-again", (req, res) => {
   const { boardSize, player1Type, player2Type } = req.body;
   const player1Score = tournament.game.players.player1.score;
   const player2Score = tournament.game.players.player2.score;
-  tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
+
+  tournament.game = new Game(boardSize, player1Type, player2Type);
   tournament.game.players.player1.score = player1Score;  // Preserve scores
   tournament.game.players.player2.score = player2Score;
+
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
 });
@@ -201,7 +205,7 @@ app.post("/api/game/valid-move", (req, res) => {
 app.post("/api/game/load-file", (req, res) => {
   const { body } = req;
 
-  tournament.loadGame(body);
+  tournament.loadGame(tournament, body);
 
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after loading the game
 

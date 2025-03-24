@@ -15,8 +15,8 @@ class Tournament {
     };
   }
 
-  loadGame(state) {
-    this.game = new Game(state.player1Squares.length);
+  loadGame(tournament, state) {
+    this.game = new Game(tournament, state.player1Squares.length);
 
     // Set the squares for both players
     this.game.players.player1 = state.player1Type === "human" 
