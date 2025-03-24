@@ -95,7 +95,17 @@ app.post("/api/game/roll-dice", (req, res) => {
 });
 
 app.post("/api/game/help", (req, res) => {
-  res.json({ message: "Help: Try to cover your squares or uncover the opponent's squares!" });
+  let move;
+  if (tournament.game.players.player1.type === "human") {
+    move = tournament.game.players.player1.requestHelp(tournament.game.getDice().total, tournament.game.players.player2.board);
+  } 
+
+  if (tournament.game.players.player2.type === "human") {
+    move = tournament.game.players.player2.requestHelp(tournament.game.getDice().total, tournament.game.players.player1.board);
+  }
+
+  tournament.game.message = `Computer suggests to ${move.action} ${move.combination}`;
+  res.json({ message: "Help: Try to cover your squares or uncover the opponent's squares!", move });
 });
 
 app.post("/api/game/rewind", (req, res) => {

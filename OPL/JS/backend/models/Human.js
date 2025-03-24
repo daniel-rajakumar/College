@@ -1,4 +1,5 @@
 const Player = require("../models/Player");
+const Computer = require("../models/Computer");
 
 class Human extends Player {
   constructor(board) {
