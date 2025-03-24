@@ -27,7 +27,7 @@ class Game {
   }
 
   switchTurn() {
-    this.currentPlayer = this.currentPlayer === "player1" ? "player1" : "player2";
+    this.currentPlayer = this.currentPlayer === "player1" ? "player2" : "player1";
   }
 
   setScreen(screen) {

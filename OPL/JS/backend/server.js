@@ -93,6 +93,15 @@ app.post("/api/game/valid-move", (req, res) => {
   const { validMove, toCover } = req.body;
   console.log("Valid move: ", validMove, toCover);
 
+  if (validMove.length === 0) {
+    console.log("Current player: ", tournament.game.currentPlayer);
+    tournament.game.switchTurn();
+    console.log("Switching turn to: ", tournament.game.currentPlayer);
+
+    res.json({ message: "No valid move found. Switching turn." });
+    return;
+  }
+
   const currentPlayer = tournament.game.currentPlayer;
   let currentPlayerBoard, opponentBoard;
 
@@ -103,21 +112,26 @@ app.post("/api/game/valid-move", (req, res) => {
       currentPlayerBoard = tournament.game.players.player2.squares;
     }
 
-    for (const square of validMove) {
-      currentPlayerBoard.coverSquare(square);
-    }
   } else {
     if (currentPlayer === "player1") {
       opponentBoard = tournament.game.players.player2.squares;
     } else {
       opponentBoard = tournament.game.players.player1.squares;
     }
+  }
+    
 
+
+
+  if (toCover) {
+    for (const square of validMove) {
+      currentPlayerBoard.coverSquare(square);
+    }
+  } else {
     for (const square of validMove) {
       opponentBoard.uncoverSquare(square);
     }
   }
-  
 
   res.json({ message: `You selected: ${validMove}` });
 });
