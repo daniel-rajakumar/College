@@ -117,7 +117,7 @@ app.post("/api/game/valid-move", (req, res) => {
       opponentBoard.uncoverSquare(square);
     }
   }
-
+  
 
   res.json({ message: `You selected: ${validMove}` });
 });
