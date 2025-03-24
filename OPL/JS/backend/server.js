@@ -89,6 +89,23 @@ app.post("/api/game/new", (req, res) => {
 
 app.post("/api/game/valid-move", (req, res) => {
   const { validMove } = req.body;
+  console.log("Valid move: ", validMove);
+
+  const currentPlayer = tournament.game.currentPlayer;
+  let currentPlayerBoard, opponentBoard;
+
+  if (currentPlayer === "player1") {
+    currentPlayerBoard = tournament.game.players.player1.squares;
+    opponentBoard = tournament.game.players.player2.squares;
+  } else {
+    currentPlayerBoard = tournament.game.players.player2.squares;
+    opponentBoard = tournament.game.players.player1.squares;
+  }
+
+  for (const square of validMove) {
+    currentPlayerBoard.coverSquare(square);
+  }
+
   res.json({ message: `You selected: ${validMove}` });
 });
 

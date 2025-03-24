@@ -271,6 +271,7 @@ confirmValidRollsButton.addEventListener("click", async () => {
     coverSwitchElement.classList.add("hidden");
     rewindButton.classList.remove("hidden");
     saveGameButton.classList.remove("hidden");
+    updateUI();
   }
 });
 
