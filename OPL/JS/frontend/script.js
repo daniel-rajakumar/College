@@ -35,10 +35,8 @@ const toggleSwitchElement = document.getElementById("toggle-switch");
 const ExitGameButton = document.getElementById("exit-game");
 const playAgainGameButton = document.getElementById("play-again-game");
 const roundWinnerElement = document.getElementById("round-winner");
-const currentTurnElement = document.getElementById("current-turn");
 const roundWinnerTextElement = document.getElementById("round-winner-text");
-const currentTurnBlock = document.querySelector("#live-game > div.current-turn");
-
+const currentTurnElement = document.querySelector("#live-game > div.current-turn");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -96,7 +94,7 @@ async function updateUI() {
   computerScoreElement.textContent = state.player2.score;
   diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";
   gameMessageElement.textContent = state.message || "";
-  currentTurnElement.textContent = state.currentPlayer || "Unknown";
+  currentTurnElement.textContent = "Current Turn: " + (state.currentPlayer || "Unknown");
   diceResultElement.textContent = "Dice: " + state.dice.total || "No dice rolled yet.";
   document.querySelector("#human-board > h2").innerHTML = "Player 1: " + state.player1.type;
   document.querySelector("#computer-board > h2").innerHTML = "Player 2: " + state.player2.type;
@@ -211,15 +209,11 @@ applyConfigButton.addEventListener("click", async () => {
       updateUI();
 
       rollDiceButton.classList.remove("hidden");
-      // rewindButton.classList.add("hidden");
-      // saveGameButton.classList.add("hidden");
       helpButton.classList.add("hidden");
       coverSwitchElement.classList.add("hidden");
       ExitGameButton.classList.add("hidden");
       playAgainGameButton.classList.add("hidden");
       currentTurnElement.classList.remove("hidden");
-      roundWinnerElement.classList.add("hidden");
-      currentTurnBlock.classList.remove("hidden");
     } else {
         console.error("Unknown screen:", data.screen);
     }
@@ -295,12 +289,16 @@ confirmValidRollsButton.addEventListener("click", async () => {
       ExitGameButton.classList.remove("hidden");
       playAgainGameButton.classList.remove("hidden");
       helpButton.classList.add("hidden");
-      currentTurnBlock.classList.add("hidden");
-      roundWinnerElement.classList.remove("hidden");
-      roundWinnerTextElement.textContent = data.winner + " wins!";
+      currentTurnElement.classList.add("hidden");
+      alert("Winner: " + data.winner);
     }
 
     updateUI();
+
+    // if (data.gameOver) {
+    //   currentTurnElement.textContent = data.winner + " wins!";
+    //   console.log("Winner:", data.winner);
+    // }
   }
 });
 
@@ -332,10 +330,13 @@ fileInput.addEventListener("change", async (event) => {
           updateUI();
 
           rollDiceButton.classList.remove("hidden");
-          rewindButton.classList.add("hidden");
-          saveGameButton.classList.add("hidden");
           helpButton.classList.add("hidden");
           coverSwitchElement.classList.add("hidden");
+          ExitGameButton.classList.add("hidden");
+          playAgainGameButton.classList.add("hidden");
+          currentTurnElement.classList.remove("hidden");
+          fileInput.classList.add("hidden");
+
         } else {
           console.error("Failed to load game state from file");
         }
@@ -442,7 +443,7 @@ async function saveGame() {
     const computerSquares = Array.from(computerSquaresElement.querySelectorAll('.square')).map(square => square.textContent).join(' ');
     const humanScore = humanScoreElement.textContent;
     const computerScore = computerScoreElement.textContent;
-    const currentTurn = currentTurnElement.textContent;
+    const currentTurn = currentTurnElement.textContent.includes("1") ? "player1" : "player2";
 
     // Determine the next turn
     const nextTurn = currentTurn === "player1" ? "player1" : "player2";
