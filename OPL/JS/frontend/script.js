@@ -37,6 +37,7 @@ const playAgainGameButton = document.getElementById("play-again-game");
 const roundWinnerElement = document.getElementById("round-winner");
 const roundWinnerTextElement = document.getElementById("round-winner-text");
 const currentTurnElement = document.querySelector("#live-game > div.current-turn");
+let isNewGame = false;
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -185,7 +186,7 @@ applyConfigButton.addEventListener("click", async () => {
   const boardSize = boardSizeSelect.value;
   const player1Type = player1TypeElement.value;
   const player2Type = player2TypeElement.value;
-  const response = await fetch("http://localhost:3000/api/game/new", {
+  const response = await fetch(`http://localhost:3000/api/game/${isNewGame ? "new" : "play-again"}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -210,7 +211,6 @@ applyConfigButton.addEventListener("click", async () => {
     } else {
         console.error("Unknown screen:", data.screen);
     }
-
 
     // updateUI();
   }
@@ -321,6 +321,12 @@ ExitGameButton.addEventListener("click", async () => {
   showStartUI();
 });
 
+playAgainGameButton.addEventListener("click", async () => {
+  console.log("Playing again");
+  isNewGame = false;
+  showConfigUI("CONFIG");
+});
+
 async function validRolls(validMove = validRollsElement.value, toCover = toggleSwitchElement.checked) {
   console.log("Valid move:", validMove);
   console.log("toCover:", toCover);
@@ -362,8 +368,8 @@ function afterValidRoll(data) {
     playAgainGameButton.classList.remove("hidden");
     helpButton.classList.add("hidden");
     currentTurnElement.classList.add("hidden");
+    document.querySelector("#live-game > div.game-board").classList.add("hidden");
     alert("Winner: " + data.winner);
-    showStartUI();
   }
 }
 
@@ -379,6 +385,8 @@ function showConfigUI(screen) {
 
     preGameElement.classList.remove("hidden");
     liveGameElement.classList.add("hidden");
+
+    document.querySelector("#live-game > div.game-board").classList.remove("hidden");
 
   } else if (screen === "LOAD") {
     initialUI.classList.add("hidden");

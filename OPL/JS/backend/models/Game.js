@@ -10,6 +10,7 @@ class Game {
     // let player2board = Array.from({ length: boardSize }, (_, i) => i + 1);
     this.tournament = tournamentRef;
 
+
     let player1Board = new Board(boardSize);
     let player2Board = new Board(boardSize);
 
