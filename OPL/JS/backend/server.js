@@ -47,14 +47,13 @@ app.post("/api/game/roll-dice", (req, res) => {
     if (currentPlayer === "player1") {
       currentPlayerBoard = tournament.game.players.player1.squares;
       opponentBoard = tournament.game.players.player2.squares;
-      validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
-      validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
     } else {
       currentPlayerBoard = tournament.game.players.player2.squares;
       opponentBoard = tournament.game.players.player1.squares;
-      validCoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, true);
-      validUncoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, false);
     }
+
+    validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
+    validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
 
     // Find valid combinations for covering and uncovering
   
@@ -144,15 +143,14 @@ app.post("/api/game/toggle", (req, res) => {
   if (tournament.game.currentPlayer === "player1") {
     currentPlayerBoard = tournament.game.players.player1.squares;
     opponentBoard = tournament.game.players.player2.squares;
-    validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
-    validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
 
   } else {
     currentPlayerBoard = tournament.game.players.player2.squares;
     opponentBoard = tournament.game.players.player1.squares
-    validCoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, true);
-    validUncoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, false);
   }
+
+  validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
+  validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
 
   if (checked)
     res.json(validCoverCombinations);
