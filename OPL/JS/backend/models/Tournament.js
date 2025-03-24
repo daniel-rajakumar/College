@@ -1,5 +1,7 @@
 const Game = require("../models/Game");
 const Board = require("./Board");
+const Human = require("./Human");
+const Computer = require("./Computer");
 
 
 class Tournament {
@@ -29,8 +31,8 @@ class Tournament {
     : new Computer(new Board(state.player2Squares.length), this.game.tournament);
 
 
-    this.game.players.player1.squares.setSquareValues(state.player1Squares);
-    this.game.players.player2.squares.setSquareValues(state.player2Squares);
+    this.game.players.player1.board.setSquareValues(state.player1Squares);
+    this.game.players.player2.board.setSquareValues(state.player2Squares);
 
     // Set the scores for both players
     this.game.players.player1.score = state.player1Score;

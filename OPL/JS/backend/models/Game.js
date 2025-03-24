@@ -123,7 +123,7 @@ class Game {
         this.players.player2.score += winnerPoints;
       }
 
-      tournament.applyAdvantage(winner, winnerPoints);
+      this.tournament.applyAdvantage(winner, winnerPoints);
 
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);
       this.resetGame(); // Reset the game for a new round
@@ -142,7 +142,7 @@ class Game {
 
 
   resetGame() {
-    tournament.clearAdvantage();
+    this.tournament.clearAdvantage();
     this.players.player1.board = new Board(this.boardSize);
     this.players.player2.board = new Board(this.boardSize);
     this.currentPlayer = "player1";
@@ -166,11 +166,7 @@ class Game {
       currentPlayer: this.currentPlayer,
       dice: this.dice,
       screen: this.screen,
-      advantage: {
-        square: this.tournament.advantage.square,
-        applied: this.tournament.advantage.applied,
-        player: this.tournament.advantage.player
-      },
+      advantage: this.tournament.advantage,
       message: this.message,
     };
   }

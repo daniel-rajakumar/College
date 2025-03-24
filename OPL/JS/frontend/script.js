@@ -321,8 +321,15 @@ ExitGameButton.addEventListener("click", async () => {
   showStartUI();
 });
 
-async function validRolls(validMove = validRollsElement.value, toCover = toggleSwitchElement.checked) {
-  console.log("Valid move:", toCover);
+async function validRolls(validMove, toCover) {
+
+
+
+  validMove = validRollsElement.value;
+  toCover = toggleSwitchElement.checked;
+
+  console.log("Valid move:", validMove);
+  console.log("toCover:", toCover);
   const response = await fetch("http://localhost:3000/api/game/valid-move", {
     method: "POST",
     headers: {
@@ -397,7 +404,6 @@ function afterDieRoll(data){
     if (data.currentPlayer === "player1" && data.player1.type === "computer"
     ||  data.currentPlayer === "player2" && data.player2.type === "computer") {
       validRolls(data.move.combination, data.move.action === "cover")
-      updateUI();
       // return;
     }
 
@@ -464,7 +470,7 @@ async function saveGame() {
     const currentTurn = currentTurnElement.textContent.includes("1") ? "player1" : "player2";
 
     // Determine the next turn
-    const nextTurn = currentTurn === "player1" ? "player1" : "player2";
+    const nextTurn = currentTurn === "player1" ? "player2" : "player1";
 
     // Format the game state as a string
     const gameStateString = `

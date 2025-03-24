@@ -1,11 +1,10 @@
-
     Computer:
-      Squares: 0 0 0 0 5 0 7 0 9
+      Squares: 0 0 0 0 5 0 0 0 0
       Score: 0
 
     Human:
-      Squares: 0 0 0 0 0 0 0 8 0
+      Squares: 0 0 0 0 5 0 0 0 9
       Score: 0
 
-    First Turn: player1
-    Next Turn: player1
+    First Turn: player2
+    Next Turn: player2
