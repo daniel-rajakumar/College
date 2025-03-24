@@ -55,7 +55,7 @@ class Game {
     const player2Board = player2.squares;
 
     if (!player1.hasFirstTurnBeenPlayed || !player2.hasFirstTurnBeenPlayed) 
-      return false;
+      return null;
 
     // Check if player1 has won by covering all their squares
     if (player1Board.allCovered()) {
@@ -118,10 +118,10 @@ class Game {
 
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);
       this.resetGame(); // Reset the game for a new round
-      return true;
+      return winner;
     } else {
       console.log("The game continues...");
-      return false;
+      return null;
     }
   }
 

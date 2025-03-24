@@ -17,7 +17,6 @@ const boardSizeSelect = document.getElementById("board-size");
 const applyConfigButton = document.getElementById("apply-config");
 const preGameElement = document.getElementById("pre-game");
 const liveGameElement = document.getElementById("live-game");
-const currentTurnElement = document.getElementById("current-turn");
 const inputDiceButton = document.getElementById("input-dice");
 const diceModalElement = document.getElementById("dice-modal");
 const gameUIElement = document.getElementById("game-ui");
@@ -33,6 +32,11 @@ const humanBoardElement = document.getElementById("human-board");
 const player1TypeElement = document.getElementById("player1-type-select");
 const player2TypeElement = document.getElementById("player2-type-select");
 const toggleSwitchElement = document.getElementById("toggle-switch");
+const ExitGameButton = document.getElementById("exit-game");
+const playAgainGameButton = document.getElementById("play-again-game");
+const roundWinnerElement = document.getElementById("round-winner");
+const currentTurnElement = document.getElementById("current-turn");
+const roundWinnerTextElement = document.getElementById("round-winner-text");
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -209,6 +213,10 @@ applyConfigButton.addEventListener("click", async () => {
       // saveGameButton.classList.add("hidden");
       helpButton.classList.add("hidden");
       coverSwitchElement.classList.add("hidden");
+      ExitGameButton.classList.add("hidden");
+      playAgainGameButton.classList.add("hidden");
+      currentTurnElement.classList.remove("hidden");
+      roundWinnerElement.classList.add("hidden");
 
     } else {
         console.error("Unknown screen:", data.screen);
@@ -264,7 +272,7 @@ confirmValidRollsButton.addEventListener("click", async () => {
 
   if (response.ok) {
     const data = await response.json();
-    console.log("User selected dice response:", validMove); // Log the result
+    console.log("User selected dice response:", data); // Log the result
 
     diceResultElement.classList.add("hidden");
     rollDiceButton.classList.remove("hidden");
@@ -279,6 +287,15 @@ confirmValidRollsButton.addEventListener("click", async () => {
       console.log("Game over!");
       rewindButton.classList.add("hidden");
       saveGameButton.classList.add("hidden");
+      rewindButton.classList.add("hidden");
+      inputDiceButton.classList.add("hidden");
+      rollDiceButton.classList.add("hidden");
+      ExitGameButton.classList.remove("hidden");
+      playAgainGameButton.classList.remove("hidden");
+      helpButton.classList.add("hidden");
+      document.querySelector("#live-game > div.current-turn").classList.add("hidden");
+      roundWinnerElement.classList.remove("hidden");
+      roundWinnerTextElement.textContent = data.winner + " wins!";
     }
 
     updateUI();
@@ -347,9 +364,14 @@ toggleSwitchElement.addEventListener("change", async () => {
   }
 });
 
+ExitGameButton.addEventListener("click", async () => {
+  console.log("Exiting game");
+  showStartUI();
+});
+
 function showStartUI() {
-  // initialUI.classList.remove("hidden");
-  // regularUI.classList.add("hidden");
+  initialUI.classList.remove("hidden");
+  regularUI.classList.add("hidden");
 }
 
 function showConfigUI(screen) {
@@ -424,16 +446,17 @@ async function saveGame() {
     const nextTurn = currentTurn === "player1" ? "player1" : "player2";
 
     // Format the game state as a string
-    const gameStateString = `Computer:
-                              Squares: ${computerSquares}
-                              Score: ${computerScore}
+    const gameStateString = `
+    Computer:
+      Squares: ${computerSquares}
+      Score: ${computerScore}
 
-                            Human:
-                              Squares: ${humanSquares}
-                              Score: ${humanScore}
+    Human:
+      Squares: ${humanSquares}
+      Score: ${humanScore}
 
-                            First Turn: ${currentTurn}
-                            Next Turn: ${nextTurn}`;
+    First Turn: ${currentTurn}
+    Next Turn: ${nextTurn}`;
 
     // Create a Blob with the game state string
     const blob = new Blob([gameStateString], { type: "text/plain;charset=utf-8" });
@@ -455,6 +478,7 @@ async function saveGame() {
     await writableStream.close();
 
     console.log("Game saved successfully!");
+    showStartUI();
   } catch (error) {
     console.error("Error saving the game:", error);
     alert("Failed to save the game. Please try again.");

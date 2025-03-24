@@ -137,10 +137,11 @@ app.post("/api/game/valid-move", (req, res) => {
     }
   }
 
-  if (tournament.game.isGameOver()) {
+  let winner = tournament.game.isGameOver();
+  if (winner !== null) {
     tournament.game.declareWinner();
 
-    res.json({ gameOver: true, message: "Game over!" });
+    res.json({ winner, gameOver: true, message: "Game over!" });
     return;
   }
 
