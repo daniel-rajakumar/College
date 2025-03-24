@@ -1,6 +1,7 @@
 const Game = require("../models/Game");
 const Board = require("./Board");
 
+
 class Tournament {
   constructor() {
     this.game = new Game();

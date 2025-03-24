@@ -30,7 +30,7 @@ app.post("/api/game/load", (req, res) => {
 
 app.post("/api/game/roll-dice", (req, res) => {
     // Roll the dice
-    const diceResult = tournament.game.rollDice();
+    tournament.game.rollDice();
     tournament.game.setScreen("PLAY"); // Set the screen to PLAY after rolling dice
   
     // Get the current player's board and the opponent's board
@@ -44,15 +44,14 @@ app.post("/api/game/roll-dice", (req, res) => {
       currentPlayerBoard = tournament.game.players.player2.squares;
       opponentBoard = tournament.game.players.player1.squares;
     }
-  
+
     // Find valid combinations for covering and uncovering
-    const validCoverCombinations = currentPlayerBoard.findValidCombinations(diceResult.total, true);
-    const validUncoverCombinations = opponentBoard.findValidCombinations(diceResult.total, false);
+    const validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
+    const validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
   
     // Prepare the response
     const response = {
       ...tournament.getState(), // Current game state
-      diceResult, // Dice roll result
       validCoverCombinations, // Valid combinations for covering
       validUncoverCombinations, // Valid combinations for uncovering
     };

@@ -81,6 +81,8 @@ async function fetchGameState() {
 async function updateUI() {
   const state = await fetchGameState();
 
+  console.log("State from updateUI:", state);
+
   renderSquares(humanSquaresElement, state.player1.squares);
   renderSquares(computerSquaresElement, state.player2.squares);
   humanScoreElement.textContent = state.player1.score;
@@ -88,8 +90,7 @@ async function updateUI() {
   diceRollElement.textContent = state.diceRoll || "No dice rolled yet.";
   gameMessageElement.textContent = state.message || "";
   currentTurnElement.textContent = state.currentPlayer || "Unknown";
-  diceResultElement.textContent = "Dice: " + state.diceRoll || "No dice rolled yet.";
-
+  diceResultElement.textContent = "Dice: " + state.dice.total || "No dice rolled yet.";
   document.querySelector("#human-board > h2").innerHTML = "Player 1: " + state.player1.type;
   document.querySelector("#computer-board > h2").innerHTML = "Player 2: " + state.player2.type;
 }
@@ -355,8 +356,7 @@ function afterDieRoll(data){
     rewindButton.classList.add("hidden");
     saveGameButton.classList.add("hidden");
 
-    const validRolls = ["one", "two", "three"];
-    populateStringSelect(validRolls);
+    populateStringSelect(data.validCoverCombinations || []);
 
     console.log("Data from afterDieRoll:", data);
 

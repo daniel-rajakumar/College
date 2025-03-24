@@ -17,12 +17,13 @@ class Game {
     };
     this.currentPlayer = "player1"; // Start with Player 1
     this.screen = "START";
+    this.dice = { dice1: 0, dice2: 0, total: 0 };
   }
 
   rollDice() {
     const dice1 = Math.floor(Math.random() * 6) + 1;
     const dice2 = Math.floor(Math.random() * 6) + 1;
-    return { dice1, dice2, total: dice1 + dice2 };
+    this.dice = { dice1, dice2, total: dice1 + dice2 };
   }
 
   switchTurn() {
@@ -31,6 +32,10 @@ class Game {
 
   setScreen(screen) {
     this.screen = screen;
+  }
+
+  getDice() {
+    return this.dice;
   }
 
   getState() {
@@ -46,6 +51,7 @@ class Game {
         score: this.players.player2.score,
       },
       currentPlayer: this.currentPlayer,
+      dice: this.dice,
       screen: this.screen,
     };
   }

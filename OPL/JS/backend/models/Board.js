@@ -59,7 +59,7 @@ class Board {
 
     backtrack(1, [], sum);
 
-    console.log(`Found ${combinations.length} valid combinations for ${forCovering ? "covering" : "uncovering"}`);
+    // console.log(`Found ${combinations.length} valid combinations for ${forCovering ? "covering" : "uncovering"}`);
     return combinations;
   }
 
