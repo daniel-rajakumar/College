@@ -122,9 +122,10 @@ class Game {
 
         this.players.player2.score += winnerPoints;
       }
-
-          // Apply advantage through tournament reference
-      this.tournament.applyAdvantage(winner, winnerPoints);
+      // Apply advantage
+      if (this.tournament) {
+        this.tournament.applyAdvantage(winner, winnerPoints);
+      }
 
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);
       this.resetGame(); // Reset the game for a new round
@@ -133,6 +134,21 @@ class Game {
       console.log("The game continues...");
       return null;
     }
+  }
+
+
+  determineFirstPlayer() {
+    // Roll dice to determine first player
+    let player1Roll = Math.floor(Math.random() * 6) + 1;
+    let player2Roll = Math.floor(Math.random() * 6) + 1;
+    
+    if (player1Roll === player2Roll) {
+      return this.determineFirstPlayer(); // Re-roll if tie
+    }
+    
+    const firstPlayer = player1Roll > player2Roll ? 'player1' : 'player2';
+    this.tournament.setFirstPlayer(firstPlayer);
+    return firstPlayer;
   }
 
 

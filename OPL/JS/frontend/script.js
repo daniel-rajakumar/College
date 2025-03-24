@@ -37,7 +37,7 @@ const playAgainGameButton = document.getElementById("play-again-game");
 const roundWinnerElement = document.getElementById("round-winner");
 const roundWinnerTextElement = document.getElementById("round-winner-text");
 const currentTurnElement = document.querySelector("#live-game > div.current-turn");
-let isNewGame = false;
+let isNewGame = true;
 
 // Show the regular UI and hide the initial UI
 function showRegularUI() {
@@ -276,6 +276,8 @@ fileInput.addEventListener("change", async (event) => {
       try {
         // Parse the file content
         const gameState = parseGameState(content);
+        gameState.player1Type = "human";
+        gameState.player2Type = "computer";
 
         // Send the parsed game state to the backend
         const response = await fetch("http://localhost:3000/api/game/load-file", {
@@ -584,6 +586,10 @@ function parseGameState(content) {
       gameState.currentPlayer = line.includes("Human") ? "player1" : "player2";
     }
   }
+
+  gameState.firstTurn = gameState.currentPlayer == "player1" ? "player2" : "player1";
+
+  console.log("Parsed game state:", gameState);
 
   return gameState;
 }

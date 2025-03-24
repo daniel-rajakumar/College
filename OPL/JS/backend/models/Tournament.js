@@ -11,8 +11,14 @@ class Tournament {
     this.advantage = {
       square: null,
       applied: false,
-      player: null
+      player: null,
+      firstPlayer: null
+      
     };
+  }
+
+  setFirstPlayer(player) {
+    this.advantage.firstPlayer = player;
   }
 
   loadGame(tournament, state) {
@@ -49,6 +55,7 @@ class Tournament {
 
     // Mark the game as not new
     this.isANewGame = false;
+    this.advantage.firstPlayer = state.currentPlayer;
 
     console.log("Game loaded successfully!", this.game.getState());
   }
@@ -70,12 +77,32 @@ class Tournament {
   }
 
   applyAdvantage(winner, winnerScore) {
+    // Calculate advantage square
     this.advantage.square = this.calculateAdvantageSquare(winnerScore);
     this.advantage.applied = true;
-    this.advantage.player = winner;
+    
+    // Determine who gets advantage
+    if (winner === this.advantage.firstPlayer) {
+      // Winner was first player - advantage goes to opponent
+      this.advantage.player = winner === 'player1' ? 'player2' : 'player1';
+    } else {
+      // Winner was second player - keeps advantage
+      this.advantage.player = winner;
+    }
 
-    const opponent = winner === 'player1' ? 'player2' : 'player1';
+    // Cover the advantage square on opponent's board
+    const opponent = this.advantage.player === 'player1' ? 'player2' : 'player1';
     this.game.players[opponent].board.coverSquare(this.advantage.square);
+    
+    console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
+  }
+
+  canUncoverAdvantage(currentPlayer) {
+    // Can't uncover advantage square until advantage player has had a turn
+    if (!this.advantage.applied) return true;
+    
+    // If current player is NOT the advantage player, can't uncover advantage square
+    return currentPlayer === this.advantage.player;
   }
 
   clearAdvantage() {

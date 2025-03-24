@@ -56,37 +56,42 @@ class Board {
     }, 0);
   }
 
+
+
   findValidCombinations(sum, forCovering) {
     const combinations = [];
-    const advantageSquare = this.tournament?.getAdvantageSquare();
-    const advantageApplied = this.tournament?.getAdvantageApplied();
-    const isOpponentBoard = !forCovering; // When uncovering, we're working with opponent's board
+    const advantageSquare = this.game?.tournament?.getAdvantageSquare();
+    const advantageApplied = this.game?.tournament?.getAdvantageApplied();
+    const isOpponentBoard = !forCovering;
+    const currentPlayer = this.game?.currentPlayer;
+
+    const canUncover = this.game?.tournament?.canUncoverAdvantage(currentPlayer);
 
     const backtrack = (start, path, remaining) => {
-        if (remaining === 0) {
-            if (this.isValidCombination(path, forCovering)) {
-                // Only add combination if it doesn't include protected advantage square
-                if (!(advantageApplied && isOpponentBoard && path.includes(advantageSquare))) {
-                    combinations.push([...path]);
-                }
-            }
-            return;
+      if (remaining === 0) {
+        if (this.isValidCombination(path, forCovering)) {
+          // Skip combinations with protected advantage square
+          if (!(advantageApplied && isOpponentBoard && path.includes(advantageSquare) && !canUncover)) {
+            combinations.push([...path]);
+          }
+        }
+        return;
+      }
+
+      for (let i = start; i <= this.size; i++) {
+        // Skip advantage square if it's protected
+        if (advantageApplied && isOpponentBoard && i === advantageSquare && !canUncover) {
+          continue;
         }
 
-        for (let i = start; i <= this.size; i++) {
-            // Skip advantage square if it's protected on opponent's board
-            if (advantageApplied && isOpponentBoard && i === advantageSquare) {
-                continue;
-            }
-
-            if ((forCovering && !this.isSquareCovered(i)) || (!forCovering && this.isSquareCovered(i))) {
-                if (i <= remaining) {
-                    path.push(i);
-                    backtrack(i + 1, path, remaining - i);
-                    path.pop();
-                }
-            }
+        if ((forCovering && !this.isSquareCovered(i)) || (!forCovering && this.isSquareCovered(i))) {
+          if (i <= remaining) {
+            path.push(i);
+            backtrack(i + 1, path, remaining - i);
+            path.pop();
+          }
         }
+      }
     };
 
     backtrack(1, [], sum);

@@ -110,6 +110,10 @@ app.post("/api/game/new", (req, res) => {
   tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
   tournament.game.players.player1.score = 0;  // Explicitly reset scores
   tournament.game.players.player2.score = 0;
+
+  const firstPlayer = tournament.game.determineFirstPlayer();
+  tournament.game.currentPlayer = firstPlayer;
+
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
 });
@@ -123,6 +127,8 @@ app.post("/api/game/play-again", (req, res) => {
   tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
   tournament.game.players.player1.score = player1Score;  // Preserve scores
   tournament.game.players.player2.score = player2Score;
+
+  tournament.game.currentPlayer = tournament.advantage.firstPlayer;
 
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
