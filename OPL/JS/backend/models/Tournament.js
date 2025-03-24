@@ -11,6 +11,9 @@ class Tournament {
   loadGame(state) {
     this.game = new Game(state.player1Squares.length);
 
+    this.game.players.player1.hasFirstTurnBeenPlayed = true;
+    this.game.players.player2.hasFirstTurnBeenPlayed = true;
+
     // Set the squares for both players
     this.game.players.player1.squares = new Board(state.player1Squares.length);
     this.game.players.player2.squares = new Board(state.player2Squares.length);

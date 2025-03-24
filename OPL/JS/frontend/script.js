@@ -415,9 +415,19 @@ function afterDieRoll(data){
 
     console.log("Data from afterDieRoll:", data);
 
-    if (data.player1.type === "human" || data.player2.type === "human") {
+    if (data.currentPlayer === "player1" && data.player1.type === "human") {
       helpButton.classList.remove("hidden");
-    } else if (data.player1.type === "computer" || data.player2.type === "computer") {
+    }
+
+    if (data.currentPlayer === "player2" && data.player2.type === "human") {
+      helpButton.classList.remove("hidden");
+    }
+
+    if (data.currentPlayer === "player1" && data.player1.type === "computer") {
+      helpButton.classList.add("hidden");
+    }
+
+    if (data.currentPlayer === "player2" && data.player2.type === "computer") {
       helpButton.classList.add("hidden");
     }
 
