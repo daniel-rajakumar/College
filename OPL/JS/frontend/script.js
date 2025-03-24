@@ -230,11 +230,11 @@ closeButton.addEventListener("click", () => {
 });
 
 submitDiceButton.addEventListener("click", async () => {
-  const dice1 = document.getElementById("dice1").value;
-  const dice2 = document.getElementById("dice2").value;
-  const inputDice = [parseInt(dice1), parseInt(dice2)];
+  const dice1 = parseInt(document.getElementById("dice1").value);
+  const dice2 = parseInt(document.getElementById("dice2").value);
+  const inputDice = [dice1, dice2];
 
-  const response = await fetch("http://localhost:3000/api/game/input-dice", {
+  const response = await fetch("http://localhost:3000/api/game/roll-dice", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

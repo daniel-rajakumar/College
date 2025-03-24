@@ -29,8 +29,14 @@ app.post("/api/game/load", (req, res) => {
 });
 
 app.post("/api/game/roll-dice", (req, res) => {
+    const { inputDice } = req.body;
+
     // Roll the dice
-    tournament.game.rollDice();
+    if (inputDice != null) {
+      tournament.game.setDice(inputDice[0], inputDice[1]);
+    } else {
+      tournament.game.rollDice();
+    }
     tournament.game.setScreen("PLAY"); // Set the screen to PLAY after rolling dice
   
     // Get the current player's board and the opponent's board
@@ -79,11 +85,6 @@ app.post("/api/game/new", (req, res) => {
   tournament.game = new Game(boardSize, player1Type, player2Type);
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
-});
-
-app.post("/api/game/input-dice", (req, res) => {
-  const { inputDice } = req.body;
-  res.json({ message: `You entered: ${inputDice}` });
 });
 
 app.post("/api/game/valid-move", (req, res) => {

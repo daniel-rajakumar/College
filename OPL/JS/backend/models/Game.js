@@ -38,6 +38,10 @@ class Game {
     return this.dice;
   }
 
+  setDice(dice1 = 0, dice2 = 0) {
+    this.dice = { dice1, dice2, total: dice1 + dice2 };
+  }
+
   getState() {
     return {
       player1: {
