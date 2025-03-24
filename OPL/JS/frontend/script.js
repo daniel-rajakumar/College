@@ -321,13 +321,7 @@ ExitGameButton.addEventListener("click", async () => {
   showStartUI();
 });
 
-async function validRolls(validMove, toCover) {
-
-
-
-  validMove = validRollsElement.value;
-  toCover = toggleSwitchElement.checked;
-
+async function validRolls(validMove = validRollsElement.value, toCover = toggleSwitchElement.checked) {
   console.log("Valid move:", validMove);
   console.log("toCover:", toCover);
   const response = await fetch("http://localhost:3000/api/game/valid-move", {
@@ -343,7 +337,6 @@ async function validRolls(validMove, toCover) {
     console.log("User selected dice response:", data); // Log the result
 
     afterValidRoll(data);
-
     updateUI();
   }
 }
@@ -370,6 +363,7 @@ function afterValidRoll(data) {
     helpButton.classList.add("hidden");
     currentTurnElement.classList.add("hidden");
     alert("Winner: " + data.winner);
+    showStartUI();
   }
 }
 

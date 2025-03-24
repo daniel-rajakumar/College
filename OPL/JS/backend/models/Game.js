@@ -5,26 +5,28 @@ const Tournament = require("../models/Tournament");
 
 class Game {
 
-  constructor(tournament, boardSize = 11, player1Type = "human", player2Type = "computer") {
+  constructor(tournamentRef, boardSize = 11, player1Type = "human", player2Type = "computer") {
     // let player1board = Array.from({ length: boardSize }, (_, i) => i + 1);
     // let player2board = Array.from({ length: boardSize }, (_, i) => i + 1);
-    this.tournament = tournament;
+    this.tournament = tournamentRef;
 
     let player1Board = new Board(boardSize);
     let player2Board = new Board(boardSize);
 
     this.players = {
       player1: player1Type === "human" 
-        ? new Human(player1Board, tournament) 
-        : new Computer(player1Board, tournament),
+        ? new Human(player1Board, this) 
+        : new Computer(player1Board, this),
       player2: player2Type === "human" 
-        ? new Human(player2Board, tournament) 
-        : new Computer(player2Board, tournament)
+        ? new Human(player2Board, this) 
+        : new Computer(player2Board, this)
     };
     this.currentPlayer = "player1"; // Start with Player 1
     this.screen = "START";
     this.dice = { dice1: 0, dice2: 0, total: 0 };
     this.message = "";
+    this.hasFirstTurnBeenPlayed = false;
+    this.gameOver = false;  
   }
 
   rollDice() {
@@ -123,7 +125,10 @@ class Game {
         this.players.player2.score += winnerPoints;
       }
 
+          // Apply advantage through tournament reference
+    if (this.tournament && typeof this.tournament.applyAdvantage === 'function') {
       this.tournament.applyAdvantage(winner, winnerPoints);
+    }
 
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);
       this.resetGame(); // Reset the game for a new round
@@ -142,7 +147,7 @@ class Game {
 
 
   resetGame() {
-    this.tournament.clearAdvantage();
+    // this.players.player1.tournament.clearAdvantage();
     this.players.player1.board = new Board(this.boardSize);
     this.players.player2.board = new Board(this.boardSize);
     this.currentPlayer = "player1";
@@ -168,6 +173,7 @@ class Game {
       screen: this.screen,
       advantage: this.tournament.advantage,
       message: this.message,
+      fullGame: this.players,
     };
   }
 }

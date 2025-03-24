@@ -46,19 +46,38 @@ class Computer extends Player {
   }
 
   findBestCombination(board, sum, forCovering) {
-    const validCombinations = board.findValidCombinations(sum, forCovering);
-    
-    if (this.tournament?.getAdvantageApplied()) {
-      const advantageSquare = this.tournament.getAdvantageSquare();
-      const advantagePlayer = this.tournament.getAdvantagePlayer();
-      const currentPlayer = this === this.tournament.game.players.player1 ? 'player1' : 'player2';
-      
-      if (advantagePlayer !== currentPlayer) {
-        return validCombinations.filter(combo => !combo.includes(advantageSquare));
+    const combinations = [];
+    const advantageSquare = this.game?.tournament?.getAdvantageSquare();
+    const advantageApplied = this.game?.tournament?.getAdvantageApplied();
+    const isOpponentBoard = !forCovering;
+
+    const backtrack = (start, path, remaining) => {
+      if (remaining === 0) {
+        if (this.board.isValidCombination(path, forCovering)) {
+          if (!(advantageApplied && isOpponentBoard && path.includes(advantageSquare))) {
+            combinations.push([...path]);
+          }
+        }
+        return;
       }
-    }
-    
-    return validCombinations;
+
+      for (let i = start; i <= board.size; i++) {
+        if (advantageApplied && isOpponentBoard && i === advantageSquare) {
+          continue;
+        }
+
+        if ((forCovering && !board.isSquareCovered(i)) || (!forCovering && board.isSquareCovered(i))) {
+          if (i <= remaining) {
+            path.push(i);
+            backtrack(i + 1, path, remaining - i);
+            path.pop();
+          }
+        }
+      }
+    };
+
+    backtrack(1, [], sum);
+    return combinations;
   }
 
   selectBestCombination(combinations) {

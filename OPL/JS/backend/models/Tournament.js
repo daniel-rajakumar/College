@@ -18,17 +18,14 @@ class Tournament {
   loadGame(state) {
     this.game = new Game(state.player1Squares.length);
 
-    this.game.players.player1.hasFirstTurnBeenPlayed = true;
-    this.game.players.player2.hasFirstTurnBeenPlayed = true;
-
     // Set the squares for both players
     this.game.players.player1 = state.player1Type === "human" 
-    ? new Human(new Board(state.player1Squares.length), this.game.tournament)
-    : new Computer(new Board(state.player1Squares.length), this.game.tournament);
+    ? new Human(new Board(state.player1Squares.length), this.game)
+    : new Computer(new Board(state.player1Squares.length), this.game);
   
   this.game.players.player2 = state.player2Type === "human" 
-    ? new Human(new Board(state.player2Squares.length), this.game.tournament)
-    : new Computer(new Board(state.player2Squares.length), this.game.tournament);
+    ? new Human(new Board(state.player2Squares.length), this.game)
+    : new Computer(new Board(state.player2Squares.length), this.game);
 
 
     this.game.players.player1.board.setSquareValues(state.player1Squares);
@@ -37,6 +34,9 @@ class Tournament {
     // Set the scores for both players
     this.game.players.player1.score = state.player1Score;
     this.game.players.player2.score = state.player2Score;
+
+    this.game.players.player1.hasFirstTurnBeenPlayed = true;
+    this.game.players.player2.hasFirstTurnBeenPlayed = true;
 
     // Set the current player
     this.game.currentPlayer = state.currentPlayer;
