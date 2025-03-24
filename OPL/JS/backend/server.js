@@ -57,21 +57,6 @@ app.post("/api/game/roll-dice", (req, res) => {
     validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
 
 
-    // Check if trying to uncover advantage square
-    // if (!isCover && tournament.getAdvantageApplied()) {
-    //   const advantageSquare = tournament.getAdvantageSquare();
-    //   if (combination.includes(advantageSquare)) {
-    //       const currentPlayer = tournament.game.currentPlayer;
-    //       const advantagePlayer = tournament.getAdvantagePlayer();
-          
-    //       if (currentPlayer !== advantagePlayer) {
-    //           return res.status(400).json({
-    //               error: `Cannot uncover advantage square ${advantageSquare} yet!`,
-    //               valid: false
-    //           });
-    //       }
-    //     }
-    //   }
 
     let move;
 
@@ -136,6 +121,22 @@ app.post("/api/game/valid-move", (req, res) => {
     res.json({ message: "No valid move found. Switching turn." });
     return;
   }
+
+    // Check if trying to uncover advantage square
+    // if (!isCover && tournament.getAdvantageApplied()) {
+    //   const advantageSquare = tournament.getAdvantageSquare();
+    //   if (combination.includes(advantageSquare)) {
+    //       const currentPlayer = tournament.game.currentPlayer;
+    //       const advantagePlayer = tournament.getAdvantagePlayer();
+          
+    //       if (currentPlayer !== advantagePlayer) {
+    //           return res.status(400).json({
+    //               error: `Cannot uncover advantage square ${advantageSquare} yet!`,
+    //               valid: false
+    //           });
+    //       }
+    //     }
+    //   }
 
   const currentPlayer = tournament.game.currentPlayer;
   let currentPlayerBoard, opponentBoard;
