@@ -55,7 +55,8 @@ class Tournament {
 
     // Mark the game as not new
     this.isANewGame = false;
-    this.advantage.firstPlayer = state.currentPlayer;
+    this.advantage.firstPlayer = state.firstTurn;
+    this.advantage.player = state.currentPlayer;
 
     console.log("Game loaded successfully!", this.game.getState());
   }
