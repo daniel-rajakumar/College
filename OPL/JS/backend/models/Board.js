@@ -35,6 +35,28 @@ class Board {
     return false;
   }
 
+  allCovered() {
+    return this.squares.every((square) => square === 0);
+  }
+
+  allUncovered() {
+    return this.squares.every((square) => square !== 0);
+  }
+    
+
+  getCoveredSum() {
+    return this.squares.reduce((sum, square, index) => {
+      return square === 0 ? sum + (index + 1) : sum; // Add the square number if it's covered (0)
+    }, 0);
+  }
+
+  getUncoveredSum() {
+    return this.squares.reduce((sum, square, index) => {
+      return square !== 0 ? sum + (index + 1) : sum; // Add the square number if it's uncovered
+    }, 0);
+  }
+
+
   findValidCombinations(sum, forCovering) {
     const combinations = [];
 

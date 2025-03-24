@@ -27,7 +27,13 @@ class Game {
   }
 
   switchTurn() {
-    this.currentPlayer = this.currentPlayer === "player1" ? "player2" : "player1";
+    if (this.currentPlayer === "player1") {
+      this.players.player1.hasFirstTurnBeenPlayed = true;
+      this.currentPlayer = "player2";
+    } else {
+      this.players.player2.hasFirstTurnBeenPlayed = true;
+      this.currentPlayer = "player1";
+    }
   }
 
   setScreen(screen) {
@@ -40,6 +46,65 @@ class Game {
 
   setDice(dice1 = 0, dice2 = 0) {
     this.dice = { dice1, dice2, total: dice1 + dice2 };
+  }
+
+  isGameOver() {
+    const player1 = this.players.player1;
+    const player2 = this.players.player2;
+    const player1Board = player1.squares;
+    const player2Board = player2.squares;
+
+    if (!player1.hasFirstTurnBeenPlayed || !player2.hasFirstTurnBeenPlayed) 
+      return false;
+
+    // Check if player1 has won by covering all their squares
+    if (player1Board.allCovered()) {
+      this.gameOver = true;
+      return "player1"; // Player 1 wins by covering all squares
+    }
+
+    // Check if player1 has won by uncovering all of player2's squares
+    if (player2Board.allUncovered()) {
+      this.gameOver = true;
+      return "player1"; // Player 1 wins by uncovering all of player2's squares
+    }
+
+    // Check if player2 has won by covering all their squares
+    if (player2Board.allCovered()) {
+      this.gameOver = true;
+      return "player2"; // Player 2 wins by covering all squares
+    }
+
+    // Check if player2 has won by uncovering all of player1's squares
+    if (player1Board.allUncovered()) {
+      this.gameOver = true;
+      return "player2"; // Player 2 wins by uncovering all of player1's squares
+    }
+
+    // If none of the above conditions are met, the game is not over
+    return null;
+  }
+
+  declareWinner() {
+    const winner = this.checkGameOver();
+
+    if (winner) {
+      console.log(`Game over! ${winner} wins!`);
+      this.resetGame(); // Reset the game for a new round
+    } else {
+      console.log("The game continues...");
+    }
+
+    return winner;
+  }
+
+  resetGame() {
+    this.players.player1.board = new Board(this.boardSize);
+    this.players.player2.board = new Board(this.boardSize);
+    this.currentPlayer = "player1";
+    this.screen = "START";
+    this.gameOver = false;
+    console.log("Game has been reset. Starting a new round...");
   }
 
   getState() {
