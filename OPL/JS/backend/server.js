@@ -42,18 +42,21 @@ app.post("/api/game/roll-dice", (req, res) => {
     // Get the current player's board and the opponent's board
     const currentPlayer = tournament.game.currentPlayer;
     let currentPlayerBoard, opponentBoard;
+    let validCoverCombinations, validUncoverCombinations;
 
     if (currentPlayer === "player1") {
       currentPlayerBoard = tournament.game.players.player1.squares;
       opponentBoard = tournament.game.players.player2.squares;
+      validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
+      validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
     } else {
       currentPlayerBoard = tournament.game.players.player2.squares;
       opponentBoard = tournament.game.players.player1.squares;
+      validCoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, true);
+      validUncoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, false);
     }
 
     // Find valid combinations for covering and uncovering
-    const validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
-    const validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
   
     // Prepare the response
     const response = {
@@ -143,6 +146,7 @@ app.post("/api/game/toggle", (req, res) => {
     opponentBoard = tournament.game.players.player2.squares;
     validCoverCombinations = currentPlayerBoard.findValidCombinations(tournament.game.getDice().total, true);
     validUncoverCombinations = opponentBoard.findValidCombinations(tournament.game.getDice().total, false);
+
   } else {
     currentPlayerBoard = tournament.game.players.player2.squares;
     opponentBoard = tournament.game.players.player1.squares
