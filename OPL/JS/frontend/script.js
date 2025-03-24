@@ -141,7 +141,7 @@ rollDiceButton.addEventListener("click", async () => {
   if (response.ok) {
     const data = await response.json();
     console.log("Roll dice response:", data); // Log the result
-
+    // console.log("computer move: " + data.move)
 
     afterDieRoll(data);
   }
@@ -256,30 +256,7 @@ submitDiceButton.addEventListener("click", async () => {
 });
 
 confirmValidRollsButton.addEventListener("click", async () => {
-  const validMove = validRollsElement.value;
-  const toCover = toggleSwitchElement.checked;
-  console.log("Valid move:",toCover);
-  const response = await fetch("http://localhost:3000/api/game/valid-move", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ validMove, toCover }),
-  });
-
-  if (response.ok) {
-    const data = await response.json();
-    console.log("User selected dice response:", data); // Log the result
-
-    afterValidRoll(data);
-
-    updateUI();
-
-    // if (data.gameOver) {
-    //   currentTurnElement.textContent = data.winner + " wins!";
-    //   console.log("Winner:", data.winner);
-    // }
-  }
+  await validRolls(validRollsElement.value, toggleSwitchElement.checked);
 });
 
 fileInput.addEventListener("change", async (event) => {
@@ -352,6 +329,26 @@ ExitGameButton.addEventListener("click", async () => {
   showStartUI();
 });
 
+async function validRolls(validMove = validRollsElement.value, toCover = toggleSwitchElement.checked) {
+  console.log("Valid move:", toCover);
+  const response = await fetch("http://localhost:3000/api/game/valid-move", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ validMove, toCover }),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    console.log("User selected dice response:", data); // Log the result
+
+    afterValidRoll(data);
+
+    updateUI();
+  }
+}
+
 function afterValidRoll(data) {
   diceResultElement.classList.add("hidden");
   rollDiceButton.classList.remove("hidden");
@@ -405,6 +402,21 @@ function showLiveGameUI() {
 }
 
 function afterDieRoll(data){
+
+    if (data.currentPlayer === "player1" && data.player1.type === "computer") {
+      validRolls(data.move.combination, data.move.action === "cover")
+      updateUI();
+      return;
+    }
+
+    if (data.currentPlayer === "player2" && data.player2.type === "computer") {
+      validRolls(data.move.combination, data.move.action === "cover")
+      updateUI();
+      return;
+    }
+
+      
+    
     regularUI.classList.remove("hidden")
     diceModalElement.classList.add("hidden");
     diceResultElement.classList.remove("hidden");
@@ -441,6 +453,7 @@ function afterDieRoll(data){
     ||  (data.currentPlayer === "player2" && data.player2.type === "computer")) {
       afterValidRoll(data);
     }
+
 
 
     updateUI();

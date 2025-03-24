@@ -77,40 +77,21 @@ app.post("/api/game/roll-dice", (req, res) => {
 
     if (currentPlayer === "player1" && tournament.game.players.player1.type === "computer") {
       move = tournament.game.players.player1.chooseMove(tournament.game.getDice().total, opponentBoard);
-      console.log("Computer move: ", move);
-      if (move.action === "cover") {
-        for (const square of move.combination) {
-          currentPlayerBoard.coverSquare(square);
-        }
-      } else if (move.action === "uncover") {
-        for (const square of move.combination) {
-          opponentBoard.uncoverSquare(square);
-        }
-      }
     } else if (currentPlayer === "player2" && tournament.game.players.player2.type === "computer") {
       move = tournament.game.players.player2.chooseMove(tournament.game.getDice().total, opponentBoard);
-      console.log("Computer move: ", move);
-      if (move.action === "cover") {
-        for (const square of move.combination) {
-          currentPlayerBoard.coverSquare(square);
-        }
-      } else if (move.action === "uncover") {
-        for (const square of move.combination) {
-          opponentBoard.uncoverSquare(square);
-        }
-      }
     }
 
-    tournament.game.message = `
-    ${currentPlayer} rolled ${tournament.game.getDice().total} (${tournament.game.getDice().dice1} + ${tournament.game.getDice().dice2}) 
-    and chooses to ${move.action}: ${move.combination}
-    `; 
+    // tournament.game.message = `
+    // ${currentPlayer} rolled ${tournament.game.getDice().total} (${tournament.game.getDice().dice1} + ${tournament.game.getDice().dice2}) 
+    // and chooses to ${move.action}: ${move.combination}
+    // `; 
   
     // Prepare the response
     const response = {
       ...tournament.getState(), // Current game state
       validCoverCombinations, // Valid combinations for covering
       validUncoverCombinations, // Valid combinations for uncovering
+      move,
     };
   
     // Send the response
