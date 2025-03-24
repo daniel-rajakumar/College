@@ -274,6 +274,13 @@ confirmValidRollsButton.addEventListener("click", async () => {
     coverSwitchElement.classList.add("hidden");
     rewindButton.classList.remove("hidden");
     saveGameButton.classList.remove("hidden");
+
+    if (data.gameOver) {
+      console.log("Game over!");
+      rewindButton.classList.add("hidden");
+      saveGameButton.classList.add("hidden");
+    }
+
     updateUI();
   }
 });
