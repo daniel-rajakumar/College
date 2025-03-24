@@ -81,11 +81,7 @@ app.post("/api/game/roll-dice", (req, res) => {
       move = tournament.game.players.player2.chooseMove(tournament.game.getDice().total, opponentBoard);
     }
 
-    // tournament.game.message = `
-    // ${currentPlayer} rolled ${tournament.game.getDice().total} (${tournament.game.getDice().dice1} + ${tournament.game.getDice().dice2}) 
-    // and chooses to ${move.action}: ${move.combination}
-    // `; 
-  
+
     // Prepare the response
     const response = {
       ...tournament.getState(), // Current game state
@@ -124,8 +120,9 @@ app.post("/api/game/valid-move", (req, res) => {
   console.log("Valid move: ", validMove, toCover);
 
   if (validMove.length === 0) {
-    tournament.game.switchTurn();
     console.log("No valid move found. Switching turn.");
+    tournament.game.message = `${tournament.game.currentPlayer} chooses ${tournament.game.dice.total} (${!toCover ? "cover" : "uncover"}) and No valid move found. Switching turn.`;
+    tournament.game.switchTurn();
     res.json({ message: "No valid move found. Switching turn." });
     return;
   }
@@ -168,10 +165,12 @@ app.post("/api/game/valid-move", (req, res) => {
   if (winner !== null) {
     tournament.game.declareWinner();
 
+    tournament.game.message = "Game over!"
     res.json({ winner, gameOver: true, message: "Game over!" });
     return;
   }
 
+  tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"}`;
   res.json({ message: `You selected: ${validMove}` });
 });
 

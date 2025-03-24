@@ -58,8 +58,8 @@ class Game {
   isGameOver() {
     const player1 = this.players.player1;
     const player2 = this.players.player2;
-    const player1Board = player1.squares;
-    const player2Board = player2.squares;
+    const player1Board = player1.board;
+    const player2Board = player2.board;
 
     if (!player1.hasFirstTurnBeenPlayed || !player2.hasFirstTurnBeenPlayed) 
       return null;
@@ -96,8 +96,8 @@ class Game {
     const winner = this.isGameOver();
 
     if (winner) {
-      const player1Board = this.players.player1.board.squares;
-      const player2Board = this.players.player2.board.squares;
+      const player1Board = this.players.player1.board;
+      const player2Board = this.players.player2.board;
 
       let winnerPoints = 0;
 
