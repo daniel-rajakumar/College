@@ -196,14 +196,6 @@ applyConfigButton.addEventListener("click", async () => {
     const data = await response.json();
     console.log("Apply config response:", data); // Log the result
 
-    if (data.currentPlayer == "player1") {
-      console.log("Player1's turn");
-    } else if (data.currentPlayer == "player2") {
-      console.log("Player2's turn");
-    } else {
-      console.error("Unknown turn:", data.currentPlayer);
-    }
-
     if (data.screen === "PLAY") {
       console.log("Showing live game UI");
       showLiveGameUI();
@@ -402,21 +394,13 @@ function showLiveGameUI() {
 }
 
 function afterDieRoll(data){
-
-    if (data.currentPlayer === "player1" && data.player1.type === "computer") {
+    if (data.currentPlayer === "player1" && data.player1.type === "computer"
+    ||  data.currentPlayer === "player2" && data.player2.type === "computer") {
       validRolls(data.move.combination, data.move.action === "cover")
       updateUI();
-      return;
+      // return;
     }
 
-    if (data.currentPlayer === "player2" && data.player2.type === "computer") {
-      validRolls(data.move.combination, data.move.action === "cover")
-      updateUI();
-      return;
-    }
-
-      
-    
     regularUI.classList.remove("hidden")
     diceModalElement.classList.add("hidden");
     diceResultElement.classList.remove("hidden");
@@ -453,7 +437,6 @@ function afterDieRoll(data){
     ||  (data.currentPlayer === "player2" && data.player2.type === "computer")) {
       afterValidRoll(data);
     }
-
 
 
     updateUI();
