@@ -107,7 +107,7 @@ app.post("/api/game/new", (req, res) => {
   const { boardSize, player1Type, player2Type } = req.body;
 
   console.log("new game: " + tournament)
-  tournament.game = new Game(boardSize, player1Type, player2Type);
+  tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
   tournament.game.players.player1.score = 0;  // Explicitly reset scores
   tournament.game.players.player2.score = 0;
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
@@ -119,7 +119,8 @@ app.post("/api/game/play-again", (req, res) => {
   const player1Score = tournament.game.players.player1.score;
   const player2Score = tournament.game.players.player2.score;
 
-  tournament.game = new Game(boardSize, player1Type, player2Type);
+
+  tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
   tournament.game.players.player1.score = player1Score;  // Preserve scores
   tournament.game.players.player2.score = player2Score;
 

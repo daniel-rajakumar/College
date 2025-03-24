@@ -28,8 +28,11 @@ class Tournament {
     : new Computer(new Board(state.player2Squares.length), this.game);
 
 
-    this.game.players.player1.board.setSquareValues(state.player1Squares);
-    this.game.players.player2.board.setSquareValues(state.player2Squares);
+    if (state.player1Squares.length != 0)
+      this.game.players.player1.board.setSquareValues(state.player1Squares);
+
+    if (state.player2Squares.length != 0)
+      this.game.players.player2.board.setSquareValues(state.player2Squares);
 
     // Set the scores for both players
     this.game.players.player1.score = state.player1Score;
