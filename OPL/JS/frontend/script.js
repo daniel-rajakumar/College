@@ -254,6 +254,12 @@ submitDiceButton.addEventListener("click", async () => {
   const dice2 = parseInt(document.getElementById("dice2").value);
   const inputDice = [dice1, dice2];
 
+  if (isNaN(dice1) || isNaN(dice2) || dice1 < 1 || dice1 > 6 || dice2 < 1 || dice2 > 6) {
+    alert("Please enter valid dice values between 1 and 6");
+    return;
+  }
+
+
   const response = await fetch("http://localhost:3000/api/game/roll-dice", {
     method: "POST",
     headers: {
@@ -584,62 +590,70 @@ async function saveGame() {
   }
 }
 
-
 function parseGameState(content) {
   const lines = content.split("\n");
   const gameState = {
+    player1: {
+      type: "human",
+      squares: [],
+      score: 0
+    },
+    player2: {
+      type: "computer",
+      squares: [],
+      score: 0
+    },
+    currentPlayer: "player1",
+    screen: "PLAY",
+    advantage: {
+      square: null,
+      applied: false,
+      player: null
+    }
   };
-
-  let boardSize = 0;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
     if (line.includes("Computer:")) {
-      // Read the next line for computer squares
+      // Parse computer squares
       const squaresLine = lines[++i].trim();
-      const squares = squaresLine
+      gameState.player2.squares = squaresLine
         .split("Squares:")[1]
         .trim()
-        .split(" ")
+        .split(/\s+/) // Split on any whitespace
         .map(Number);
 
-      boardSize = squares.length;
-      gameState.player2Squares = squares;
-
-      // Read the next line for computer score
+      // Parse computer score
       const scoreLine = lines[++i].trim();
-      gameState.player2Score = parseInt(scoreLine.split("Score:")[1].trim());
+      gameState.player2.score = parseInt(scoreLine.split("Score:")[1].trim());
+
     } else if (line.includes("Human:")) {
-      // Read the next line for human squares
+      // Parse human squares
       const squaresLine = lines[++i].trim();
-      const squares = squaresLine
+      gameState.player1.squares = squaresLine
         .split("Squares:")[1]
         .trim()
-        .split(" ")
+        .split(/\s+/) // Split on any whitespace
         .map(Number);
 
-      gameState.player1Squares = squares;
-
-      // Read the next line for human score
+      // Parse human score
       const scoreLine = lines[++i].trim();
-      gameState.player1Score = parseInt(scoreLine.split("Score:")[1].trim());
+      gameState.player1.score = parseInt(scoreLine.split("Score:")[1].trim());
+
     } else if (line.includes("First Turn:")) {
-      // Determine the first turn
-      // gameState.GAME_TURN = line.includes("Human") ? "human" : "computer";
       gameState.currentPlayer = line.includes("Human") ? "player1" : "player2";
+      gameState.firstTurn = gameState.currentPlayer;
+      
     } else if (line.includes("Next Turn:")) {
-      // Determine the next turn (optional, depending on your game logic)
-      // This can be used to set the current turn after loading the game
-      // gameState.GAME_TURN = line.includes("Human") ? "HUMAN" : "computer";
       gameState.currentPlayer = line.includes("Human") ? "player1" : "player2";
     }
   }
 
-  gameState.firstTurn = gameState.currentPlayer == "player1" ? "player2" : "player1";
+  // Set board size based on parsed squares
+  gameState.boardSize = gameState.player1.squares.length || gameState.player2.squares.length;
 
   console.log("Parsed game state:", gameState);
-
   return gameState;
 }
 
