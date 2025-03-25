@@ -196,13 +196,13 @@ app.post("/api/game/valid-move", (req, res) => {
   tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"}`;
 
   let move;
-  if (tournament.game.players.player1.type !== "human") {
-    move += tournament.game.players.player1.requestHelp(tournament.game.getDice().total, tournament.game.players.player2.board);
+  if (tournament.game.players.player1.type !== "human" && currentPlayer === "player1") {
+    move = tournament.game.players.player1.suggestMove(tournament.game.getDice().total, tournament.game.players.player2.board);
     tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"} because ${move.reason.toLowerCase()}`;
   } 
 
-  if (tournament.game.players.player2.type !== "human") {
-    move += tournament.game.players.player2.requestHelp(tournament.game.getDice().total, tournament.game.players.player1.board);
+  if (tournament.game.players.player2.type !== "human" && currentPlayer === "player2") {
+    move = tournament.game.players.player2.suggestMove(tournament.game.getDice().total, tournament.game.players.player1.board);
     tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"} because ${move.reason.toLowerCase()}`;
   }
   
