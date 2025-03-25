@@ -25,6 +25,7 @@ class Game {
     this.message = "";
     this.hasFirstTurnBeenPlayed = false;
     this.gameOver = false;  
+    this.BOARD_SIZE = boardSize;
   }
 
   rollDice() {
@@ -186,6 +187,7 @@ class Game {
       advantage: this.tournament.advantage,
       message: this.message,
       fullGame: this.players,
+      BOARD_SIZE: this.BOARD_SIZE,
     };
   }
 }

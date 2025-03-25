@@ -16,6 +16,7 @@ class Tournament {
     };
     this.moveHistory = []; // Array to store game states
     this.currentHistoryIndex = -1; // Track current position in history
+    this.BOARD_SIZE = 0;
   }
 
   setFirstPlayer(player) {
@@ -63,6 +64,8 @@ class Tournament {
     this.history = [];
     this.currentHistoryIndex = -1;
     this.saveMoveSnapshot(); // Save initial state
+
+    this.BOARD_SIZE = n;
 
 
     console.log("Game loaded successfully!", this.game.getState());

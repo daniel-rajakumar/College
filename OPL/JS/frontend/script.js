@@ -194,6 +194,7 @@ applyConfigButton.addEventListener("click", async () => {
   const boardSize = boardSizeSelect.value;
   const player1Type = player1TypeElement.value;
   const player2Type = player2TypeElement.value;
+
   const response = await fetch(`http://localhost:3000/api/game/${isNewGame ? "new" : "play-again"}`, {
     method: "POST",
     headers: {
@@ -364,6 +365,17 @@ playAgainGameButton.addEventListener("click", async () => {
   player1TypeElement.disabled = true;
   player2TypeElement.disabled = true;
   isNewGame = false;
+
+  const previousState = isNewGame ? null : await fetchGameState();
+
+  console.log("Previous state:", previousState);
+
+  if (previousState) {
+    boardSizeSelect.value = previousState.BOARD_SIZE;
+    player1TypeElement.value = previousState.fullGame.player1.type;
+    player2TypeElement.value = previousState.fullGame.player2.type;
+  }
+  
   showConfigUI("CONFIG");
 });
 
