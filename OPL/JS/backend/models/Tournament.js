@@ -102,7 +102,7 @@ class Tournament {
     const opponent = this.advantage.player === 'player1' ? 'player2' : 'player1';
     this.game.players[opponent].board.coverSquare(this.advantage.square);
 
-    this.saveToHistory();
+    // this.saveToHistory();
     
     console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
   }

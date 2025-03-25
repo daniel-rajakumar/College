@@ -41,6 +41,8 @@ const rewindModalElement = document.getElementById("rewind-modal");
 const closeRewindButton = document.getElementById("close-rewind-button");
 const confirmRewindButton = document.getElementById("confirm-rewind");
 const historyListElement = document.getElementById("history-list");
+const useOneDieElement = document.getElementById("use-one-die");
+const diceToggleContainer = document.getElementById("dice-toggle-container");
 
 let selectedHistoryIndex = -1;
 let isNewGame = true;
@@ -138,19 +140,6 @@ loadGameInitialButton.addEventListener("click", async () => {
 
 newGameInitialButton.addEventListener("click", async () => {
   showConfigUI("CONFIG");
-  // const response = await fetch("http://localhost:3000/api/game/new", {
-  //   method: "POST",
-  // });
-  // if (response.ok) {
-  //   const data = await response.json();
-  //   console.log("New game response:", data); // Log the result
-
-  //   if (data.screen === "CONFIG") {
-  //       showConfigUI(data.screen);
-  //   } else {
-  //       console.error("Unknown screen:", data.screen);
-  //   }
-  // }
 });
 
 rollDiceButton.addEventListener("click", async () => {
@@ -239,6 +228,12 @@ applyConfigButton.addEventListener("click", async () => {
 });
 
 inputDiceButton.addEventListener("click", async () => {
+  const canThrowSingleDie = await canThrowOneDie();
+
+  if (canThrowSingleDie) {
+    diceToggleContainer.classList.remove("hidden");
+  }
+
   regularUI.classList.add("hidden");
   diceModalElement.classList.remove("hidden");
 });
@@ -253,8 +248,11 @@ submitDiceButton.addEventListener("click", async () => {
   const dice1 = parseInt(document.getElementById("dice1").value);
   const dice2 = parseInt(document.getElementById("dice2").value);
   const inputDice = [dice1, dice2];
+  const useOneDie = useOneDieElement.checked;
 
-  if (isNaN(dice1) || isNaN(dice2) || dice1 < 1 || dice1 > 6 || dice2 < 1 || dice2 > 6) {
+  console.log("use one die", useOneDie)
+
+  if (!useOneDie && (isNaN(dice1) || isNaN(dice2) || dice1 < 1 || dice1 > 6 || dice2 < 1 || dice2 > 6)) {
     alert("Please enter valid dice values between 1 and 6");
     return;
   }
@@ -401,6 +399,18 @@ confirmRewindButton.addEventListener("click", async () => {
 closeRewindButton.addEventListener("click", () => {
   rewindModalElement.classList.add("hidden");
   regularUI.classList.remove("hidden");
+});
+
+useOneDieElement.addEventListener("change", async () => {
+
+  if (useOneDieElement.checked) {
+    document.getElementById("dice2").disabled = true;
+    document.getElementById("dice2").value = 0;
+  }
+  else {
+    document.getElementById("dice2").disabled = false;
+  }
+  
 });
 
 async function validRolls(validMove = validRollsElement.value, toCover = toggleSwitchElement.checked) {
@@ -657,6 +667,20 @@ function parseGameState(content) {
   return gameState;
 }
 
+async function canThrowOneDie() {
+  try {
+    const response = await fetch('http://localhost:3000/api/game/can-throw-one-die');
+    if (response.ok) {
+      const data = await response.json();
+      return data.canThrowOneDie;
+    }
+    return false; // Default to two dice if API fails
+  } catch (error) {
+    console.error('Error checking dice rules:', error);
+    return false;
+  }
+}
+
 
 // Add this function to show the rewind modal
 async function showRewindModal() {
@@ -747,3 +771,4 @@ function renderMoveSquares(elementId, squares, advantageSquare) {
     }
   }).join(" ");
 }
+

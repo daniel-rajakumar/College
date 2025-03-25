@@ -257,6 +257,25 @@ app.post('/api/game/rewind-move', (req, res) => {
   }
 });
 
+app.get('/api/game/can-throw-one-die', (req, res) => {
+  const currentPlayer = tournament.game.currentPlayer;
+  const currentPlayerBoard = currentPlayer === 'player1' 
+    ? tournament.game.players.player1.board 
+    : tournament.game.players.player2.board;
+  
+  // Implement the same logic as your C++ function
+  const canThrowOneDie = () => {
+    for (let i = 6; i < currentPlayerBoard.squares.length; i++) {
+      if (currentPlayerBoard.squares[i] !== 0) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  res.json({ canThrowOneDie: canThrowOneDie() });
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
