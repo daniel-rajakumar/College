@@ -39,6 +39,7 @@ app.post("/api/game/roll-dice", (req, res) => {
     }
 
     tournament.game.setScreen("PLAY"); // Set the screen to PLAY after rolling dice
+    tournament.game.message = "";
   
     // Get the current player's board and the opponent's board
     const currentPlayer = tournament.game.currentPlayer;

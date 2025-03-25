@@ -250,8 +250,6 @@ submitDiceButton.addEventListener("click", async () => {
   const inputDice = [dice1, dice2];
   const useOneDie = useOneDieElement.checked;
 
-  console.log("use one die", useOneDie)
-
   if (!useOneDie && (isNaN(dice1) || isNaN(dice2) || dice1 < 1 || dice1 > 6 || dice2 < 1 || dice2 > 6)) {
     alert("Please enter valid dice values between 1 and 6");
     return;
@@ -442,6 +440,7 @@ function afterValidRoll(data) {
   coverSwitchElement.classList.add("hidden");
   rewindButton.classList.remove("hidden");
   saveGameButton.classList.remove("hidden");
+  helpButton.classList.add("hidden");
 
   if (data.gameOver) {
     console.log("Game over!");
