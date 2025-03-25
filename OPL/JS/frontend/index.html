@@ -108,6 +108,41 @@
     </div>
   </div>
 
+  <div id="rewind-modal" class="modal hidden">
+    <div class="modal-content" style="width: 90%; max-width: 800px;">
+      <span id="close-rewind-button" class="close-button">&times;</span>
+      <h2>Move History</h2>
+      <div class="history-container">
+        <div class="move-list">
+          <div id="move-history-items" class="history-items"></div>
+        </div>
+        <div class="move-details">
+          <div class="move-preview">
+            <h3>Move Details</h3>
+            <div class="move-info">
+              <div>Player: <span id="detail-player">-</span></div>
+              <div>Action: <span id="detail-action">-</span></div>
+              <div>Squares: <span id="detail-squares">-</span></div>
+              <div>Dice: <span id="detail-dice">-</span></div>
+            </div>
+            <div class="board-states">
+              <div class="board-state">
+                <h4>Player 1</h4>
+                <div id="detail-player1-squares" class="squares-preview"></div>
+                <div>Score: <span id="detail-player1-score">0</span></div>
+              </div>
+              <div class="board-state">
+                <h4>Player 2</h4>
+                <div id="detail-player2-squares" class="squares-preview"></div>
+                <div>Score: <span id="detail-player2-score">0</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button id="confirm-rewind">Rewind To This Move</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

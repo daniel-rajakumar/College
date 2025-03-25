@@ -37,6 +37,12 @@ const playAgainGameButton = document.getElementById("play-again-game");
 const roundWinnerElement = document.getElementById("round-winner");
 const roundWinnerTextElement = document.getElementById("round-winner-text");
 const currentTurnElement = document.querySelector("#live-game > div.current-turn");
+const rewindModalElement = document.getElementById("rewind-modal");
+const closeRewindButton = document.getElementById("close-rewind-button");
+const confirmRewindButton = document.getElementById("confirm-rewind");
+const historyListElement = document.getElementById("history-list");
+
+let selectedHistoryIndex = -1;
 let isNewGame = true;
 
 // Show the regular UI and hide the initial UI
@@ -348,6 +354,49 @@ playAgainGameButton.addEventListener("click", async () => {
   showConfigUI("CONFIG");
 });
 
+
+// Update rewind button event listener
+rewindButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/move-history");
+  if (response.ok) {
+    const data = await response.json();
+    populateMoveHistory(data.history);
+    if (data.history.length > 0) {
+      updateMoveDetails(data.history[data.history.length - 1]);
+    }
+    rewindModalElement.classList.remove("hidden");
+    regularUI.classList.add("hidden");
+  }
+});
+
+// Update confirm button
+confirmRewindButton.addEventListener("click", async () => {
+  const selectedItem = document.querySelector(".move-item.selected");
+  if (selectedItem) {
+    const index = parseInt(selectedItem.dataset.index);
+    const response = await fetch("http://localhost:3000/api/game/rewind-move", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ index }),
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      updateUI();
+      rewindModalElement.classList.add("hidden");
+      regularUI.classList.remove("hidden");
+    }
+  }
+});
+
+
+closeRewindButton.addEventListener("click", () => {
+  rewindModalElement.classList.add("hidden");
+  regularUI.classList.remove("hidden");
+});
+
 async function validRolls(validMove = validRollsElement.value, toCover = toggleSwitchElement.checked) {
   console.log("Valid move:", validMove);
   console.log("toCover:", toCover);
@@ -594,3 +643,93 @@ function parseGameState(content) {
   return gameState;
 }
 
+
+// Add this function to show the rewind modal
+async function showRewindModal() {
+  const response = await fetch("http://localhost:3000/api/game/history");
+  if (response.ok) {
+    const data = await response.json();
+    console.log("History response:", data);
+    populateHistoryList(data.history);
+    rewindModalElement.classList.remove("hidden");
+    regularUI.classList.add("hidden");
+  }
+}
+
+// New functions
+function populateMoveHistory(history) {
+  const container = document.getElementById("move-history-items");
+  container.innerHTML = "";
+  
+  console.log("History:", history);
+  history.forEach((move, index) => {
+    const item = document.createElement("div");
+    item.className = "move-item";
+    item.dataset.index = index;
+    
+    const moveNumber = document.createElement("div");
+    moveNumber.className = "move-number";
+    moveNumber.textContent = `Move ${index + 1}`;
+    
+    const moveSummary = document.createElement("div");
+    moveSummary.className = "move-summary";
+    moveSummary.textContent = getMoveSummary(move);
+    
+    item.appendChild(moveNumber);
+    item.appendChild(moveSummary);
+    
+    item.addEventListener("click", () => {
+      document.querySelectorAll(".move-item").forEach(el => el.classList.remove("selected"));
+      item.classList.add("selected");
+      updateMoveDetails(history[index]);
+    });
+    
+    container.appendChild(item);
+  });
+}
+
+function getMoveSummary(move) {
+  const player = move.currentPlayer === "player1" ? "P1" : "P2";
+  const action = move.lastAction === "cover" ? "covered" : "uncovered";
+  const squares = move.lastSquares ? move.lastSquares.join(", ") : "none";
+  return `${player} ${action} ${squares}`;
+}
+
+function updateMoveDetails(move) {
+  // Update move info
+  document.getElementById("detail-player").textContent = 
+    move.currentPlayer === "player1" ? "Player 1" : "Player 2";
+  document.getElementById("detail-action").textContent = 
+    move.lastAction || "-";
+  document.getElementById("detail-squares").textContent = 
+    move.lastSquares ? move.lastSquares.join(", ") : "-";
+  document.getElementById("detail-dice").textContent = 
+    move.dice ? `${move.dice.dice1} + ${move.dice.dice2} = ${move.dice.total}` : "-";
+  
+  // Update board states
+  renderMoveSquares("detail-player1-squares", move.player1.squares, 
+                   move.advantage.player === "player1" ? move.advantage.square : -1);
+  renderMoveSquares("detail-player2-squares", move.player2.squares, 
+                   move.advantage.player === "player2" ? move.advantage.square : -1);
+  
+  // Update scores
+  document.getElementById("detail-player1-score").textContent = move.player1.score;
+  document.getElementById("detail-player2-score").textContent = move.player2.score;
+}
+
+
+function renderMoveSquares(elementId, squares, advantageSquare) {
+  const container = document.getElementById(elementId);
+
+  container.innerHTML = squares.map((square, index) => {
+    const num = index + 1; // Position number (1-based)
+    
+    if (square === 0) {
+      // Covered square - show as 0 with covered styling
+      return `<span class="covered${num === advantageSquare ? ' advantage' : ''}">0</span>`;
+    } else {
+      // Uncovered square - show the stored value (which should equal the position number)
+      return `<span${num === advantageSquare ? ' class="advantage"' : ''}>${square}</span>`;
+    }
+  }).join(" ");
+}

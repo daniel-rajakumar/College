@@ -146,21 +146,8 @@ app.post("/api/game/valid-move", (req, res) => {
     return;
   }
 
-    // Check if trying to uncover advantage square
-    // if (!isCover && tournament.getAdvantageApplied()) {
-    //   const advantageSquare = tournament.getAdvantageSquare();
-    //   if (combination.includes(advantageSquare)) {
-    //       const currentPlayer = tournament.game.currentPlayer;
-    //       const advantagePlayer = tournament.getAdvantagePlayer();
-          
-    //       if (currentPlayer !== advantagePlayer) {
-    //           return res.status(400).json({
-    //               error: `Cannot uncover advantage square ${advantageSquare} yet!`,
-    //               valid: false
-    //           });
-    //       }
-    //     }
-    //   }
+  // Save snapshot after move
+  tournament.saveMoveSnapshot();
 
   const currentPlayer = tournament.game.currentPlayer;
   let currentPlayerBoard, opponentBoard;
@@ -243,6 +230,31 @@ app.post("/api/game/toggle", (req, res) => {
     res.json(validCoverCombinations);
   else 
     res.json(validUncoverCombinations);
+});
+
+// In your server.js or routes file
+app.get('/api/game/move-history', (req, res) => {
+  res.json({
+    history: tournament.moveHistory.map((state, index) => ({
+      moveNumber: index + 1,
+      currentPlayer: state.currentPlayer,
+      player1: state.player1,
+      player2: state.player2,
+      dice: state.dice,
+      advantage: state.advantage,
+      lastAction: state.lastAction,    // Add these to your state object
+      lastSquares: state.lastSquares   // Add these to your state object
+    }))
+  });
+});
+
+app.post('/api/game/rewind-move', (req, res) => {
+  const { index } = req.body;
+  if (tournament.rewindToMove(index)) {
+    res.json({ success: true, state: tournament.getState() });
+  } else {
+    res.status(400).json({ error: "Invalid move index" });
+  }
 });
 
 // Start the server

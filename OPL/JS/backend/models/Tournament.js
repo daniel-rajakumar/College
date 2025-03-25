@@ -13,8 +13,9 @@ class Tournament {
       applied: false,
       player: null,
       firstPlayer: null
-      
     };
+    this.moveHistory = []; // Array to store game states
+    this.currentHistoryIndex = -1; // Track current position in history
   }
 
   setFirstPlayer(player) {
@@ -22,27 +23,28 @@ class Tournament {
   }
 
   loadGame(tournament, state) {
-    this.game = new Game(tournament, state.player1Squares.length);
+    let n = state.player1.squares.length;
+    this.game = new Game(tournament, n);
 
     // Set the squares for both players
     this.game.players.player1 = state.player1Type === "human" 
-    ? new Human(new Board(state.player1Squares.length), this.game)
-    : new Computer(new Board(state.player1Squares.length), this.game);
+    ? new Human(new Board(n), this.game)
+    : new Computer(new Board(n), this.game);
   
   this.game.players.player2 = state.player2Type === "human" 
-    ? new Human(new Board(state.player2Squares.length), this.game)
-    : new Computer(new Board(state.player2Squares.length), this.game);
+    ? new Human(new Board(n), this.game)
+    : new Computer(new Board(n), this.game);
 
 
-    if (state.player1Squares.length != 0)
-      this.game.players.player1.board.setSquareValues(state.player1Squares);
+    if (n != 0)
+      this.game.players.player1.board.setSquareValues(state.player1.squares);
 
-    if (state.player2Squares.length != 0)
-      this.game.players.player2.board.setSquareValues(state.player2Squares);
+    if (n != 0)
+      this.game.players.player2.board.setSquareValues(state.player2.squares);
 
     // Set the scores for both players
-    this.game.players.player1.score = state.player1Score;
-    this.game.players.player2.score = state.player2Score;
+    this.game.players.player1.score = state.player1.score;
+    this.game.players.player2.score = state.player2.score;
 
     this.game.players.player1.hasFirstTurnBeenPlayed = true;
     this.game.players.player2.hasFirstTurnBeenPlayed = true;
@@ -57,6 +59,11 @@ class Tournament {
     this.isANewGame = false;
     this.advantage.firstPlayer = state.firstTurn;
     this.advantage.player = state.currentPlayer;
+
+    this.history = [];
+    this.currentHistoryIndex = -1;
+    this.saveMoveSnapshot(); // Save initial state
+
 
     console.log("Game loaded successfully!", this.game.getState());
   }
@@ -94,6 +101,8 @@ class Tournament {
     // Cover the advantage square on opponent's board
     const opponent = this.advantage.player === 'player1' ? 'player2' : 'player1';
     this.game.players[opponent].board.coverSquare(this.advantage.square);
+
+    this.saveToHistory();
     
     console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
   }
@@ -119,6 +128,25 @@ class Tournament {
       advantage: { ...this.advantage }
     };
   }
+
+  // Rewind to a specific move
+  rewindToMove(index) {
+    if (index >= 0 && index < this.moveHistory.length) {
+      const state = this.moveHistory[index];
+      this.loadGame(this, state);
+      this.currentMoveIndex = index;
+      return true;
+    }
+    return false;
+  }
+
+  // Call this after a valid move is confirmed
+  saveMoveSnapshot() {
+    const state = this.game.getState();
+    this.moveHistory.push(JSON.parse(JSON.stringify(state)));
+    this.currentMoveIndex = this.moveHistory.length - 1;
+  }
+
 }
 
 module.exports = Tournament;
