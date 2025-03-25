@@ -14,7 +14,7 @@ class Tournament {
       player: null,
       firstPlayer: null
     };
-    this.moveHistory = []; // Array to store game states
+    this.moveHistory = []; 
     this.currentHistoryIndex = -1; // Track current position in history
     this.BOARD_SIZE = 0;
   }
@@ -104,6 +104,7 @@ class Tournament {
     // Cover the advantage square on opponent's board
     const opponent = this.advantage.player === 'player1' ? 'player2' : 'player1';
     this.game.players[opponent].board.coverSquare(this.advantage.square);
+    
 
     console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
   }
