@@ -43,6 +43,7 @@ const confirmRewindButton = document.getElementById("confirm-rewind");
 const historyListElement = document.getElementById("history-list");
 const useOneDieElement = document.getElementById("use-one-die");
 const diceToggleContainer = document.getElementById("dice-toggle-container");
+const titleElement = document.getElementById("title-game");
 
 let selectedHistoryIndex = -1;
 let isNewGame = true;
@@ -343,8 +344,18 @@ toggleSwitchElement.addEventListener("change", async () => {
 });
 
 ExitGameButton.addEventListener("click", async () => {
-  console.log("Exiting game");
-  showStartUI();
+  const response = await fetch("http://localhost:3000/api/game/winner", {
+    method: "POST",
+  });
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Exit game response:", data); // Log the result
+    showStartUI();
+    loadGameInitialButton.classList.add("hidden");
+    newGameInitialButton.classList.add("hidden");
+    titleElement.textContent = "Winner is: " + data.winner;
+  }
+
 });
 
 playAgainGameButton.addEventListener("click", async () => {
@@ -454,7 +465,12 @@ function afterValidRoll(data) {
     helpButton.classList.add("hidden");
     currentTurnElement.classList.add("hidden");
     document.querySelector("#live-game > div.game-board").classList.add("hidden");
+
+    gameUIElement.classList.add("hidden");
+
     alert("Winner: " + data.winner);
+
+    gameUIElement.classList.remove("hidden");
   }
 }
 

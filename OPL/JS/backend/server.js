@@ -188,12 +188,24 @@ app.post("/api/game/valid-move", (req, res) => {
   if (winner !== null) {
     tournament.game.declareWinner();
 
-    tournament.game.message = "Game over!"
+    tournament.game.message = `Game over! Score (Player 1, Player 2) : (${tournament.game.players.player1.getScore()}, ${tournament.game.players.player2.getScore()})`;
     res.json({ winner, gameOver: true, message: "Game over!" });
     return;
   }
 
   tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"}`;
+
+  let move;
+  if (tournament.game.players.player1.type !== "human") {
+    move += tournament.game.players.player1.requestHelp(tournament.game.getDice().total, tournament.game.players.player2.board);
+    tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"} because ${move.reason.toLowerCase()}`;
+  } 
+
+  if (tournament.game.players.player2.type !== "human") {
+    move += tournament.game.players.player2.requestHelp(tournament.game.getDice().total, tournament.game.players.player1.board);
+    tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"} because ${move.reason.toLowerCase()}`;
+  }
+  
   res.json({ message: `You selected: ${validMove}` });
 });
 
@@ -276,6 +288,13 @@ app.get('/api/game/can-throw-one-die', (req, res) => {
 
   res.json({ canThrowOneDie: canThrowOneDie() });
 });
+
+app.post('/api/game/winner', (req, res) => {
+  const { player } = req.body;
+  const winner = tournament.game.declareWinner(player);
+  res.json( { winner } );
+});
+
 
 // Start the server
 app.listen(PORT, () => {
