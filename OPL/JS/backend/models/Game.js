@@ -114,6 +114,7 @@ class Game {
 
         this.players.player2.score += winnerPoints;
       }
+
       if (this.tournament) {
         this.tournament.applyAdvantage(winner, winnerPoints);
       }

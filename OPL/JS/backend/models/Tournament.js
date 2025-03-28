@@ -94,24 +94,34 @@ class Tournament {
     this.advantage.square = this.calculateAdvantageSquare(winnerScore);
     this.advantage.applied = true;
     
+    // Determine who gets the advantage
     if (winner === this.advantage.firstPlayer) {
+      // Winner took first turn → opponent gets advantage
       this.advantage.player = winner === 'player1' ? 'player2' : 'player1';
     } else {
+      // Winner didn't take first turn → winner gets advantage
       this.advantage.player = winner;
     }
-
-    // Cover the advantage square on opponent's board
-    const opponent = this.advantage.player === 'player1' ? 'player2' : 'player1';
+  
+    // Cover the advantage square on the appropriate board
+    const advantagedPlayer = this.advantage.player;
+    const opponent = advantagedPlayer === 'player1' ? 'player2' : 'player1';
+    
+    // Cover the square on opponent's board if advantaged player is current player
     this.game.players[opponent].board.coverSquare(this.advantage.square);
     
-
     console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
   }
 
   canUncoverAdvantage(currentPlayer) {
     if (!this.advantage.applied) return true;
     
-    return currentPlayer === this.advantage.player;
+    // If current player is not the one with advantage, check if advantaged player has had a turn
+    if (currentPlayer !== this.advantage.player) {
+      return this.game.players[this.advantage.player].hasFirstTurnBeenPlayed;
+    }
+    
+    return true;
   }
 
   clearAdvantage() {

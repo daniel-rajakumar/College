@@ -58,6 +58,42 @@ class Board {
   }
 
 
+  findValidCombinations(sum, forCovering) {
+    const combinations = [];
+    const advantageSquare = this.game?.tournament?.getAdvantageSquare();
+    const advantageApplied = this.game?.tournament?.getAdvantageApplied();
+    const isOpponentBoard = !forCovering;
+    const currentPlayer = this.game?.currentPlayer;
+    const canUncover = this.game?.tournament?.canUncoverAdvantage(currentPlayer);
+  
+    const backtrack = (start, path, remaining) => {
+      if (remaining === 0) {
+        if (this.isValidCombination(path, forCovering)) {
+          if (!(advantageApplied && isOpponentBoard && path.includes(advantageSquare) && !canUncover)) {
+            combinations.push([...path]);
+          }
+        }
+        return;
+      }
+  
+      for (let i = start; i <= this.size; i++) {
+        if (advantageApplied && isOpponentBoard && i === advantageSquare && !canUncover) {
+          continue;
+        }
+  
+        if ((forCovering && !this.isSquareCovered(i)) || (!forCovering && this.isSquareCovered(i))) {
+          if (i <= remaining) {
+            path.push(i);
+            backtrack(i + 1, path, remaining - i);
+            path.pop();
+          }
+        }
+      }
+    };
+  
+    backtrack(1, [], sum);
+    return combinations;
+  }
 
   findValidCombinations(sum, forCovering) {
     const combinations = [];
