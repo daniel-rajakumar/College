@@ -27,6 +27,21 @@ app.post("/api/game/load", (req, res) => {
   res.json(tournament.getState());
 });
 
+app.post("/api/game/roll-dice-first-turn", (req, res) => {
+  const a = rollDice() + rollDice();
+  const b = rollDice() + rollDice();
+
+  if (a === b) {
+    res.json ( { winner: "tie", p1: a, p2: b, total: a + b} )
+  } 
+  if (a > b) {
+    res.json ( { winner: "player1", p1: a, p2: b, total: a + b } )
+  }
+  if (a < b) {
+    res.json ( { winner: "player2", p1: a, p2: b, total: a + b } )
+  }
+});
+
 app.post("/api/game/roll-dice", (req, res) => {
     const { inputDice } = req.body;
 
@@ -296,3 +311,7 @@ app.post('/api/game/winner', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+function rollDice() {
+  return Math.floor(Math.random() * 6) + 1;
+}

@@ -44,6 +44,9 @@ const historyListElement = document.getElementById("history-list");
 const useOneDieElement = document.getElementById("use-one-die");
 const diceToggleContainer = document.getElementById("dice-toggle-container");
 const titleElement = document.getElementById("title-game");
+const rollDieFirstPlayerElement = document.getElementById("roll-die-first-player");
+const gameBoardElement = document.getElementById("game-board");
+const playButton = document.getElementById("play-button");
 
 let selectedHistoryIndex = -1;
 let isNewGame = true;
@@ -208,25 +211,87 @@ applyConfigButton.addEventListener("click", async () => {
 
     if (data.screen === "PLAY") {
       console.log("Showing live game UI");
-      showLiveGameUI();
-      updateUI();
-
-      rollDiceButton.classList.remove("hidden");
+      preGameElement.classList.add("hidden");
+      liveGameElement.classList.remove("hidden");
+      rollDieFirstPlayerElement.classList.remove("hidden");
+      rollDiceButton.classList.add("hidden");
       helpButton.classList.add("hidden");
       coverSwitchElement.classList.add("hidden");
       ExitGameButton.classList.add("hidden");
       playAgainGameButton.classList.add("hidden");
-      currentTurnElement.classList.remove("hidden");
-      inputDiceButton.classList.remove("hidden");
-      rewindButton.classList.remove("hidden");
-      saveGameButton.classList.remove("hidden");  
-
+      currentTurnElement.classList.add("hidden");
+      inputDiceButton.classList.add("hidden");
+      rewindButton.classList.add("hidden");
+      saveGameButton.classList.add("hidden");  
+      gameBoardElement.classList.add("hidden");
+      gameMessageElement.classList.remove("hidden");
+      playButton.classList.add("hidden");
     } else {
         console.error("Unknown screen:", data.screen);
     }
 
     // updateUI();
   }
+});
+
+rollDieFirstPlayerElement.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/roll-dice-first-turn", {
+    method: "POST",
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    let msg = "";
+
+    if (data.winner === "tie") {
+      msg = `You rolled ${data.p1} & Computer rolled ${data.p2}. It's a tie! Please roll again.`;
+      gameMessageElement.textContent = msg;
+      return;
+    } 
+
+    if (data.winner === "player1") {
+      msg = `You rolled ${data.p1} & Computer rolled ${data.p2}. You win the first turn!`;
+      gameMessageElement.textContent = msg;
+    }
+
+    if (data.winner === "player2") {
+      msg = `You rolled ${data.p1} | Computer rolled ${data.p2}. Computer wins the first turn!`
+      gameMessageElement.textContent = msg;
+    }
+
+    rollDieFirstPlayerElement.classList.add("hidden");
+    playButton.classList.remove("hidden");
+    return;
+  }
+
+
+  if (response.ok) {
+    showLiveGameUI();
+    updateUI();
+
+    liveGameElement.classList.remove("hidden");
+    rollDiceButton.classList.remove("hidden");
+    helpButton.classList.add("hidden");
+    coverSwitchElement.classList.add("hidden");
+    ExitGameButton.classList.add("hidden");
+    playAgainGameButton.classList.add("hidden");
+    currentTurnElement.classList.remove("hidden");
+    inputDiceButton.classList.remove("hidden");
+    rewindButton.classList.remove("hidden");
+    saveGameButton.classList.remove("hidden");  
+    gameBoardElement.classList.remove("hidden");
+  }
+});
+
+playButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/start-game", {
+    method: "POST",
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+  }
+
 });
 
 inputDiceButton.addEventListener("click", async () => {
