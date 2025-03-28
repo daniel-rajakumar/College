@@ -71,9 +71,21 @@ function renderSquares(container, squares, advantage) {
   squares.forEach((square, index) => {
     const squareElement = document.createElement("span");
     squareElement.classList.add("square");
-    if (advantage === index + 1) {
+    const position = index + 1;
+
+       
+    // Check if this is a protected advantage square
+    const isProtected = position === advantage && 
+                       container.id === "computer-squares" && 
+                       !canUncoverAdvantageSquare();
+
+    if (isProtected) {
+      squareElement.classList.add("protected-advantage");
+      squareElement.title = "Cannot uncover until advantaged player takes a turn";
+    } else if (position === advantage) {
       squareElement.classList.add("advantage");
     }
+
     squareElement.textContent = square;
     squareElement.classList.add("square-num");
     squaresWrapper.appendChild(squareElement);
@@ -838,4 +850,19 @@ function renderMoveSquares(elementId, squares, advantageSquare) {
     }
   }).join(" ");
 }
+
+async function canUncoverAdvantageSquare() {
+  try {
+    const response = await fetch('http://localhost:3000/api/game/can-uncover-advantage');
+    if (response.ok) {
+      const data = await response.json();
+      return data.canUncover;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error checking advantage status:', error);
+    return true;
+  }
+}
+
 

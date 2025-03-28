@@ -42,6 +42,9 @@ class Game {
       this.players.player2.hasFirstTurnBeenPlayed = true;
       this.currentPlayer = "player1";
     }
+    if (this.tournament) {
+      this.tournament.recordTurn(this.currentPlayer);
+    }
   }
 
   setScreen(screen) {

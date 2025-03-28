@@ -14,12 +14,14 @@ class Tournament {
       player: null,
       firstPlayer: null,
       winner: null,
-      winnerScore: null
+      winnerScore: null,
+      hasTakenTurn: false  
     };
     this.moveHistory = []; 
     this.currentHistoryIndex = -1; 
     this.BOARD_SIZE = 0;
   }
+
 
   setFirstPlayer(player) {
     this.advantage.firstPlayer = player;
@@ -113,6 +115,7 @@ class Tournament {
     // Cover the square on opponent's board if advantaged player is current player
     // this.game.players[opponent].board.coverSquare(this.advantage.square);
     this.game.players[advantagedPlayer].board.coverSquare(this.advantage.square);
+    this.advantage.hasTakenTurn = false;  // Reset for new round
     
     console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
   }
@@ -122,10 +125,17 @@ class Tournament {
     
     // If current player is not the one with advantage, check if advantaged player has had a turn
     if (currentPlayer !== this.advantage.player) {
-      return this.game.players[this.advantage.player].hasFirstTurnBeenPlayed;
+      return this.advantage.hasTakenTurn;
     }
     
     return true;
+  }
+
+  // Add this method to update turn tracking
+  recordTurn(player) {
+    if (this.advantage.applied && player === this.advantage.player) {
+      this.advantage.hasTakenTurn = true;
+    }
   }
 
   clearAdvantage() {

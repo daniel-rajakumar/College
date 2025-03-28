@@ -374,3 +374,19 @@ input:checked + .slider .off {
 .toggle-label {
   font-size: 14px;
 }
+
+/* Add to styles.css */
+.protected-advantage {
+  color: #ff0000;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.protected-advantage::after {
+  content: "🔒";
+  position: absolute;
+  right: -15px;
+  top: -5px;
+  font-size: 0.8em;
+}

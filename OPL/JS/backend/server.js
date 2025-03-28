@@ -316,6 +316,15 @@ app.post('/api/game/winner', (req, res) => {
   res.json( { winner } );
 });
 
+app.get('/api/game/can-uncover-advantage', (req, res) => {
+  if (!this.tournament) {
+    return res.json({ canUncover: true });
+  }
+  
+  const canUncover = tournament.canUncoverAdvantage(game.currentPlayer);
+  res.json({ canUncover });
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
