@@ -115,7 +115,9 @@ class Tournament {
     
     // Cover the square on opponent's board if advantaged player is current player
     // this.game.players[opponent].board.coverSquare(this.advantage.square);
-    this.game.players[advantagedPlayer].board.coverSquare(this.advantage.square);
+    // this.game.players[advantagedPlayer].board.coverSquare(this.advantage.square);
+    this.game.players[opponent].board.coverSquare(this.advantage.square);
+    
     this.advantage.hasTakenTurn = false;  // Reset for new round
     
     console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
