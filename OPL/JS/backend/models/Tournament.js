@@ -93,6 +93,7 @@ class Tournament {
   }
 
   applyAdvantage(winner, winnerScore) {
+    if (!winner) return;
     this.advantage.square = this.calculateAdvantageSquare(winnerScore);
     this.advantage.applied = true;
 

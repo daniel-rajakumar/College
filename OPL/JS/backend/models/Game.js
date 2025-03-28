@@ -130,24 +130,6 @@ class Game {
   }
 
 
-  determineFirstPlayer() {
-    // Roll dice to determine first player
-    let player1Roll = Math.floor(Math.random() * 6) + 1;
-    let player2Roll = Math.floor(Math.random() * 6) + 1;
-    
-    if (player1Roll === player2Roll) {
-      return this.determineFirstPlayer(); // Re-roll if tie
-    }
-    
-    const firstPlayer = player1Roll > player2Roll ? 'player1' : 'player2';
-    this.tournament.setFirstPlayer(firstPlayer);
-    return firstPlayer;
-  }
-
-
-
-
-
 
 
 

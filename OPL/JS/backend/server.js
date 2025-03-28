@@ -35,17 +35,19 @@ app.post("/api/game/roll-dice-first-turn", (req, res) => {
     res.json ( { winner: "tie", p1: a, p2: b, total: a + b} )
   } 
   if (a > b) {
+    tournament.advantage.firstPlayer = "player1";
     res.json ( { winner: "player1", p1: a, p2: b, total: a + b } )
   }
   if (a < b) {
+    tournament.advantage.firstPlayer = "player2";
     res.json ( { winner: "player2", p1: a, p2: b, total: a + b } )
   }
 });
 
 app.post("/api/game/start-game", (req, res) => {
 
+  tournament.game.currentPlayer = tournament.advantage.firstPlayer;
   tournament.applyAdvantage(tournament.advantage.winner, tournament.advantage.winnerScore);
-
 
   res.json({ message: "Game started!" });
 });
@@ -134,8 +136,7 @@ app.post("/api/game/new", (req, res) => {
   tournament.game.players.player1.score = 0;  // Explicitly reset scores
   tournament.game.players.player2.score = 0;
 
-  const firstPlayer = tournament.game.determineFirstPlayer();
-  tournament.game.currentPlayer = firstPlayer;
+  // tournament.game.currentPlayer = tournament.advantage.firstPlayer;
 
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
@@ -151,7 +152,7 @@ app.post("/api/game/play-again", (req, res) => {
   tournament.game.players.player1.score = player1Score;  // Preserve scores
   tournament.game.players.player2.score = player2Score;
 
-  tournament.game.currentPlayer = tournament.advantage.firstPlayer;
+  // tournament.game.currentPlayer = tournament.advantage.firstPlayer;
 
   tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
   res.json(tournament.getState());
