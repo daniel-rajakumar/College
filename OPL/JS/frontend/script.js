@@ -372,6 +372,8 @@ fileInput.addEventListener("change", async (event) => {
           playAgainGameButton.classList.add("hidden");
           currentTurnElement.classList.remove("hidden");
           fileInput.classList.add("hidden");
+          rollDieFirstPlayerElement.classList.add("hidden");
+          playButton.classList.add("hidden");
 
         } else {
           console.error("Failed to load game state from file");
@@ -420,7 +422,7 @@ ExitGameButton.addEventListener("click", async () => {
 
 playAgainGameButton.addEventListener("click", async () => {
   console.log("Playing again");
-  boardSizeSelect.disabled = true;
+  // boardSizeSelect.disabled = true;
   player1TypeElement.disabled = true;
   player2TypeElement.disabled = true;
   isNewGame = false;
@@ -559,6 +561,8 @@ function showConfigUI(screen) {
     liveGameElement.classList.add("hidden");
 
     document.querySelector("#live-game > div.game-board").classList.remove("hidden");
+
+    diceResultElement.classList.add("hidden");
 
   } else if (screen === "LOAD") {
     initialUI.classList.add("hidden");

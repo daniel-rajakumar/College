@@ -44,6 +44,7 @@ app.post("/api/game/roll-dice-first-turn", (req, res) => {
 
 app.post("/api/game/start-game", (req, res) => {
 
+  tournament.applyAdvantage(tournament.advantage.winner, tournament.advantage.winnerScore);
 
 
   res.json({ message: "Game started!" });

@@ -116,7 +116,8 @@ class Game {
       }
 
       if (this.tournament) {
-        this.tournament.applyAdvantage(winner, winnerPoints);
+        this.tournament.advantage.winner = winner;
+        this.tournament.advantage.winnerScore = winnerPoints;
       }
 
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);

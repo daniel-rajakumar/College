@@ -12,7 +12,9 @@ class Tournament {
       square: null,
       applied: false,
       player: null,
-      firstPlayer: null
+      firstPlayer: null,
+      winner: null,
+      winnerScore: null
     };
     this.moveHistory = []; 
     this.currentHistoryIndex = -1; 
@@ -93,7 +95,7 @@ class Tournament {
   applyAdvantage(winner, winnerScore) {
     this.advantage.square = this.calculateAdvantageSquare(winnerScore);
     this.advantage.applied = true;
-    
+
     // Determine who gets the advantage
     if (winner === this.advantage.firstPlayer) {
       // Winner took first turn → opponent gets advantage
