@@ -312,7 +312,7 @@ app.get('/api/game/can-throw-one-die', (req, res) => {
 
 app.post('/api/game/winner', (req, res) => {
   const { player } = req.body;
-  const winner = tournament.game.declareWinner(player);
+  const winner = tournament.game.declareTournamentWinner(player);
   res.json( { winner } );
 });
 

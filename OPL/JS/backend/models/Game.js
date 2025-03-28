@@ -91,6 +91,21 @@ class Game {
     return null;
   }
   
+  declareTournamentWinner() {
+    const player1 = this.players.player1;
+    const player2 = this.players.player2;
+
+    if (player1.score > player2.score) {
+      console.log(`Tournament over! Player 1 wins with ${player1.score} points!`);
+      return "player1";
+    } else if (player2.score > player1.score) {
+      console.log(`Tournament over! Player 2 wins with ${player2.score} points!`);
+      return "player2";
+    } else {
+      console.log("Tournament ended in a draw!");
+      return "draw";
+    }
+  }
 
   declareWinner() {
     const winner = this.isGameOver();
