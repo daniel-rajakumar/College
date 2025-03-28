@@ -7,24 +7,20 @@ const Game = require("./models/Game");
 const app = express();
 const PORT = 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the frontend folder
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 const tournament = new Tournament();
 
-// API endpoints
 app.get("/api/game/state", (req, res) => {
   res.json(tournament.getState());
 });
 
 app.post("/api/game/load", (req, res) => {
   const state = req.body;
-  // tournament.loadGame(state);
-  tournament.game.setScreen("LOAD"); // Set the screen to PLAY after loading the game
+  tournament.game.setScreen("LOAD"); 
   res.json(tournament.getState());
 });
 
@@ -214,7 +210,7 @@ app.post("/api/game/load-file", (req, res) => {
 
   tournament.loadGame(tournament, body);
 
-  tournament.game.setScreen("PLAY"); // Set the screen to PLAY after loading the game
+  tournament.game.setScreen("PLAY"); 
 
   console.log("Loading game state: ", tournament.getState());
 
@@ -255,8 +251,8 @@ app.get('/api/game/move-history', (req, res) => {
       player2: state.player2,
       dice: state.dice,
       advantage: state.advantage,
-      lastAction: state.lastAction,    // Add these to your state object
-      lastSquares: state.lastSquares   // Add these to your state object
+      lastAction: state.lastAction,    
+      lastSquares: state.lastSquares   
     }))
   });
 });
@@ -276,7 +272,6 @@ app.get('/api/game/can-throw-one-die', (req, res) => {
     ? tournament.game.players.player1.board 
     : tournament.game.players.player2.board;
   
-  // Implement the same logic as your C++ function
   const canThrowOneDie = () => {
     for (let i = 6; i < currentPlayerBoard.squares.length; i++) {
       if (currentPlayerBoard.squares[i] !== 0) {
@@ -296,7 +291,6 @@ app.post('/api/game/winner', (req, res) => {
 });
 
 
-// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -19,7 +19,7 @@ class Game {
         ? new Human(player2Board, this) 
         : new Computer(player2Board, this)
     };
-    this.currentPlayer = "player1"; // Start with Player 1
+    this.currentPlayer = "player1"; 
     this.screen = "START";
     this.dice = { dice1: 0, dice2: 0, total: 0 };
     this.message = "";
@@ -65,31 +65,26 @@ class Game {
     if (!player1.hasFirstTurnBeenPlayed || !player2.hasFirstTurnBeenPlayed) 
       return null;
 
-    // Check if player1 has won by covering all their squares
     if (player1Board.allCovered()) {
       this.gameOver = true;
-      return "player1"; // Player 1 wins by covering all squares
+      return "player1"; 
     }
 
-    // Check if player1 has won by uncovering all of player2's squares
     if (player2Board.allUncovered()) {
       this.gameOver = true;
-      return "player1"; // Player 1 wins by uncovering all of player2's squares
+      return "player1"; 
     }
 
-    // Check if player2 has won by covering all their squares
     if (player2Board.allCovered()) {
       this.gameOver = true;
-      return "player2"; // Player 2 wins by covering all squares
+      return "player2";
     }
 
-    // Check if player2 has won by uncovering all of player1's squares
     if (player1Board.allUncovered()) {
       this.gameOver = true;
-      return "player2"; // Player 2 wins by uncovering all of player1's squares
+      return "player2"; 
     }
 
-    // If none of the above conditions are met, the game is not over
     return null;
   }
 
@@ -104,32 +99,27 @@ class Game {
 
       if (winner === "player1") {
         if (player1Board.allCovered()) {
-          // Player 1 wins by covering all their squares
           winnerPoints = player2Board.getUncoveredSum(); // Sum of uncovered squares on player2's board
         } else if (player2Board.allUncovered()) {
-          // Player 1 wins by uncovering all of player2's squares
           winnerPoints = player1Board.getCoveredSum(); // Sum of covered squares on player1's board
         }
 
         this.players.player1.score += winnerPoints;
       } else if (winner === "player2") {
         if (player2Board.allCovered()) {
-          // Player 2 wins by covering all their squares
           winnerPoints = player1Board.getUncoveredSum(); // Sum of uncovered squares on player1's board
         } else if (player1Board.allUncovered()) {
-          // Player 2 wins by uncovering all of player1's squares
           winnerPoints = player2Board.getCoveredSum(); // Sum of covered squares on player2's board
         }
 
         this.players.player2.score += winnerPoints;
       }
-      // Apply advantage
       if (this.tournament) {
         this.tournament.applyAdvantage(winner, winnerPoints);
       }
 
       console.log(`Game over! ${winner} wins with ${winnerPoints} points!`);
-      this.resetGame(); // Reset the game for a new round
+      this.resetGame(); 
       return winner;
     } else {
       console.log("The game continues...");

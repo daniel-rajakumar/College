@@ -15,7 +15,7 @@ class Tournament {
       firstPlayer: null
     };
     this.moveHistory = []; 
-    this.currentHistoryIndex = -1; // Track current position in history
+    this.currentHistoryIndex = -1; 
     this.BOARD_SIZE = 0;
   }
 
@@ -27,7 +27,6 @@ class Tournament {
     let n = state.player1.squares.length;
     this.game = new Game(tournament, n);
 
-    // Set the squares for both players
     this.game.players.player1 = state.player1Type === "human" 
     ? new Human(new Board(n), this.game)
     : new Computer(new Board(n), this.game);
@@ -43,27 +42,23 @@ class Tournament {
     if (n != 0)
       this.game.players.player2.board.setSquareValues(state.player2.squares);
 
-    // Set the scores for both players
     this.game.players.player1.score = state.player1.score;
     this.game.players.player2.score = state.player2.score;
 
     this.game.players.player1.hasFirstTurnBeenPlayed = true;
     this.game.players.player2.hasFirstTurnBeenPlayed = true;
 
-    // Set the current player
     this.game.currentPlayer = state.currentPlayer;
 
-    // Set the screen from the loaded state
     this.game.setScreen(state.screen);
 
-    // Mark the game as not new
     this.isANewGame = false;
     this.advantage.firstPlayer = state.firstTurn;
     this.advantage.player = state.currentPlayer;
 
     this.history = [];
     this.currentHistoryIndex = -1;
-    this.saveMoveSnapshot(); // Save initial state
+    this.saveMoveSnapshot(); 
 
     this.BOARD_SIZE = n;
 
@@ -84,20 +79,18 @@ class Tournament {
   }
 
   calculateAdvantageSquare(score) {
-    return String(score).split('').reduce((sum, digit) => sum + parseInt(digit), 0) % 9 + 1;
+    score = Math.abs(score);
+    if (score === 0) return 1;
+    return score % 9 || 9; // Returns 1-9
   }
 
   applyAdvantage(winner, winnerScore) {
-    // Calculate advantage square
     this.advantage.square = this.calculateAdvantageSquare(winnerScore);
     this.advantage.applied = true;
     
-    // Determine who gets advantage
     if (winner === this.advantage.firstPlayer) {
-      // Winner was first player - advantage goes to opponent
       this.advantage.player = winner === 'player1' ? 'player2' : 'player1';
     } else {
-      // Winner was second player - keeps advantage
       this.advantage.player = winner;
     }
 
@@ -110,10 +103,8 @@ class Tournament {
   }
 
   canUncoverAdvantage(currentPlayer) {
-    // Can't uncover advantage square until advantage player has had a turn
     if (!this.advantage.applied) return true;
     
-    // If current player is NOT the advantage player, can't uncover advantage square
     return currentPlayer === this.advantage.player;
   }
 
@@ -131,7 +122,6 @@ class Tournament {
     };
   }
 
-  // Rewind to a specific move
   rewindToMove(index) {
     if (index >= 0 && index < this.moveHistory.length) {
       const state = this.moveHistory[index];
@@ -142,7 +132,6 @@ class Tournament {
     return false;
   }
 
-  // Call this after a valid move is confirmed
   saveMoveSnapshot() {
     const state = this.game.getState();
     this.moveHistory.push(JSON.parse(JSON.stringify(state)));

@@ -447,7 +447,7 @@ async function validRolls(validMove = validRollsElement.value, toCover = toggleS
 
   if (response.ok) {
     const data = await response.json();
-    console.log("User selected dice response:", data); // Log the result
+    console.log("User selected dice response:", data); 
 
     afterValidRoll(data);
     updateUI();
@@ -577,17 +577,14 @@ function populateStringSelect(strings) {
 
 async function saveGame() {
   try {
-    // Fetch the current game state
     const humanSquares = Array.from(humanSquaresElement.querySelectorAll('.square')).map(square => square.textContent).join(' ');
     const computerSquares = Array.from(computerSquaresElement.querySelectorAll('.square')).map(square => square.textContent).join(' ');
     const humanScore = humanScoreElement.textContent;
     const computerScore = computerScoreElement.textContent;
     const currentTurn = currentTurnElement.textContent.includes("1") ? "player1" : "player2";
 
-    // Determine the next turn
     const nextTurn = currentTurn === "player1" ? "player2" : "player1";
 
-    // Format the game state as a string
     const gameStateString = `
     Computer:
       Squares: ${computerSquares}
@@ -600,12 +597,10 @@ async function saveGame() {
     First Turn: ${currentTurn}
     Next Turn: ${nextTurn}`;
 
-    // Create a Blob with the game state string
     const blob = new Blob([gameStateString], { type: "text/plain;charset=utf-8" });
 
-    // Prompt the user to save the file
     const fileHandle = await window.showSaveFilePicker({
-      suggestedName: "savegame.txt", // Default file name
+      suggestedName: "savegame.txt",
       types: [
         {
           description: "Text Files",
@@ -614,7 +609,6 @@ async function saveGame() {
       ],
     });
 
-    // Write the Blob to the file
     const writableStream = await fileHandle.createWritable();
     await writableStream.write(blob);
     await writableStream.close();
@@ -653,28 +647,24 @@ function parseGameState(content) {
     const line = lines[i].trim();
 
     if (line.includes("Computer:")) {
-      // Parse computer squares
       const squaresLine = lines[++i].trim();
       gameState.player2.squares = squaresLine
         .split("Squares:")[1]
         .trim()
-        .split(/\s+/) // Split on any whitespace
+        .split(/\s+/) 
         .map(Number);
 
-      // Parse computer score
       const scoreLine = lines[++i].trim();
       gameState.player2.score = parseInt(scoreLine.split("Score:")[1].trim());
 
     } else if (line.includes("Human:")) {
-      // Parse human squares
       const squaresLine = lines[++i].trim();
       gameState.player1.squares = squaresLine
         .split("Squares:")[1]
         .trim()
-        .split(/\s+/) // Split on any whitespace
+        .split(/\s+/) 
         .map(Number);
 
-      // Parse human score
       const scoreLine = lines[++i].trim();
       gameState.player1.score = parseInt(scoreLine.split("Score:")[1].trim());
 
@@ -687,7 +677,6 @@ function parseGameState(content) {
     }
   }
 
-  // Set board size based on parsed squares
   gameState.boardSize = gameState.player1.squares.length || gameState.player2.squares.length;
 
   console.log("Parsed game state:", gameState);
@@ -701,7 +690,7 @@ async function canThrowOneDie() {
       const data = await response.json();
       return data.canThrowOneDie;
     }
-    return false; // Default to two dice if API fails
+    return false; 
   } catch (error) {
     console.error('Error checking dice rules:', error);
     return false;
@@ -709,7 +698,6 @@ async function canThrowOneDie() {
 }
 
 
-// Add this function to show the rewind modal
 async function showRewindModal() {
   const response = await fetch("http://localhost:3000/api/game/history");
   if (response.ok) {
@@ -721,7 +709,6 @@ async function showRewindModal() {
   }
 }
 
-// New functions
 function populateMoveHistory(history) {
   const container = document.getElementById("move-history-items");
   container.innerHTML = "";
@@ -771,13 +758,11 @@ function updateMoveDetails(move) {
   document.getElementById("detail-dice").textContent = 
     move.dice ? `${move.dice.dice1} + ${move.dice.dice2} = ${move.dice.total}` : "-";
   
-  // Update board states
   renderMoveSquares("detail-player1-squares", move.player1.squares, 
                    move.advantage.player === "player1" ? move.advantage.square : -1);
   renderMoveSquares("detail-player2-squares", move.player2.squares, 
                    move.advantage.player === "player2" ? move.advantage.square : -1);
   
-  // Update scores
   document.getElementById("detail-player1-score").textContent = move.player1.score;
   document.getElementById("detail-player2-score").textContent = move.player2.score;
 }
@@ -790,10 +775,8 @@ function renderMoveSquares(elementId, squares, advantageSquare) {
     const num = index + 1; // Position number (1-based)
     
     if (square === 0) {
-      // Covered square - show as 0 with covered styling
       return `<span class="covered${num === advantageSquare ? ' advantage' : ''}">0</span>`;
     } else {
-      // Uncovered square - show the stored value (which should equal the position number)
       return `<span${num === advantageSquare ? ' class="advantage"' : ''}>${square}</span>`;
     }
   }).join(" ");

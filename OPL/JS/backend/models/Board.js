@@ -46,13 +46,13 @@ class Board {
 
   getCoveredSum() {
     return this.squares.reduce((sum, square, index) => {
-      return square === 0 ? sum + (index + 1) : sum; // Add the square number if it's covered (0)
+      return square === 0 ? sum + (index + 1) : sum; 
     }, 0);
   }
 
   getUncoveredSum() {
     return this.squares.reduce((sum, square, index) => {
-      return square !== 0 ? sum + (index + 1) : sum; // Add the square number if it's uncovered
+      return square !== 0 ? sum + (index + 1) : sum; 
     }, 0);
   }
 
@@ -70,7 +70,6 @@ class Board {
     const backtrack = (start, path, remaining) => {
       if (remaining === 0) {
         if (this.isValidCombination(path, forCovering)) {
-          // Skip combinations with protected advantage square
           if (!(advantageApplied && isOpponentBoard && path.includes(advantageSquare) && !canUncover)) {
             combinations.push([...path]);
           }
@@ -79,7 +78,6 @@ class Board {
       }
 
       for (let i = start; i <= this.size; i++) {
-        // Skip advantage square if it's protected
         if (advantageApplied && isOpponentBoard && i === advantageSquare && !canUncover) {
           continue;
         }
@@ -103,7 +101,6 @@ class Board {
     const advantageApplied = this.tournament?.getAdvantageApplied();
     const isOpponentBoard = !forCovering;
 
-    // Skip advantage square check if not applicable
     if (advantageApplied && isOpponentBoard && combination.includes(advantageSquare)) {
         return false;
     }
