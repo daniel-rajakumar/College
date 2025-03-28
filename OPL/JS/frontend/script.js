@@ -71,7 +71,7 @@ function renderSquares(container, squares, advantage) {
   squares.forEach((square, index) => {
     const squareElement = document.createElement("span");
     squareElement.classList.add("square");
-    if (advantage === index) {
+    if (advantage === index + 1) {
       squareElement.classList.add("advantage");
     }
     squareElement.textContent = square;
@@ -812,19 +812,13 @@ function getMoveSummary(move) {
 
 function updateMoveDetails(move) {
   // Update move info
-  document.getElementById("detail-player").textContent = 
-    move.currentPlayer === "player1" ? "Player 1" : "Player 2";
-  document.getElementById("detail-action").textContent = 
-    move.lastAction || "-";
-  document.getElementById("detail-squares").textContent = 
-    move.lastSquares ? move.lastSquares.join(", ") : "-";
-  document.getElementById("detail-dice").textContent = 
-    move.dice ? `${move.dice.dice1} + ${move.dice.dice2} = ${move.dice.total}` : "-";
+  document.getElementById("detail-player").textContent = move.currentPlayer === "player1" ? "Player 1" : "Player 2";
+  document.getElementById("detail-action").textContent = move.lastAction || "-";
+  document.getElementById("detail-squares").textContent = move.lastSquares ? move.lastSquares.join(", ") : "-";
+  document.getElementById("detail-dice").textContent = move.dice ? `${move.dice.dice1} + ${move.dice.dice2} = ${move.dice.total}` : "-";
   
-  renderMoveSquares("detail-player1-squares", move.player1.squares, 
-                   move.advantage.player === "player1" ? move.advantage.square - 1 : -1);
-  renderMoveSquares("detail-player2-squares", move.player2.squares, 
-                   move.advantage.player === "player2" ? move.advantage.square - 1 : -1);
+  renderMoveSquares("detail-player1-squares", move.player1.squares, move.advantage.player === "player1" ? move.advantage.square : -1);
+  renderMoveSquares("detail-player2-squares", move.player2.squares, move.advantage.player === "player2" ? move.advantage.square : -1);
   
   document.getElementById("detail-player1-score").textContent = move.player1.score;
   document.getElementById("detail-player2-score").textContent = move.player2.score;
@@ -836,7 +830,7 @@ function renderMoveSquares(elementId, squares, advantageSquare) {
 
   container.innerHTML = squares.map((square, index) => {
     const num = index + 1; // Position number (1-based)
-    
+
     if (square === 0) {
       return `<span class="covered${num === advantageSquare ? ' advantage' : ''}">0</span>`;
     } else {
