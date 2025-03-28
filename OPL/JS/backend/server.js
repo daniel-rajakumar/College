@@ -114,7 +114,7 @@ app.post("/api/game/help", (req, res) => {
     move = tournament.game.players.player2.requestHelp(tournament.game.getDice().total, tournament.game.players.player1.board);
   }
 
-  tournament.game.message = `Computer suggests to ${move.action} ${move.combination}`;
+  tournament.game.message = `Computer suggests to ${move.action} ${move.combination} because ${move.reason.toLowerCase().replaceAll("my", "your")}`;
   res.json({ message: "Help: Try to cover your squares or uncover the opponent's squares!", move });
 });
 
