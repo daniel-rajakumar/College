@@ -261,9 +261,13 @@ rollDieFirstPlayerElement.addEventListener("click", async () => {
 
     rollDieFirstPlayerElement.classList.add("hidden");
     playButton.classList.remove("hidden");
-    return;
   }
+});
 
+playButton.addEventListener("click", async () => {
+  const response = await fetch("http://localhost:3000/api/game/start-game", {
+    method: "POST",
+  });
 
   if (response.ok) {
     showLiveGameUI();
@@ -280,18 +284,8 @@ rollDieFirstPlayerElement.addEventListener("click", async () => {
     rewindButton.classList.remove("hidden");
     saveGameButton.classList.remove("hidden");  
     gameBoardElement.classList.remove("hidden");
+    playAgainGameButton.classList.add("hidden");
   }
-});
-
-playButton.addEventListener("click", async () => {
-  const response = await fetch("http://localhost:3000/api/game/start-game", {
-    method: "POST",
-  });
-
-  if (response.ok) {
-    const data = await response.json();
-  }
-
 });
 
 inputDiceButton.addEventListener("click", async () => {

@@ -42,6 +42,13 @@ app.post("/api/game/roll-dice-first-turn", (req, res) => {
   }
 });
 
+app.post("/api/game/start-game", (req, res) => {
+
+
+
+  res.json({ message: "Game started!" });
+});
+
 app.post("/api/game/roll-dice", (req, res) => {
     const { inputDice } = req.body;
 
