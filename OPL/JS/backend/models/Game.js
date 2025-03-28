@@ -118,17 +118,17 @@ class Game {
 
       if (winner === "player1") {
         if (player1Board.allCovered()) {
-          winnerPoints = player2Board.getUncoveredSum(); // Sum of uncovered squares on player2's board
+          winnerPoints = player2Board.getUncoveredSum(); 
         } else if (player2Board.allUncovered()) {
-          winnerPoints = player1Board.getCoveredSum(); // Sum of covered squares on player1's board
+          winnerPoints = player1Board.getCoveredSum(); 
         }
 
         this.players.player1.score += winnerPoints;
       } else if (winner === "player2") {
         if (player2Board.allCovered()) {
-          winnerPoints = player1Board.getUncoveredSum(); // Sum of uncovered squares on player1's board
+          winnerPoints = player1Board.getUncoveredSum(); 
         } else if (player1Board.allUncovered()) {
-          winnerPoints = player2Board.getCoveredSum(); // Sum of covered squares on player2's board
+          winnerPoints = player2Board.getCoveredSum(); 
         }
 
         this.players.player2.score += winnerPoints;

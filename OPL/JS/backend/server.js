@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, "../frontend")));
 
 const tournament = new Tournament();
 
-const n = 6; // Example board size
+const n = 6; 
 console.log(tournament.getAdvantageSquare("4 4"));
 
 app.get("/api/game/state", (req, res) => {
@@ -55,17 +55,15 @@ app.post("/api/game/start-game", (req, res) => {
 app.post("/api/game/roll-dice", (req, res) => {
     const { inputDice } = req.body;
 
-    // Roll the dice
     if (inputDice != null) {
       tournament.game.setDice(inputDice[0], inputDice[1]);
     } else {
       tournament.game.rollDice();
     }
 
-    tournament.game.setScreen("PLAY"); // Set the screen to PLAY after rolling dice
+    tournament.game.setScreen("PLAY"); 
     tournament.game.message = "";
   
-    // Get the current player's board and the opponent's board
     const currentPlayer = tournament.game.currentPlayer;
     let currentPlayerBoard, opponentBoard;
     let validCoverCombinations, validUncoverCombinations;
@@ -92,15 +90,13 @@ app.post("/api/game/roll-dice", (req, res) => {
     }
 
 
-    // Prepare the response
     const response = {
-      ...tournament.getState(), // Current game state
-      validCoverCombinations, // Valid combinations for covering
-      validUncoverCombinations, // Valid combinations for uncovering
+      ...tournament.getState(), 
+      validCoverCombinations, 
+      validUncoverCombinations, 
       move,
     };
   
-    // Send the response
     res.json(response);
 });
 
@@ -119,12 +115,10 @@ app.post("/api/game/help", (req, res) => {
 });
 
 app.post("/api/game/rewind", (req, res) => {
-  // Implement rewind logic here
   res.json(tournament.getState());
 });
 
 app.post("/api/game/save", (req, res) => {
-  // Implement save logic here
   res.json(tournament.getState());
 });
 
@@ -133,12 +127,12 @@ app.post("/api/game/new", (req, res) => {
 
   console.log("new game: " + tournament)
   tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
-  tournament.game.players.player1.score = 0;  // Explicitly reset scores
+  tournament.game.players.player1.score = 0;  
   tournament.game.players.player2.score = 0;
 
   // tournament.game.currentPlayer = tournament.advantage.firstPlayer;
 
-  tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
+  tournament.game.setScreen("PLAY"); 
   res.json(tournament.getState());
 });
 
@@ -149,12 +143,12 @@ app.post("/api/game/play-again", (req, res) => {
 
 
   tournament.game = new Game(tournament, boardSize, player1Type, player2Type);
-  tournament.game.players.player1.score = player1Score;  // Preserve scores
+  tournament.game.players.player1.score = player1Score;  
   tournament.game.players.player2.score = player2Score;
 
   // tournament.game.currentPlayer = tournament.advantage.firstPlayer;
 
-  tournament.game.setScreen("PLAY"); // Set the screen to PLAY after configuration
+  tournament.game.setScreen("PLAY");
   res.json(tournament.getState());
 });
 
@@ -170,7 +164,6 @@ app.post("/api/game/valid-move", (req, res) => {
     return;
   }
 
-  // Save snapshot after move
   tournament.saveMoveSnapshot();
 
   const currentPlayer = tournament.game.currentPlayer;
@@ -267,7 +260,6 @@ app.post("/api/game/toggle", (req, res) => {
     res.json(validUncoverCombinations);
 });
 
-// In your server.js or routes file
 app.get('/api/game/move-history', (req, res) => {
   res.json({
     history: tournament.moveHistory.map((state, index) => ({

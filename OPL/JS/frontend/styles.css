@@ -235,7 +235,6 @@ input:checked + .slider .off {
 }
 
 
-/* Add to styles.css */
 .history-container {
   display: flex;
   gap: 20px;
@@ -375,7 +374,6 @@ input:checked + .slider .off {
   font-size: 14px;
 }
 
-/* Add to styles.css */
 .protected-advantage {
   color: #ff0000;
   text-decoration: line-through;

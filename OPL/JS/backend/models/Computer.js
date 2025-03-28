@@ -15,7 +15,6 @@ class Computer extends Player {
   }
 
   chooseMove(diceSum, opponentBoard) {
-    // First check if we can win by uncovering all opponent's squares
     const uncoverWinOptions = this.findBestCombination(opponentBoard, diceSum, false);
     const canWinByUncovering = uncoverWinOptions.some(combo => {
       const tempBoard = new Board(opponentBoard.size);
@@ -32,7 +31,6 @@ class Computer extends Player {
       };
     }
 
-    // Then check for normal cover moves
     const coverOptions = this.findBestCombination(this.board, diceSum, true);
     if (coverOptions.length > 0) {
       return {
@@ -42,7 +40,6 @@ class Computer extends Player {
       };
     }
 
-    // Finally check for normal uncover moves
     const uncoverOptions = this.findBestCombination(opponentBoard, diceSum, false);
     if (uncoverOptions.length > 0) {
       return {
@@ -83,7 +80,6 @@ class Computer extends Player {
 
       for (let i = start; i <= board.size; i++) {
 
-        // Skip advantage square if not allowed to uncover
         if (advantageApplied && isOpponentBoard && i === advantageSquare && !canUncover) {
           continue;
         }
@@ -126,7 +122,6 @@ class Computer extends Player {
   }
 
   selectWinningCombination(combinations, opponentBoard) {
-    // Find combinations that would result in a win
     const winningCombos = combinations.filter(combo => {
       const tempBoard = new Board(opponentBoard.size);
       tempBoard.setSquareValues([...opponentBoard.squares]);
@@ -134,12 +129,10 @@ class Computer extends Player {
       return tempBoard.allUncovered();
     });
 
-    // If we found winning combinations, return the best one
     if (winningCombos.length > 0) {
       return this.selectBestCombination(winningCombos);
     }
     
-    // Otherwise fall back to normal selection
     return this.selectBestCombination(combinations);
   }
 }

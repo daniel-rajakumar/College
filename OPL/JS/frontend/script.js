@@ -1,4 +1,3 @@
-// DOM elements
 const initialUI = document.getElementById("initial-ui");
 const regularUI = document.getElementById("regular-ui");
 const loadGameInitialButton = document.getElementById("load-game-initial");
@@ -51,13 +50,11 @@ const playButton = document.getElementById("play-button");
 let selectedHistoryIndex = -1;
 let isNewGame = true;
 
-// Show the regular UI and hide the initial UI
 function showRegularUI() {
   initialUI.classList.add("hidden");
   regularUI.classList.remove("hidden");
 }
 
-// Render squares in the format [ x, x, x, ..., x ]
 function renderSquares(container, squares, advantage) {
   container.innerHTML = "";
   const squaresWrapper = document.createElement("div");
@@ -74,7 +71,6 @@ function renderSquares(container, squares, advantage) {
     const position = index + 1;
 
        
-    // Check if this is a protected advantage square
     const isProtected = position === advantage && 
                        container.id === "computer-squares" && 
                        !canUncoverAdvantageSquare();
@@ -105,15 +101,13 @@ function renderSquares(container, squares, advantage) {
   container.appendChild(squaresWrapper);
 }
 
-// Fetch game state from the backend
 async function fetchGameState() {
   const response = await fetch("http://localhost:3000/api/game/state");
   const data = await response.json();
-  console.log("Game state from backend:", data); // Log the result
+  console.log("Game state from backend:", data); 
   return data;
 }
 
-// Update the UI with the game state
 async function updateUI() {
   const state = await fetchGameState();
 
@@ -137,14 +131,13 @@ async function updateUI() {
   document.querySelector("#computer-board > h2").innerHTML = "Player 2: " + state.player2.type;
 }
 
-// Event listeners
 loadGameInitialButton.addEventListener("click", async () => {
   const response = await fetch("http://localhost:3000/api/game/load", {
     method: "POST",
   });
   if (response.ok) {
     const data = await response.json();
-    console.log("Load game response:", data); // Log the result
+    console.log("Load game response:", data); 
 
     if (data.screen === "LOAD") {
       showConfigUI(data.screen);
@@ -188,7 +181,7 @@ rewindButton.addEventListener("click", async () => {
   });
   if (response.ok) {
     const data = await response.json();
-    console.log("Rewind response:", data); // Log the result
+    console.log("Rewind response:", data);
     updateUI();
   }
 });
@@ -199,7 +192,7 @@ saveGameButton.addEventListener("click", async () => {
   });
   if (response.ok) {
     const data = await response.json();
-    console.log("Save game response:", data); // Log the result
+    console.log("Save game response:", data); 
     saveGame();
     // updateUI();
   }
@@ -219,7 +212,7 @@ applyConfigButton.addEventListener("click", async () => {
   });
   if (response.ok) {
     const data = await response.json();
-    console.log("Apply config response:", data); // Log the result
+    console.log("Apply config response:", data); 
 
     if (data.screen === "PLAY") {
       console.log("Showing live game UI");
@@ -339,7 +332,7 @@ submitDiceButton.addEventListener("click", async () => {
 
   if (response.ok) {
     const data = await response.json();
-    console.log("Input dice response:", data); // Log the result
+    console.log("Input dice response:", data); 
     afterDieRoll(data);
   }
 });
@@ -355,12 +348,10 @@ fileInput.addEventListener("change", async (event) => {
     reader.onload = async (e) => {
       const content = e.target.result;
       try {
-        // Parse the file content
         const gameState = parseGameState(content);
         gameState.player1Type = "human";
         gameState.player2Type = "computer";
 
-        // Send the parsed game state to the backend
         const response = await fetch("http://localhost:3000/api/game/load-file", {
           method: "POST",
           headers: {
@@ -373,7 +364,6 @@ fileInput.addEventListener("change", async (event) => {
           const data = await response.json();
           console.log("File load response:", data);
 
-          // Update the UI with the new game state
           showLiveGameUI();
           updateUI();
 
@@ -409,7 +399,7 @@ toggleSwitchElement.addEventListener("change", async () => {
   });
   if (response.ok) {
     const data = await response.json();
-    console.log("Toggle response:", data); // Log the result
+    console.log("Toggle response:", data); 
     
     populateStringSelect(data);
    
@@ -423,7 +413,7 @@ ExitGameButton.addEventListener("click", async () => {
   });
   if (response.ok) {
     const data = await response.json();
-    console.log("Exit game response:", data); // Log the result
+    console.log("Exit game response:", data);
     showStartUI();
     loadGameInitialButton.classList.add("hidden");
     newGameInitialButton.classList.add("hidden");
@@ -453,7 +443,6 @@ playAgainGameButton.addEventListener("click", async () => {
 });
 
 
-// Update rewind button event listener
 rewindButton.addEventListener("click", async () => {
   const response = await fetch("http://localhost:3000/api/game/move-history");
   if (response.ok) {
@@ -467,7 +456,6 @@ rewindButton.addEventListener("click", async () => {
   }
 });
 
-// Update confirm button
 confirmRewindButton.addEventListener("click", async () => {
   const selectedItem = document.querySelector(".move-item.selected");
   if (selectedItem) {
@@ -642,18 +630,16 @@ async function populateStringSelect(strings) {
   const validRollsElement = document.getElementById("valid-rolls");
   validRollsElement.innerHTML = "";
   
-  // Get current game state to check advantage rules
   const state = await fetchGameState();
   const advantageSquare = state.advantage?.square;
   const advantageApplied = state.advantage?.applied;
-  const isOpponentBoard = !toggleSwitchElement.checked; // true if uncovering (opponent's board)
+  const isOpponentBoard = !toggleSwitchElement.checked; 
   const currentPlayer = state.currentPlayer;
   const advantagePlayer = state.advantage?.player;
   const canUncover = advantageApplied ? (currentPlayer === advantagePlayer || state.advantage?.hasTakenTurn) : true;
 
   strings.forEach(str => {
 
-    // Skip combinations that include protected advantage square
     if (advantageApplied && isOpponentBoard && str.includes(advantageSquare) && !canUncover) {
       return;
     }
@@ -840,7 +826,6 @@ function getMoveSummary(move) {
 }
 
 function updateMoveDetails(move) {
-  // Update move info
   document.getElementById("detail-player").textContent = move.currentPlayer === "player1" ? "Player 1" : "Player 2";
   document.getElementById("detail-action").textContent = move.lastAction || "-";
   document.getElementById("detail-squares").textContent = move.lastSquares ? move.lastSquares.join(", ") : "-";
@@ -858,7 +843,7 @@ function renderMoveSquares(elementId, squares, advantageSquare) {
   const container = document.getElementById(elementId);
 
   container.innerHTML = squares.map((square, index) => {
-    const num = index + 1; // Position number (1-based)
+    const num = index + 1; 
 
     if (square === 0) {
       return `<span class="covered${num === advantageSquare ? ' advantage' : ''}">0</span>`;

@@ -84,14 +84,12 @@ class Tournament {
   }
 
   calculateAdvantageSquare(score) {
-    if (score <= 0) return 1; // Minimum square is 1
+    if (score <= 0) return 1; 
   
-    // Sum all digits (0-9 result)
     const sum = String(score).split('')
                       .map(Number)
                       .reduce((a, b) => a + b, 0);
     
-    // Special case: sum=0 → use square 1
     return sum === 0 ? 1 : sum;
   }
 
@@ -100,25 +98,22 @@ class Tournament {
     this.advantage.square = this.calculateAdvantageSquare(winnerScore);
     this.advantage.applied = true;
 
-    // Determine who gets the advantage
     if (winner === this.advantage.firstPlayer) {
-      // Winner took first turn → opponent gets advantage
       this.advantage.player = winner === 'player1' ? 'player2' : 'player1';
     } else {
-      // Winner didn't take first turn → winner gets advantage
       this.advantage.player = winner;
     }
   
-    // Cover the advantage square on the appropriate board
     const advantagedPlayer = this.advantage.player;
     const opponent = advantagedPlayer === 'player1' ? 'player2' : 'player1';
     
     // Cover the square on opponent's board if advantaged player is current player
     // this.game.players[opponent].board.coverSquare(this.advantage.square);
+
     // this.game.players[advantagedPlayer].board.coverSquare(this.advantage.square);
     this.game.players[opponent].board.coverSquare(this.advantage.square);
     
-    this.advantage.hasTakenTurn = false;  // Reset for new round
+    this.advantage.hasTakenTurn = false;  
     
     console.log(`Advantage applied! Square ${this.advantage.square} covered for ${opponent}`);
   }
@@ -126,7 +121,6 @@ class Tournament {
   canUncoverAdvantage(currentPlayer) {
     if (!this.advantage.applied) return true;
     
-    // If current player is not the one with advantage, check if advantaged player has had a turn
     if (currentPlayer !== this.advantage.player) {
       return this.advantage.hasTakenTurn;
     }
@@ -134,7 +128,6 @@ class Tournament {
     return true;
   }
 
-  // Add this method to update turn tracking
   recordTurn(player) {
     if (this.advantage.applied && player === this.advantage.player) {
       this.advantage.hasTakenTurn = true;
