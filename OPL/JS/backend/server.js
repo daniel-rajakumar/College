@@ -14,6 +14,9 @@ app.use(express.static(path.join(__dirname, "../frontend")));
 
 const tournament = new Tournament();
 
+const n = 6; // Example board size
+console.log(tournament.getAdvantageSquare("4 4"));
+
 app.get("/api/game/state", (req, res) => {
   res.json(tournament.getState());
 });
@@ -169,6 +172,17 @@ app.post("/api/game/valid-move", (req, res) => {
       opponentBoard = tournament.game.players.player1.board;
     }
   }
+
+  tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"}`;
+
+  if (tournament.game.players[currentPlayer].type !== "human") {
+    const opponentBoard = currentPlayer === "player1" 
+      ? tournament.game.players.player2.board 
+      : tournament.game.players.player1.board;
+
+    const move = tournament.game.players[currentPlayer].suggestMove(tournament.game.getDice().total, opponentBoard);
+    tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"} because ${move.reason.toLowerCase()}`;
+  }
     
   if (toCover) {
     for (const square of validMove) {
@@ -189,18 +203,6 @@ app.post("/api/game/valid-move", (req, res) => {
     return;
   }
 
-  tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"}`;
-
-  let move;
-  if (tournament.game.players.player1.type !== "human" && currentPlayer === "player1") {
-    move = tournament.game.players.player1.suggestMove(tournament.game.getDice().total, tournament.game.players.player2.board);
-    tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"} because ${move.reason.toLowerCase()}`;
-  } 
-
-  if (tournament.game.players.player2.type !== "human" && currentPlayer === "player2") {
-    move = tournament.game.players.player2.suggestMove(tournament.game.getDice().total, tournament.game.players.player1.board);
-    tournament.game.message = `${currentPlayer} selected ${validMove} and choose to ${toCover ? "cover" : "uncover"} because ${move.reason.toLowerCase()}`;
-  }
   
   res.json({ message: `You selected: ${validMove}` });
 });

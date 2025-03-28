@@ -5,6 +5,7 @@ class Board {
   }
 
   coverSquare(index) {
+    index = parseInt(index, 10);
     if (index >= 1 && index <= this.size) {
       this.squares[index - 1] = 0;
     }

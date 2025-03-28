@@ -79,9 +79,15 @@ class Tournament {
   }
 
   calculateAdvantageSquare(score) {
-    score = Math.abs(score);
-    if (score === 0) return 1;
-    return score % 9 || 9; // Returns 1-9
+    if (score <= 0) return 1; // Minimum square is 1
+  
+    // Sum all digits (0-9 result)
+    const sum = String(score).split('')
+                      .map(Number)
+                      .reduce((a, b) => a + b, 0);
+    
+    // Special case: sum=0 → use square 1
+    return sum === 0 ? 1 : sum;
   }
 
   applyAdvantage(winner, winnerScore) {
