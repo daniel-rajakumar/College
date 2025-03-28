@@ -296,7 +296,7 @@ playButton.addEventListener("click", async () => {
     rewindButton.classList.remove("hidden");
     saveGameButton.classList.remove("hidden");  
     gameBoardElement.classList.remove("hidden");
-    playAgainGameButton.classList.add("hidden");
+    playButton.classList.add("hidden");
   }
 });
 
@@ -638,9 +638,26 @@ function afterDieRoll(data){
     updateUI();
 }
 
-function populateStringSelect(strings) {
+async function populateStringSelect(strings) {
+  const validRollsElement = document.getElementById("valid-rolls");
   validRollsElement.innerHTML = "";
+  
+  // Get current game state to check advantage rules
+  const state = await fetchGameState();
+  const advantageSquare = state.advantage?.square;
+  const advantageApplied = state.advantage?.applied;
+  const isOpponentBoard = !toggleSwitchElement.checked; // true if uncovering (opponent's board)
+  const currentPlayer = state.currentPlayer;
+  const advantagePlayer = state.advantage?.player;
+  const canUncover = advantageApplied ? (currentPlayer === advantagePlayer || state.advantage?.hasTakenTurn) : true;
+
   strings.forEach(str => {
+
+    // Skip combinations that include protected advantage square
+    if (advantageApplied && isOpponentBoard && str.includes(advantageSquare) && !canUncover) {
+      return;
+    }
+    
     const option = document.createElement("option");
     option.value = str;
     option.textContent = str;

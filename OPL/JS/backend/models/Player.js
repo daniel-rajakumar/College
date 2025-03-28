@@ -41,27 +41,6 @@ class Player {
       reason: "No valid moves available"
     };
   }
-
-  findBestCombination(board, sum, forCovering) {
-    const validCombinations = board.findValidCombinations(sum, forCovering);
-    
-    if (Tournament.getAdvantageApplied()) {
-      const advantageSquare = Tournament.getAdvantageSquare();
-      return validCombinations.filter(combo => !combo.includes(advantageSquare));
-    }
-    
-    return validCombinations;
-  }
-
-  selectBestCombination(combinations) {
-    return combinations.reduce((best, current) => {
-      if (current.length > best.length) return current;
-      if (current.length === best.length) {
-        return current.reduce((a, b) => a + b, 0) > best.reduce((a, b) => a + b, 0) ? current : best;
-      }
-      return best;
-    }, []);
-  }
 }
 
 module.exports = Player;

@@ -99,6 +99,7 @@ class Board {
     const advantageSquare = this.tournament?.getAdvantageSquare();
     const advantageApplied = this.tournament?.getAdvantageApplied();
     const isOpponentBoard = !forCovering;
+    const currentPlayer = this.game?.currentPlayer;
     const canUncover = this.game?.tournament?.canUncoverAdvantage(this.game.currentPlayer);
 
 
@@ -106,6 +107,7 @@ class Board {
     if (advantageApplied && isOpponentBoard && combination.includes(advantageSquare) && !canUncover) {
       return false;
     }
+    
 
     for (const square of combination) {
       if ((forCovering && this.isSquareCovered(square)) || (!forCovering && !this.isSquareCovered(square))) {

@@ -222,7 +222,7 @@ app.post("/api/game/valid-move", (req, res) => {
   if (winner !== null) {
     tournament.game.declareWinner();
 
-    tournament.game.message = `Game over! Score (Player 1, Player 2) : (${tournament.game.players.player1.getScore()}, ${tournament.game.players.player2.getScore()})`;
+    tournament.game.message = `Game over! Score (Player 1, Player 2) : (${tournament.game.players.player1.getScore()}, ${tournament.game.players.player2.getScore()}). ${winner} gained ${tournament.advantage.winnerScore}!`;
     res.json({ winner, gameOver: true, message: "Game over!" });
     return;
   }
@@ -317,11 +317,11 @@ app.post('/api/game/winner', (req, res) => {
 });
 
 app.get('/api/game/can-uncover-advantage', (req, res) => {
-  if (!this.tournament) {
+  if (!tournament) {
     return res.json({ canUncover: true });
   }
   
-  const canUncover = tournament.canUncoverAdvantage(game.currentPlayer);
+  const canUncover = tournament.canUncoverAdvantage(tournament.game.currentPlayer);
   res.json({ canUncover });
 });
 

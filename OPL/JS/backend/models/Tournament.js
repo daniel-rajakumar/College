@@ -20,6 +20,7 @@ class Tournament {
     this.moveHistory = []; 
     this.currentHistoryIndex = -1; 
     this.BOARD_SIZE = 0;
+    
   }
 
 

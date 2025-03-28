@@ -90,6 +90,7 @@ class Game {
 
     return null;
   }
+  
 
   declareWinner() {
     const winner = this.isGameOver();
