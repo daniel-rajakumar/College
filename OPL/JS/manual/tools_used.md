@@ -13,3 +13,9 @@ Tutorials:
 
 - YouTube: Watched some javascript crash code to refresh my knowledge before I start the project.
 -- [Video 1](https://www.youtube.com/watch?v=PkZNo7MFNFg&t=84s)
+
+Online: 
+- I used Reddit and Stackoverflow for debugging help. For instance, when my webpage wasn’t loading locally, I discovered through these forums that I was using the wrong port number.
+
+Documentation: 
+- I used the [expressjs documentation](https://expressjs.com/en/5x/api.html) get started with it.
