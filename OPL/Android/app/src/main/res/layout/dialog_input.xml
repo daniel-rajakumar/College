@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter Dice Values:" />
+
+    <EditText
+        android:id="@+id/editTextDice1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Dice 1"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextDice2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Dice 2"
+        android:inputType="number" />
+
+</LinearLayout>
