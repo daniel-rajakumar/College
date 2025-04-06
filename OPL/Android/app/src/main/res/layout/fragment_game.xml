@@ -1,53 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/buttonLayout_two"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Title -->
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/diceLayout">
+
+        <LinearLayout
+            android:id="@+id/linearLayout_one"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btnRoll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Roll Dice" />
+
+            <Button
+                android:id="@+id/btnInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="Input Move" />
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="Save Game" />
+
+            <Button
+                android:id="@+id/btnHelp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="Help" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout_moveOptions"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:visibility="visible">
+
+            <!-- Toggle Button for Cover/Uncover -->
+            <ToggleButton
+                android:id="@+id/toggleCoverUncover"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Cover"
+                android:textOff="Cover"
+                android:textOn="Uncover" />
+
+            <!-- Dropdown Menu (Spinner) -->
+            <Spinner
+                android:id="@+id/spinnerOptions"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:entries="@array/dropdown_options" />
+
+            <!-- Confirm Button -->
+            <Button
+                android:id="@+id/btnConfirm"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="✅" />
+
+            <!-- Help Button -->
+            <Button
+                android:id="@+id/btnHelpMove"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Help" />
+
+        </LinearLayout>
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="Canoga"
         android:textSize="26sp"
         android:textStyle="bold"
-        android:gravity="center"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Scoreboard -->
+
     <LinearLayout
         android:id="@+id/scoreBoardLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
         <TextView
             android:id="@+id/tvHumanScore"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="center"
             android:text="Your Score: 0"
-            android:textSize="18sp"
-            android:gravity="center" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tvComputerScore"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="center"
             android:text="Computer Score: 0"
-            android:textSize="18sp"
-            android:gravity="center" />
+            android:textSize="18sp" />
     </LinearLayout>
 
     <!-- Turn Indicator -->
@@ -55,123 +154,80 @@
         android:id="@+id/tvTurnIndicator"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
         android:text="Your Turn"
         android:textSize="18sp"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/scoreBoardLayout"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scoreBoardLayout" />
 
     <!-- Human Board View -->
     <TextView
         android:id="@+id/tvHumanBoard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/board_background"
+        android:padding="8dp"
         android:text="Your Board: [ ] [ ] [ ] [ ] [ ]"
         android:textSize="16sp"
-        android:padding="8dp"
-        android:background="@drawable/board_background"
-        app:layout_constraintTop_toBottomOf="@id/tvTurnIndicator"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTurnIndicator" />
 
     <!-- Computer Board View -->
     <TextView
         android:id="@+id/tvComputerBoard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/board_background"
+        android:padding="8dp"
         android:text="Computer Board: [ ] [ ] [ ] [ ] [ ]"
         android:textSize="16sp"
-        android:padding="8dp"
-        android:background="@drawable/board_background"
-        app:layout_constraintTop_toBottomOf="@id/tvHumanBoard"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvHumanBoard" />
 
     <!-- Dice Section -->
     <LinearLayout
         android:id="@+id/diceLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvComputerBoard"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvComputerBoard">
 
         <ImageView
             android:id="@+id/ivDice1"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/dice_1"
-            android:contentDescription="Dice 1" />
+            android:contentDescription="Dice 1"
+            android:src="@drawable/dice_1" />
 
         <ImageView
             android:id="@+id/ivDice2"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/dice_2"
+            android:layout_marginStart="8dp"
             android:contentDescription="Dice 2"
-            android:layout_marginStart="8dp" />
+            android:src="@drawable/dice_2" />
 
         <TextView
             android:id="@+id/tvDiceSum"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
             android:text="Sum: 0"
-            android:textSize="18sp"
-            android:layout_marginStart="12dp" />
+            android:textSize="18sp" />
     </LinearLayout>
 
     <!-- Action Buttons -->
-    <LinearLayout
-        android:id="@+id/buttonLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/diceLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
-
-        <Button
-            android:id="@+id/btnRoll"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Roll Dice" />
-
-        <Button
-            android:id="@+id/btnInput"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Input Move"
-            android:layout_marginStart="8dp" />
-
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Save Game"
-            android:layout_marginStart="8dp" />
-
-        <Button
-            android:id="@+id/btnHelp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Help"
-            android:layout_marginStart="8dp" />
-    </LinearLayout>
 
     <!-- Game Log (ScrollView) -->
     <ScrollView
@@ -180,11 +236,12 @@
         android:layout_height="0dp"
         android:background="@android:color/darker_gray"
         android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/buttonLayout"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintVertical_bias="1.0">
 
         <TextView
             android:id="@+id/tvGameLog"
