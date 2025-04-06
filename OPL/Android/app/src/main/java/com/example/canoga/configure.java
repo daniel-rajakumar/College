@@ -11,6 +11,9 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
+import java.util.Objects;
 
 public class configure extends Fragment {
 
@@ -31,6 +34,19 @@ public class configure extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mViewModel = new ViewModelProvider(this).get(ConfigureViewModel.class);
         // TODO: Use the ViewModel
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Button nextButton = view.findViewById(R.id.btnNextConfig);
+        nextButton.setOnClickListener(v -> {
+            // Navigate to the Game fragment.
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView, new Game())
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
 }
