@@ -1,4 +1,4 @@
-package com.example.canoga;
+package com.example.canoga.ui.main.views;
 
 import androidx.lifecycle.ViewModel;
 

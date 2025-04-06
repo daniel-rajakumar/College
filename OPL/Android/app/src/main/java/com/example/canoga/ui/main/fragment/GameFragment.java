@@ -1,6 +1,7 @@
-package com.example.canoga;
+package com.example.canoga.ui.main.fragment;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.ContentValues.TAG;
 
 import androidx.lifecycle.ViewModelProvider;
 
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,18 +23,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.FileNotFoundException;
+import com.example.canoga.ui.main.views.GameViewModel;
+import com.example.canoga.R;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Objects;
 
-public class Game extends Fragment {
+public class GameFragment extends Fragment {
 
     private static final int CREATE_FILE_REQUEST_CODE = 1;
     private GameViewModel mViewModel;
 
-    public static Game newInstance() {
-        return new Game();
+    public static GameFragment newInstance() {
+        return new GameFragment();
     }
 
     @Override
@@ -94,6 +97,18 @@ public class Game extends Fragment {
                 startActivityForResult(intent, CREATE_FILE_REQUEST_CODE);
             }
         });
+
+        // Assume you add a new button for finishing the game.
+        Button finishButton = view.findViewById(R.id.btnFinishGame);
+        if (finishButton != null) {
+            finishButton.setOnClickListener(v -> {
+                // Navigate to the End fragment.
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerView, new end())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
     }
 
     @Override
@@ -109,6 +124,8 @@ public class Game extends Fragment {
         if (requestCode == CREATE_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
             if (data != null) {
                 Uri fileUri = data.getData();
+
+                Log.d(TAG, "onActivityResult: " + fileUri.toString());
                 // Write game save data to the file
                 writeGameSaveToFile(fileUri);
             }
@@ -129,4 +146,5 @@ public class Game extends Fragment {
             Toast.makeText(getActivity(), "Error saving game.", Toast.LENGTH_SHORT).show();
         }
     }
+
 }

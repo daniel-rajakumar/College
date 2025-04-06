@@ -1,40 +1,20 @@
 package com.example.canoga;
 
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.canoga.ui.main.StartFragment;
+import com.example.canoga.ui.main.fragment.StartFragment;
 
 public class MainActivity extends AppCompatActivity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        // Load the main menu fragment when the app starts.
         if (savedInstanceState == null) {
+            // Start with the main menu (StartFragment)
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainerView, new StartFragment()) // Using EndingFragment as the main menu (inflates fragment_main.xml)
+                    .replace(R.id.fragmentContainerView, StartFragment.newInstance())
                     .commit();
         }
-
-
-
-
     }
-
-
-
 }

@@ -58,6 +58,14 @@
                 android:text="Help" />
         </LinearLayout>
 
+        <!-- Within your linearLayout_one or another appropriate container -->
+        <Button
+            android:visibility="gone"
+            android:id="@+id/btnFinishGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Finish Game" />
+
         <LinearLayout
             android:id="@+id/linearLayout_moveOptions"
             android:layout_width="match_parent"
