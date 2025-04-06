@@ -1,11 +1,12 @@
 package com.example.canoga.model;
 
+import java.io.Serializable;
 import java.util.Random;
 
 /**
  * Manages a single game round.
  */
-public class GameRound {
+public class GameRound implements Serializable {
     private Board board;
     private Human human;
     private Computer computer;
@@ -21,13 +22,10 @@ public class GameRound {
         human = new Human(board);
         computer = new Computer(board);
         random = new Random();
+        // Default turn (this may be overridden by loaded data)
         isHumanTurn = decideFirstPlayer();
     }
 
-    /**
-     * Determines the first player by rolling dice.
-     * @return true if human goes first.
-     */
     private boolean decideFirstPlayer() {
         int humanRoll = (random.nextInt(6) + 1) + (random.nextInt(6) + 1);
         int computerRoll = (random.nextInt(6) + 1) + (random.nextInt(6) + 1);
@@ -38,9 +36,6 @@ public class GameRound {
         return humanRoll > computerRoll;
     }
 
-    /**
-     * Plays one turn of the game.
-     */
     public void playTurn() {
         int diceSum = throwDice();
         if (isHumanTurn) {
@@ -48,24 +43,15 @@ public class GameRound {
         } else {
             computer.makeMove(diceSum);
         }
-        // For simplicity, alternate turn after each move.
         isHumanTurn = !isHumanTurn;
     }
 
-    /**
-     * Simulates dice throws.
-     * @return Sum of dice values.
-     */
     private int throwDice() {
         int die1 = random.nextInt(6) + 1;
         int die2 = random.nextInt(6) + 1;
         return die1 + die2;
     }
 
-    /**
-     * Serializes the game round state into a text format.
-     * @return Serialized game state.
-     */
     public String serialize() {
         StringBuilder sb = new StringBuilder();
         sb.append("Board Size: ").append(board.getSize()).append("\n");
@@ -79,7 +65,25 @@ public class GameRound {
         for (boolean covered : board.getComputerSquares()) {
             sb.append(covered ? "1 " : "0 ");
         }
+        sb.append("\nNext Turn: ").append(isHumanTurn ? "Human" : "Computer");
         return sb.toString();
+    }
+
+    // Setters used by the parser:
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
+    public void setHuman(Human human) {
+        this.human = human;
+    }
+
+    public void setComputer(Computer computer) {
+        this.computer = computer;
+    }
+
+    public void setHumanTurn(boolean isHumanTurn) {
+        this.isHumanTurn = isHumanTurn;
     }
 
     public Human getHuman() {

@@ -3,8 +3,11 @@ package com.example.canoga.ui.main.fragment;
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 
+import static com.example.canoga.ui.main.fragment.StartFragment.LOAD_FILE_REQUEST_CODE;
+
 import androidx.lifecycle.ViewModelProvider;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,19 +26,41 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.canoga.controller.GameStateParser;
+import com.example.canoga.controller.SaveLoadController;
+import com.example.canoga.model.GameRound;
 import com.example.canoga.ui.main.views.GameViewModel;
 import com.example.canoga.R;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 public class GameFragment extends Fragment {
 
     private static final int CREATE_FILE_REQUEST_CODE = 1;
+    private static final int LOAD_FILE_REQUEST_CODE = 2;
     private GameViewModel mViewModel;
+    private GameRound gameRound;
 
-    public static GameFragment newInstance() {
-        return new GameFragment();
+    // Overloaded factory method that accepts a GameRound
+    public static GameFragment newInstance(GameRound loadedRound) {
+        GameFragment fragment = new GameFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("gameRound", loadedRound);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Retrieve the GameRound from the Bundle if provided.
+        if (getArguments() != null) {
+            gameRound = (GameRound) getArguments().getSerializable("gameRound");
+        }
+        // Otherwise, you can initialize a new GameRound if needed.
     }
 
     @Override
@@ -121,13 +146,23 @@ public class GameFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CREATE_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
+        if (requestCode == LOAD_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
             if (data != null) {
                 Uri fileUri = data.getData();
-
-                Log.d(TAG, "onActivityResult: " + fileUri.toString());
-                // Write game save data to the file
-                writeGameSaveToFile(fileUri);
+                SaveLoadController saveLoadController = new SaveLoadController(requireActivity().getContentResolver());
+                String fileContent = saveLoadController.loadGameState(fileUri);
+                if (fileContent != null) {
+                    try {
+                        GameRound loadedRound = GameStateParser.parse(fileContent);
+                        GameFragment gameFragment = GameFragment.newInstance(loadedRound);
+                        getActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragmentContainerView, gameFragment)
+                                .commit();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getActivity(), "Error parsing game state.", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         }
     }
@@ -146,5 +181,7 @@ public class GameFragment extends Fragment {
             Toast.makeText(getActivity(), "Error saving game.", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
 }

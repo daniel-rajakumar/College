@@ -1,6 +1,7 @@
 package com.example.canoga.controller;
 
 import com.example.canoga.model.GameModel;
+import com.example.canoga.model.GameRound;
 
 /**
  * Controller for the configuration view.
@@ -24,5 +25,9 @@ public class ConfigureController {
      */
     public void setBoardSize(int boardSize) {
         model.setBoardSize(boardSize);
+    }
+
+    public GameRound getNewGameRound() {
+        return new GameRound(model.getBoardSize());
     }
 }

@@ -14,6 +14,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.canoga.controller.GameStateParser;
+import com.example.canoga.controller.SaveLoadController;
+import com.example.canoga.model.GameRound;
 import com.example.canoga.ui.main.views.MainViewModel;
 //import com.example.canogaConfigure;
 import com.example.canoga.R;
@@ -25,7 +28,7 @@ import java.util.Objects;
 
 public class StartFragment extends Fragment {
 
-    private static final int LOAD_FILE_REQUEST_CODE = 2;
+    static final int LOAD_FILE_REQUEST_CODE = 2;
     private MainViewModel mViewModel;
 
     public static StartFragment newInstance() {
@@ -71,14 +74,31 @@ public class StartFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == LOAD_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             if (data != null) {
                 Uri fileUri = data.getData();
-                loadFileContent(fileUri);
+                // Use your SaveLoadController to load the file content.
+                SaveLoadController saveLoadController = new SaveLoadController(requireActivity().getContentResolver());
+                String fileContent = saveLoadController.loadGameState(fileUri);
+                if (fileContent != null) {
+                    try {
+                        // Parse the file content and update the game state.
+                        GameRound loadedRound = GameStateParser.parse(fileContent);
+                        // Optionally, store this round in a singleton or pass it to the GameFragment.
+                        GameFragment gameFragment = GameFragment.newInstance(loadedRound);
+                        requireActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragmentContainerView, gameFragment)
+                                .commit();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getActivity(), "Error parsing game state.", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
+
 
     private void loadFileContent(Uri uri) {
         try {
@@ -100,4 +120,6 @@ public class StartFragment extends Fragment {
             Toast.makeText(getActivity(), "Error loading file.", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 }

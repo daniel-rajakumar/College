@@ -42,7 +42,7 @@ public class ConfigureFragment extends Fragment {
             controller.setBoardSize(boardSize);
             // Navigate to the Game screen (GameFragment)
             requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainerView, GameFragment.newInstance())
+                    .replace(R.id.fragmentContainerView, GameFragment.newInstance(controller.getNewGameRound()))
                     .addToBackStack(null)
                     .commit();
         });
