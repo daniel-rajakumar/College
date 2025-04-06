@@ -1,17 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:layout_width="match_parent"
-android:layout_height="match_parent">
-
-<TextView
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Config" />
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-<Button
-    android:id="@+id/btnNextConfig"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Next"
-    android:layout_gravity="center" />
-</FrameLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Board Size:"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/spinnerBoardSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/board_size_options"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnNextConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next"
+        android:layout_gravity="center" />
+</LinearLayout>
