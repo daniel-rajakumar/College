@@ -1,4 +1,4 @@
-package com.example.canoga.ui.main.fragment;
+package com.example.canoga.view;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,7 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +19,11 @@ import com.example.canoga.controller.SaveLoadController;
 import com.example.canoga.model.GameRound;
 //import com.example.canogaConfigure;
 import com.example.canoga.R;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Objects;
 
 public class StartFragment extends Fragment {
 
@@ -54,7 +54,7 @@ public class StartFragment extends Fragment {
         playButton.setOnClickListener(v -> {
             // Navigate to the configuration fragment.
             requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainerView, new ConfigureFragment())
+                    .replace(R.id.fragmentContainerView, new BoardView.ConfigureFragment())
                     .addToBackStack(null)
                     .commit();
         });

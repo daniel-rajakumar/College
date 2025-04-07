@@ -5,7 +5,7 @@
     android:id="@+id/start"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.main.fragment.StartFragment">
+    tools:context=".view.StartFragment">
 
     <Button
         android:id="@+id/button2"

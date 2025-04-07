@@ -1,6 +1,5 @@
-package com.example.canoga.ui.main.fragment;
+package com.example.canoga.view;
 
-import androidx.lifecycle.ViewModelProvider;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,6 +12,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.canoga.R;
+
+import java.util.Objects;
 
 public class end extends Fragment {
 
@@ -50,7 +51,7 @@ public class end extends Fragment {
 
             btnRestart.setOnClickListener(v -> {
                 // Restart the game; for example, navigate back to the Game fragment.
-                getActivity().getSupportFragmentManager().beginTransaction()
+                requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentContainerView, new GameFragment())
                         .addToBackStack(null)
                         .commit();

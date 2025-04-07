@@ -1,8 +1,6 @@
-package com.example.canoga.ui.main.fragment;
+package com.example.canoga.view;
 
 import static android.app.Activity.RESULT_OK;
-
-import androidx.lifecycle.ViewModelProvider;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -23,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.example.canoga.controller.GameController;
 import com.example.canoga.controller.GameStateParser;
@@ -31,11 +30,12 @@ import com.example.canoga.model.Computer;
 import com.example.canoga.model.GameRound;
 import com.example.canoga.model.Human;
 import com.example.canoga.R;
-import com.example.canoga.view.BoardView;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GameFragment extends Fragment {
 
@@ -44,6 +44,9 @@ public class GameFragment extends Fragment {
     private GameRound gameRound;
     private TextView tvHumanScore, tvComputerScore, tvTurnIndicator;
     private BoardView boardView;
+
+    private LinearLayout layoutOne;
+    private LinearLayout layoutMoveOptions;
 
     private GameController gameController;
 
@@ -80,6 +83,8 @@ public class GameFragment extends Fragment {
         tvComputerScore = view.findViewById(R.id.tvComputerScore);
         tvTurnIndicator = view.findViewById(R.id.tvTurnIndicator);
         boardView = view.findViewById(R.id.boardView); // Assuming you have a BoardView in fragment_game.xml
+        layoutOne = view.findViewById(R.id.linearLayout_one);
+        layoutMoveOptions = view.findViewById(R.id.linearLayout_moveOptions);
         return view;
     }
 
@@ -115,6 +120,11 @@ public class GameFragment extends Fragment {
         gameController = new GameController(gameRound, boardView);
         Button buttonInput = view.findViewById(R.id.btnInput);
         buttonInput.setOnClickListener(this::onClickButtonInput);
+
+        Button btnConfirm = view.findViewById(R.id.btnConfirm);
+        btnConfirm.setOnClickListener(this::onClickButtonConfirm);
+
+
         updateUI();
     }
 
@@ -213,8 +223,6 @@ public class GameFragment extends Fragment {
                             spinnerOptions.setAdapter(adapter);
 
                             // Optionally hide the current move layout and show the move options layout.
-                            LinearLayout layoutOne = getView().findViewById(R.id.linearLayout_one);
-                            LinearLayout layoutMoveOptions = getView().findViewById(R.id.linearLayout_moveOptions);
                             layoutOne.setVisibility(View.GONE);
                             layoutMoveOptions.setVisibility(View.VISIBLE);
                         } else {
@@ -226,5 +234,81 @@ public class GameFragment extends Fragment {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void onClickButtonConfirm(View v) {
+        // Retrieve the selected move from the spinner.
+        Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
+        String selectedMove = (String) spinnerOptions.getSelectedItem();
+
+        if (selectedMove == null || selectedMove.equals("No valid moves")) {
+            // Since no valid move is made, switch turn.
+            Toast.makeText(getActivity(), "No valid move selected", Toast.LENGTH_SHORT).show();
+
+            gameRound.setHumanTurn(!gameRound.isHumanTurn());
+            updateUI();  // Refresh UI after turn switch.
+
+            layoutMoveOptions.setVisibility(View.GONE);
+            layoutOne.setVisibility(View.VISIBLE);
+
+            return;
+        }
+
+        // Parse the move string.
+        // Our formatted string is like: "_ 2 _ 4 _ _ _ _ _"
+        // We split by spaces and extract the numbers.
+        String[] tokens = selectedMove.split(", ");
+        List<Integer> moveSquares = new ArrayList<>();
+        for (String token : tokens) {
+            if (!token.equals("_")) {
+                try {
+                    moveSquares.add(Integer.parseInt(token));
+                } catch (NumberFormatException e) {
+                    // Log or handle the parsing error as needed.
+                }
+            }
+        }
+
+        // Determine the move type using the toggle button.
+        // Assume the toggle button shows "Cover" when off and "Uncover" when on.
+        ToggleButton toggle = requireView().findViewById(R.id.toggleCoverUncover);
+        // If the toggle is not checked, we're in Cover mode.
+        boolean isCovering = !toggle.isChecked();
+
+//        if (!gameRound.isHumanTurn()) isCovering = !isCovering;
+
+        // Apply the move to the board.
+        boolean validMove = true;
+
+        for (Integer square : moveSquares) {
+            boolean isHumanTurn = gameRound.isHumanTurn();
+            boolean success;
+
+            if (isCovering) {
+                success = isHumanTurn ? gameRound.getBoard().coverHumanSquare(square)
+                                      : gameRound.getBoard().coverComputerSquare(square);
+            } else {
+                success = isHumanTurn ? gameRound.getBoard().uncoverComputerSquare(square)
+                                      : gameRound.getBoard().uncoverHumanSquare(square);
+            }
+
+            if (!success) {
+                validMove = false;
+                break;
+            }
+        }
+
+        if (validMove) {
+            Toast.makeText(getActivity(), "Move confirmed", Toast.LENGTH_SHORT).show();
+            // Update the UI (for example, refresh board display, update scores, etc.)
+        } else {
+            gameRound.setHumanTurn(!gameRound.isHumanTurn()); // Switch turn if the move was invalid
+            Toast.makeText(getActivity(), "Invalid move. Please try again.", Toast.LENGTH_SHORT).show();
+        }
+
+        updateUI();  // Assuming you have an updateUI() method in your fragment.
+        // Hide the move options layout and show the input layout again.
+        layoutMoveOptions.setVisibility(View.GONE);
+        layoutOne.setVisibility(View.VISIBLE);
     }
 }

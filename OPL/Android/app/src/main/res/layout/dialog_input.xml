@@ -16,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Dice 1"
+        android:text="1"
         android:inputType="number" />
 
     <EditText
@@ -23,6 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Dice 2"
+        android:text="1"
         android:inputType="number" />
 
 </LinearLayout>

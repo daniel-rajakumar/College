@@ -3,7 +3,7 @@ package com.example.canoga;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.canoga.ui.main.fragment.StartFragment;
+import com.example.canoga.view.StartFragment;
 
 public class MainActivity extends AppCompatActivity {
     @Override

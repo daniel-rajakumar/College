@@ -20,8 +20,10 @@ public class Board {
         this.size = size;
         humanSquares = new boolean[size];    // All false by default (uncovered)
         computerSquares = new boolean[size]; // For this game, assume initial state is covered
+
         for (int i = 0; i < size; i++) {
-            computerSquares[i] = true;  // For example, computer starts with all squares covered.
+            computerSquares[i] = false;  // For example, computer starts with all squares covered.
+            humanSquares[i] = false; // Human starts with all squares uncovered.
         }
     }
 
@@ -73,6 +75,28 @@ public class Board {
         for (boolean covered : computerSquares) {
             if (covered) return false;
         }
+        return true;
+    }
+
+    public boolean uncoverHumanSquare(Integer square) {
+        if (square < 1 || square > size) {
+            return false; // Invalid index
+        }
+        if (!humanSquares[square - 1]) {
+            return false; // Already uncovered
+        }
+        humanSquares[square - 1] = false; // Uncover the square
+        return true;
+    }
+
+    public boolean coverComputerSquare(Integer square) {
+        if (square < 1 || square > size) {
+            return false; // Invalid index
+        }
+        if (computerSquares[square - 1]) {
+            return false; // Already covered
+        }
+        computerSquares[square - 1] = true; // Cover the square
         return true;
     }
 }
