@@ -137,25 +137,25 @@ public class GameFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LOAD_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
-            if (data != null) {
-                Uri fileUri = data.getData();
-                SaveLoadController saveLoadController = new SaveLoadController(requireActivity().getContentResolver());
-                String fileContent = saveLoadController.loadGameState(fileUri);
-                if (fileContent != null) {
-                    try {
-                        GameRound loadedRound = GameStateParser.parse(fileContent);
-                        GameFragment gameFragment = GameFragment.newInstance(loadedRound);
-                        getActivity().getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragmentContainerView, gameFragment)
-                                .commit();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(getActivity(), "Error parsing game state.", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }
+//        if (requestCode == LOAD_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
+//            if (data != null) {
+//                Uri fileUri = data.getData();
+//                SaveLoadController saveLoadController = new SaveLoadController(requireActivity().getContentResolver());
+//                String fileContent = saveLoadController.loadGameState(fileUri);
+//                if (fileContent != null) {
+//                    try {
+//                        GameRound loadedRound = GameStateParser.parse(fileContent);
+//                        GameFragment gameFragment = GameFragment.newInstance(loadedRound);
+//                        getActivity().getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.fragmentContainerView, gameFragment)
+//                                .commit();
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                        Toast.makeText(getActivity(), "Error parsing game state.", Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//            }
+//        }
     }
 
     private void writeGameSaveToFile(Uri uri) {
@@ -236,6 +236,7 @@ public class GameFragment extends Fragment {
                 .show();
     }
 
+
     private void onClickButtonConfirm(View v) {
         // Retrieve the selected move from the spinner.
         Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
@@ -244,19 +245,16 @@ public class GameFragment extends Fragment {
         if (selectedMove == null || selectedMove.equals("No valid moves")) {
             // Since no valid move is made, switch turn.
             Toast.makeText(getActivity(), "No valid move selected", Toast.LENGTH_SHORT).show();
-
             gameRound.setHumanTurn(!gameRound.isHumanTurn());
             updateUI();  // Refresh UI after turn switch.
-
             layoutMoveOptions.setVisibility(View.GONE);
             layoutOne.setVisibility(View.VISIBLE);
-
             return;
         }
 
         // Parse the move string.
-        // Our formatted string is like: "_ 2 _ 4 _ _ _ _ _"
-        // We split by spaces and extract the numbers.
+        // Our formatted string is like: "_, 2, _, 4, _, _, _, _, _"
+        // We split by ", " and extract numbers.
         String[] tokens = selectedMove.split(", ");
         List<Integer> moveSquares = new ArrayList<>();
         for (String token : tokens) {
@@ -264,34 +262,34 @@ public class GameFragment extends Fragment {
                 try {
                     moveSquares.add(Integer.parseInt(token));
                 } catch (NumberFormatException e) {
-                    // Log or handle the parsing error as needed.
+                    // Handle or log parsing error if needed.
                 }
             }
         }
 
         // Determine the move type using the toggle button.
-        // Assume the toggle button shows "Cover" when off and "Uncover" when on.
+        // Assume the toggle shows "Cover" when off and "Uncover" when on.
         ToggleButton toggle = requireView().findViewById(R.id.toggleCoverUncover);
-        // If the toggle is not checked, we're in Cover mode.
         boolean isCovering = !toggle.isChecked();
-
-//        if (!gameRound.isHumanTurn()) isCovering = !isCovering;
 
         // Apply the move to the board.
         boolean validMove = true;
-
         for (Integer square : moveSquares) {
-            boolean isHumanTurn = gameRound.isHumanTurn();
+            boolean currentTurn = gameRound.isHumanTurn();
             boolean success;
-
             if (isCovering) {
-                success = isHumanTurn ? gameRound.getBoard().coverHumanSquare(square)
-                                      : gameRound.getBoard().coverComputerSquare(square);
+                // For a covering move:
+                // If it's the human's turn, cover the human square;
+                // if it's the computer's turn, cover the computer square.
+                success = currentTurn ? gameRound.getBoard().coverHumanSquare(square)
+                        : gameRound.getBoard().coverComputerSquare(square);
             } else {
-                success = isHumanTurn ? gameRound.getBoard().uncoverComputerSquare(square)
-                                      : gameRound.getBoard().uncoverHumanSquare(square);
+                // For an uncovering move:
+                // If it's the human's turn, uncover the computer square;
+                // if it's the computer's turn, uncover the human square.
+                success = currentTurn ? gameRound.getBoard().uncoverComputerSquare(square)
+                        : gameRound.getBoard().uncoverHumanSquare(square);
             }
-
             if (!success) {
                 validMove = false;
                 break;
@@ -300,14 +298,41 @@ public class GameFragment extends Fragment {
 
         if (validMove) {
             Toast.makeText(getActivity(), "Move confirmed", Toast.LENGTH_SHORT).show();
-            // Update the UI (for example, refresh board display, update scores, etc.)
         } else {
-            gameRound.setHumanTurn(!gameRound.isHumanTurn()); // Switch turn if the move was invalid
-            Toast.makeText(getActivity(), "Invalid move. Please try again.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Invalid move. Turn switched.", Toast.LENGTH_SHORT).show();
+            // Switch turn if the move was invalid.
+            gameRound.setHumanTurn(!gameRound.isHumanTurn());
+        }
+
+        updateUI();  // Refresh the board display, scores, etc.
+
+        // Check win conditions.
+        // For this game, a win occurs if:
+        // - The active player's own row is fully covered, OR
+        // - The opponent's row is fully uncovered.
+        if (gameRound.getBoard().isHumanComplete() || gameRound.getBoard().isComputerComplete()) {
+            // Determine the winner based on whose turn it was when the move was applied.
+            String winner = gameRound.isHumanTurn() ? "Human" : "Computer";
+
+            // Delegate finishing the game to the controller (business logic).
+            gameController.finishGame(winner);  // e.g., update tournament scores, etc.
+
+            // Inform the user.
+            Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
+
+            // Navigate to the End screen.
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView, new end())
+                    .commit();
+            return; // Exit early since the game is finished.
+        } else {
+            // If the game isn't finished, switch the turn for the next move.
+            gameRound.setHumanTurn(!gameRound.isHumanTurn());
         }
 
         updateUI();  // Assuming you have an updateUI() method in your fragment.
-        // Hide the move options layout and show the input layout again.
+
+        // Reset the move layouts.
         layoutMoveOptions.setVisibility(View.GONE);
         layoutOne.setVisibility(View.VISIBLE);
     }

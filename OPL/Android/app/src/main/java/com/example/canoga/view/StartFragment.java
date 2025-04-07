@@ -110,6 +110,9 @@ public class StartFragment extends Fragment {
                 inputStream.close();
                 String fileContent = stringBuilder.toString();
                 // Process the file content as needed; here we display it in a Toast.
+
+
+
                 Toast.makeText(getActivity(), "Loaded file:\n" + fileContent, Toast.LENGTH_LONG).show();
             }
         } catch (IOException e) {

@@ -87,12 +87,12 @@ public class GameStateParser {
         boolean[] boardComputer = board.getComputerSquares();
         if (humanSquares != null) {
             for (int i = 0; i < boardSize; i++) {
-                boardHuman[i] = humanSquares[i];
+                boardHuman[i] = !humanSquares[i];
             }
         }
         if (computerSquares != null) {
             for (int i = 0; i < boardSize; i++) {
-                boardComputer[i] = computerSquares[i];
+                boardComputer[i] = !computerSquares[i];
             }
         }
 
