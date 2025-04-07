@@ -1,15 +1,10 @@
 package com.example.canoga.ui.main.fragment;
 
 import static android.app.Activity.RESULT_OK;
-import static android.content.ContentValues.TAG;
-
-import static com.example.canoga.ui.main.fragment.StartFragment.LOAD_FILE_REQUEST_CODE;
 
 import androidx.lifecycle.ViewModelProvider;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,30 +13,39 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.canoga.controller.GameController;
 import com.example.canoga.controller.GameStateParser;
 import com.example.canoga.controller.SaveLoadController;
+import com.example.canoga.model.Computer;
 import com.example.canoga.model.GameRound;
-import com.example.canoga.ui.main.views.GameViewModel;
+import com.example.canoga.model.Human;
 import com.example.canoga.R;
+import com.example.canoga.view.BoardView;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Objects;
+import java.util.List;
 
 public class GameFragment extends Fragment {
 
     private static final int CREATE_FILE_REQUEST_CODE = 1;
     private static final int LOAD_FILE_REQUEST_CODE = 2;
-    private GameViewModel mViewModel;
     private GameRound gameRound;
+    private TextView tvHumanScore, tvComputerScore, tvTurnIndicator;
+    private BoardView boardView;
+
+    private GameController gameController;
 
     // Overloaded factory method that accepts a GameRound
     public static GameFragment newInstance(GameRound loadedRound) {
@@ -61,12 +65,22 @@ public class GameFragment extends Fragment {
             gameRound = (GameRound) getArguments().getSerializable("gameRound");
         }
         // Otherwise, you can initialize a new GameRound if needed.
+        if (gameRound == null) {
+            gameRound = new GameRound(9); // Initialize a new GameRound if none was passed
+        }
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_game, container, false);
+        View view = inflater.inflate(R.layout.fragment_game, container, false);
+        // Find UI components
+        tvHumanScore = view.findViewById(R.id.tvHumanScore);
+        tvComputerScore = view.findViewById(R.id.tvComputerScore);
+        tvTurnIndicator = view.findViewById(R.id.tvTurnIndicator);
+        boardView = view.findViewById(R.id.boardView); // Assuming you have a BoardView in fragment_game.xml
+        return view;
     }
 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -74,53 +88,16 @@ public class GameFragment extends Fragment {
         // Here you can initialize your UI components or set up listeners if needed
         // For example: setupGameUI(view);
         // Find the input button in the fragment's view hierarchy.
-        Button buttonInput = view.findViewById(R.id.btnInput);
 
-        buttonInput.setOnClickListener(v -> {
-            // Inflate the custom layout for the dialog
-            LayoutInflater inflater = LayoutInflater.from(getActivity());
-            View dialogView = inflater.inflate(R.layout.dialog_input, null);
-
-            // Get references to the EditText fields
-            final EditText editTextDice1 = dialogView.findViewById(R.id.editTextDice1);
-            final EditText editTextDice2 = dialogView.findViewById(R.id.editTextDice2);
-
-            // Build the AlertDialog
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Input Move")
-                    .setView(dialogView)
-                    .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Retrieve input values
-                            String dice1Str = editTextDice1.getText().toString().trim();
-                            String dice2Str = editTextDice2.getText().toString().trim();
-
-                            // Convert input to integers (with basic validation)
-                            int dice1 = dice1Str.isEmpty() ? 0 : Integer.parseInt(dice1Str);
-                            int dice2 = dice2Str.isEmpty() ? 0 : Integer.parseInt(dice2Str);
-
-                            // TODO: Use the dice values in your game logic. For now, just show a Toast.
-                            Toast.makeText(getActivity(),
-                                    "Dice 1: " + dice1 + ", Dice 2: " + dice2,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
-
+        // Retrieve the layouts from the fragment's view
         Button btnSave = view.findViewById(R.id.btnSave);
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Create an intent to let the user create a new document (text file)
-                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_TITLE, "game_save.txt"); // default file name
-                startActivityForResult(intent, CREATE_FILE_REQUEST_CODE);
-            }
+        btnSave.setOnClickListener(v -> {
+            // Create an intent to let the user create a new document (text file)
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TITLE, "game_save.txt"); // default file name
+            startActivityForResult(intent, CREATE_FILE_REQUEST_CODE);
         });
 
         // Assume you add a new button for finishing the game.
@@ -134,12 +111,16 @@ public class GameFragment extends Fragment {
                         .commit();
             });
         }
+
+        gameController = new GameController(gameRound, boardView);
+        Button buttonInput = view.findViewById(R.id.btnInput);
+        buttonInput.setOnClickListener(this::onClickButtonInput);
+        updateUI();
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(GameViewModel.class);
         // TODO: Use the ViewModel
     }
 
@@ -182,6 +163,68 @@ public class GameFragment extends Fragment {
         }
     }
 
+    private void updateUI() {
+        Human human = gameRound.getHuman();
+        Computer computer = gameRound.getComputer();
+        // Update scores
+        tvHumanScore.setText("Your Score: " + human.getScore());
+        tvComputerScore.setText("Computer Score: " + computer.getScore());
+        // Update turn indicator
+        tvTurnIndicator.setText(gameRound.isHumanTurn() ? "Your Turn" : "Computer Turn");
+        // Update board text representations
+        // Update custom board view if available
+        if (boardView != null) {
+            boardView.setBoard(gameRound.getBoard());
+        }
+    }
 
+    private void onClickButtonInput(View v) {
+        LayoutInflater inflater = LayoutInflater.from(getActivity());
+        View dialogView = inflater.inflate(R.layout.dialog_input, null);
 
+        final EditText editTextDice1 = dialogView.findViewById(R.id.editTextDice1);
+        final EditText editTextDice2 = dialogView.findViewById(R.id.editTextDice2);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Input Move")
+                .setView(dialogView)
+                .setPositiveButton("Submit", (dialog, which) -> {
+                    String dice1Str = editTextDice1.getText().toString().trim();
+                    String dice2Str = editTextDice2.getText().toString().trim();
+
+                    if (!dice1Str.isEmpty() && !dice2Str.isEmpty()) {
+                        int dice1 = Integer.parseInt(dice1Str);
+                        int dice2 = Integer.parseInt(dice2Str);
+
+                        if (dice1 >= 1 && dice1 <= 6 && dice2 >= 1 && dice2 <= 6) {
+                            int diceSum = dice1 + dice2;
+                            // Assume for this example that we're calculating moves for covering own squares.
+                            // Set to 'false' if you want to calculate for uncovering opponent's squares.
+                            boolean isCovering = true;
+
+                            // Use the controller to calculate the valid moves.
+                            List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
+
+                            // Update the spinner in the view with these valid moves.
+                            Spinner spinnerOptions = getView().findViewById(R.id.spinnerOptions);
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
+                                    android.R.layout.simple_spinner_item, validMoves);
+                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            spinnerOptions.setAdapter(adapter);
+
+                            // Optionally hide the current move layout and show the move options layout.
+                            LinearLayout layoutOne = getView().findViewById(R.id.linearLayout_one);
+                            LinearLayout layoutMoveOptions = getView().findViewById(R.id.linearLayout_moveOptions);
+                            layoutOne.setVisibility(View.GONE);
+                            layoutMoveOptions.setVisibility(View.VISIBLE);
+                        } else {
+                            Toast.makeText(getActivity(), "Please enter dice values between 1 and 6.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(getActivity(), "Please enter both dice values.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
 }

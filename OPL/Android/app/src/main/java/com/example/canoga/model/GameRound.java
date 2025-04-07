@@ -97,4 +97,8 @@ public class GameRound implements Serializable {
     public Board getBoard() {
         return board;
     }
+
+    public boolean isHumanTurn() {
+        return isHumanTurn;
+    }
 }

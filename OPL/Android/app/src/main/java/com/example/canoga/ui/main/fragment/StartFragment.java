@@ -17,7 +17,6 @@ import android.widget.Toast;
 import com.example.canoga.controller.GameStateParser;
 import com.example.canoga.controller.SaveLoadController;
 import com.example.canoga.model.GameRound;
-import com.example.canoga.ui.main.views.MainViewModel;
 //import com.example.canogaConfigure;
 import com.example.canoga.R;
 import java.io.BufferedReader;
@@ -29,7 +28,6 @@ import java.util.Objects;
 public class StartFragment extends Fragment {
 
     static final int LOAD_FILE_REQUEST_CODE = 2;
-    private MainViewModel mViewModel;
 
     public static StartFragment newInstance() {
         return new StartFragment();
@@ -46,7 +44,6 @@ public class StartFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         // TODO: Load any data from ViewModel if needed.
     }
 

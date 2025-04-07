@@ -13,11 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.canoga.R;
-import com.example.canoga.ui.main.views.EndViewModel;
 
 public class end extends Fragment {
-
-    private EndViewModel mViewModel;
 
     public static end newInstance() {
         return new end();
@@ -33,7 +30,6 @@ public class end extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(EndViewModel.class);
         // TODO: Retrieve final scores and winner from ViewModel or arguments
 
         // For demonstration, we'll set some sample values
@@ -52,15 +48,12 @@ public class end extends Fragment {
             Button btnRestart = view.findViewById(R.id.btnRestart);
             Button btnMainMenu = view.findViewById(R.id.btnMainMenu);
 
-            btnRestart.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Restart the game; for example, navigate back to the Game fragment.
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.fragmentContainerView, new GameFragment())
-                            .addToBackStack(null)
-                            .commit();
-                }
+            btnRestart.setOnClickListener(v -> {
+                // Restart the game; for example, navigate back to the Game fragment.
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerView, new GameFragment())
+                        .addToBackStack(null)
+                        .commit();
             });
 
             btnMainMenu.setOnClickListener(new View.OnClickListener() {
