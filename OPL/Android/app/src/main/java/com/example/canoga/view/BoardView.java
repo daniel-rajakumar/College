@@ -2,6 +2,7 @@ package com.example.canoga.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -25,10 +26,17 @@ public class BoardView extends View {
     private Board board;
     private Paint paint;
 
+    private Paint squarePaint;
+    private Paint textPaint;
+    private Paint borderPaint;
+
+    // Layout settings: spacing and circle size.
+    private int squareRadius = 35;
+    private int squareSpacing = 20;
+
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        paint = new Paint();
-        paint.setTextSize(36);
+        init();
     }
 
     /**
@@ -40,25 +48,78 @@ public class BoardView extends View {
         invalidate();
     }
 
+    private void init() {
+        squarePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        // Configure text paint.
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(30);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+
+        // Configure border paint.
+        borderPaint.setColor(Color.DKGRAY);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setStrokeWidth(3);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (board == null) return;
-        int size = board.getSize();
-        StringBuilder humanRow = new StringBuilder("Human: ");
-        int i = 0;
-        for (boolean covered : board.getHumanSquares()) {
-            i++;
-            humanRow.append(covered ? "_ " : i + " ");
+
+        int boardSize = board.getSize();
+
+        // Calculate starting positions.
+        float startX = squareSpacing;
+        float startY = squareSpacing;
+
+        // Draw Human Row.
+        // Display row label.
+        canvas.drawText("Human:", startX + squareRadius, startY + squareRadius + 10, textPaint);
+        float rowY = startY + squareRadius * 2 + squareSpacing; // Leave space for label
+
+        boolean[] humanSquares = board.getHumanSquares();
+        for (int i = 0; i < boardSize; i++) {
+            float cx = startX + i * (2 * squareRadius + squareSpacing) + squareRadius;
+            float cy = rowY;
+            // Determine color for uncovered (light green) or covered (gray).
+            if (humanSquares[i]) {
+                squarePaint.setColor(Color.GRAY);
+            } else {
+                squarePaint.setColor(Color.parseColor("#A5D6A7")); // light green
+            }
+            // Draw circle for square.
+            canvas.drawCircle(cx, cy, squareRadius, squarePaint);
+            // Draw border.
+            canvas.drawCircle(cx, cy, squareRadius, borderPaint);
+            // If uncovered, draw the square number.
+            if (!humanSquares[i]) {
+                canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize()/3), textPaint);
+            }
         }
-        i = 0;
-        StringBuilder computerRow = new StringBuilder("Computer: ");
-        for (boolean covered : board.getComputerSquares()) {
-            i++;
-            computerRow.append(covered ? "_ " : i + " ");
+
+        // Draw Computer Row.
+        // Move further down.
+        rowY += 2 * squareRadius + 2 * squareSpacing;
+        canvas.drawText("Computer:", startX + squareRadius + 15, rowY - squareRadius - 10, textPaint);
+        boolean[] computerSquares = board.getComputerSquares();
+        for (int i = 0; i < boardSize; i++) {
+            float cx = startX + i * (2 * squareRadius + squareSpacing) + squareRadius;
+            float cy = rowY;
+            // For computer row, use different colors.
+            if (computerSquares[i]) {
+                squarePaint.setColor(Color.GRAY);
+            } else {
+                squarePaint.setColor(Color.parseColor("#90CAF9")); // light blue
+            }
+            canvas.drawCircle(cx, cy, squareRadius, squarePaint);
+            canvas.drawCircle(cx, cy, squareRadius, borderPaint);
+            if (!computerSquares[i]) {
+                canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize()/3), textPaint);
+            }
         }
-        canvas.drawText(humanRow.toString(), 20, 60, paint);
-        canvas.drawText(computerRow.toString(), 20, 120, paint);
     }
 
     public static class ConfigureFragment extends Fragment {

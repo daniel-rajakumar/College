@@ -28,6 +28,7 @@ import com.example.canoga.model.Computer;
 import com.example.canoga.model.GameRound;
 import com.example.canoga.model.Human;
 import com.example.canoga.R;
+import com.example.canoga.util.GameLogger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,6 +51,7 @@ public class GameFragment extends Fragment {
 
     private int lastDiceSum = 0;
 
+    TextView tvGameLog;
     // Overloaded factory method that accepts a GameRound
     public static GameFragment newInstance(GameRound loadedRound) {
         GameFragment fragment = new GameFragment();
@@ -63,9 +65,13 @@ public class GameFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(getActivity() != null) {
+            GameLogger.init(getActivity());
+        }
         // Retrieve the GameRound from the Bundle if provided.
         if (getArguments() != null) {
             gameRound = (GameRound) getArguments().getSerializable("gameRound");
+            GameLogger.getInstance().log("GameFragment: Loaded game round from arguments.");
             assert gameRound != null;
 
             boolean isValid = TournamentController.getInstance().getCurrentGameMode().equals("LOADED");
@@ -97,6 +103,7 @@ public class GameFragment extends Fragment {
         layoutOne = view.findViewById(R.id.linearLayout_one);
         layoutMoveOptions = view.findViewById(R.id.linearLayout_moveOptions);
         tvDiceSum = view.findViewById(R.id.tvDiceSum);
+        tvGameLog = view.findViewById(R.id.tvGameLog);
         return view;
     }
 
@@ -188,6 +195,7 @@ public class GameFragment extends Fragment {
             // Update UI with the dice results.
             TextView tvDiceResult = requireView().findViewById(R.id.tvDiceSum);
             tvDiceResult.setText("Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + diceSum + ")");
+            GameLogger.getInstance().log(gameRound.getCurrentPlayer().toString(), "Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + diceSum + ")");
 
             // Decide whether the move should be covering or uncovering using our revised heuristic.
             boolean isCovering = gameController.shouldCover(diceSum);
@@ -316,6 +324,10 @@ public class GameFragment extends Fragment {
         } else {
             btnHelpMove.setVisibility(View.GONE);
         }
+
+        // Retrieve the persistent log content from the logger.
+        String logContent = GameLogger.getInstance().getLogContent();
+        tvGameLog.setText(logContent);
     }
 
     private void onClickButtonInput(View v) {
@@ -458,6 +470,8 @@ public class GameFragment extends Fragment {
             gameRound.getCurrentPlayer().setHasPlayed(true);
         } else {
             Toast.makeText(getActivity(), "Invalid move. Turn switched.", Toast.LENGTH_SHORT).show();
+
+
             // Switch turn if the move was invalid.
             gameRound.setHumanTurn(!gameRound.isHumanTurn());
         }
@@ -498,6 +512,7 @@ public class GameFragment extends Fragment {
 
                 // Inform the user.
                 Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
+                GameLogger.getInstance().log(winner + " wins with score: " + winnerScore);
 
 
                 gameRound.setWinnerScore(winnerScore);
@@ -519,5 +534,13 @@ public class GameFragment extends Fragment {
             }
         }
         return false;
+    }
+
+    private void refreshLogDisplay() {
+        if (getView() != null) {
+            TextView tvGameLog = getView().findViewById(R.id.tvGameLog);
+            String logContent = GameLogger.getInstance().getLogContent();
+            tvGameLog.setText(logContent);
+        }
     }
 }
