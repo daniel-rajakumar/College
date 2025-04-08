@@ -343,7 +343,7 @@ public class GameFragment extends Fragment {
                 return; // Exit early since the game is finished.
             } else {
                 // If the game isn't finished, switch the turn for the next move.
-                gameRound.setHumanTurn(!gameRound.isHumanTurn());
+//                gameRound.setHumanTurn(!gameRound.isHumanTurn());
             }
         }
 
