@@ -151,6 +151,48 @@ public class GameFragment extends Fragment {
             }
         });
 
+        Button btnHelp = requireView().findViewById(R.id.btnHelp);
+        btnHelp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Check if it's the human's turn
+                if (!gameRound.isHumanTurn()) {
+                    Toast.makeText(getActivity(), "Help is available only on your turn.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // Determine the move mode based on the toggle.
+                ToggleButton toggle = requireView().findViewById(R.id.toggleCoverUncover);
+                // In our convention, if toggle is checked, then it's "Uncover"; otherwise, it's "Cover."
+                boolean isCovering = !toggle.isChecked();
+                String mode = isCovering ? "Cover" : "Uncover";
+
+                // Make sure the dice have been rolled.
+                if (lastDiceSum == 0) {
+                    Toast.makeText(getActivity(), "Please roll the dice first.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Calculate valid moves using the lastDiceSum and current mode.
+                List<String> validMoves = gameController.calculateValidMoves(lastDiceSum, isCovering);
+                String bestMove = "No valid moves";
+                if (validMoves != null && !validMoves.isEmpty()) {
+                    // Select the best move from the list.
+                    // (If you have a complex heuristic, you might iterate over validMoves,
+                    //  but here we simply take the first one for demonstration.)
+                    bestMove = validMoves.get(0);
+                }
+
+                // Retrieve the computer's explanation string.
+                String explanation = gameRound.getComputer().getStrategyExplanation();
+
+                // Build a help message combining the mode, best move, and explanation.
+                String helpMessage = "Recommended move type: " + mode +
+                        "\nBest move: " + bestMove +
+                        "\nWhy: " + explanation;
+                Toast.makeText(getActivity(), helpMessage, Toast.LENGTH_LONG).show();
+            }
+        });
+
 
         updateUI();
     }
@@ -212,6 +254,16 @@ public class GameFragment extends Fragment {
         // Update custom board view if available
         if (boardView != null) {
             boardView.setBoard(gameRound.getBoard());
+        }
+
+        Button btnHelp = requireView().findViewById(R.id.btnHelp);
+        Button btnHelpMove = requireView().findViewById(R.id.btnHelpMove);
+        if (gameRound.isHumanTurn()) {
+            btnHelp.setVisibility(View.VISIBLE);
+            btnHelpMove.setVisibility(View.VISIBLE);
+        } else {
+            btnHelp.setVisibility(View.GONE);
+            btnHelpMove.setVisibility(View.GONE);
         }
     }
 
