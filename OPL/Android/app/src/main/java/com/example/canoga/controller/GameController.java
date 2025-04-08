@@ -25,10 +25,18 @@ public class GameController {
 
     /**
      * Plays one turn and updates the view.
+     *
+     * @return
      */
-    public void playTurn() {
-        gameRound.playTurn();
-        boardView.invalidate();
+//    public void playTurn(int dice) {
+//        gameRound.playTurn(dice);
+//        boardView.invalidate();
+//    }
+
+    public boolean playComputerTurn(int dice) {
+//        gameRound.playComputerTurn(dice);
+//        boardView.invalidate();
+        return gameRound.playComputerTurn(dice);
     }
 
     /**

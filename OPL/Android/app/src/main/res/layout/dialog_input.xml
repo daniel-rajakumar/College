@@ -16,15 +16,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Dice 1"
-        android:text="5"
-        android:inputType="number" />
+        android:inputType="number"
+        android:text="2" />
 
     <EditText
         android:id="@+id/editTextDice2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Dice 2"
-        android:text="4"
-        android:inputType="number" />
+        android:inputType="number"
+        android:text="2" />
 
 </LinearLayout>

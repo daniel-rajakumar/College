@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GameFragment extends Fragment {
 
@@ -215,23 +217,43 @@ public class GameFragment extends Fragment {
 
                         if (dice1 >= 1 && dice1 <= 6 && dice2 >= 1 && dice2 <= 6) {
                             int diceSum = dice1 + dice2;
-                            // Assume for this example that we're calculating moves for covering own squares.
-                            // Set to 'false' if you want to calculate for uncovering opponent's squares.
+                            // For this example, we assume a move for covering own squares.
                             boolean isCovering = true;
 
-                            // Use the controller to calculate the valid moves.
-                            List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
+                            if (gameRound.isHumanTurn()) {
+                                // Calculate the valid moves when it's the human's turn.
+                                List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
 
-                            // Update the spinner in the view with these valid moves.
-                            Spinner spinnerOptions = getView().findViewById(R.id.spinnerOptions);
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                                    android.R.layout.simple_spinner_item, validMoves);
-                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            spinnerOptions.setAdapter(adapter);
+                                // Update the spinner with these valid moves.
+                                Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
+                                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(),
+                                        android.R.layout.simple_spinner_item, validMoves);
+                                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                spinnerOptions.setAdapter(adapter);
 
-                            // Optionally hide the current move layout and show the move options layout.
-                            layoutOne.setVisibility(View.GONE);
-                            layoutMoveOptions.setVisibility(View.VISIBLE);
+                                // Hide the input layout and show move options layout.
+                                layoutOne.setVisibility(View.GONE);
+                                layoutMoveOptions.setVisibility(View.VISIBLE);
+                            } else {
+                                // It's the computer's turn.
+                                boolean computerMoved = gameController.playComputerTurn(diceSum);
+                                if (!computerMoved) {
+                                    // If no valid move was possible (for both cover and uncover),
+                                    // switch the turn.
+//                                    gameRound.setHumanTurn(!gameRound.isHumanTurn());
+                                    Toast.makeText(getActivity(), "Computer couldn't move. Turn switched.", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getActivity(), "Computer moved automatically.", Toast.LENGTH_SHORT).show();
+                                }
+                                updateUI();
+                                if (checkWin()) {
+                                    Log.d("GameFragment", "Game over after computer's turn.");
+                                    return;
+                                } else {
+                                    Log.d("GameFragment", "Game continues after computer's turn.");
+                                }
+                            }
+
                         } else {
                             Toast.makeText(getActivity(), "Please enter dice values between 1 and 6.", Toast.LENGTH_SHORT).show();
                         }
@@ -242,6 +264,7 @@ public class GameFragment extends Fragment {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
 
 
     private void onClickButtonConfirm(View v) {
@@ -319,6 +342,17 @@ public class GameFragment extends Fragment {
         // - The active player's own row is fully covered, OR
         // - The opponent's row is fully uncovered.
 
+        if (checkWin()) return; // Exit early since the game is finished.
+
+
+        updateUI();  // Assuming you have an updateUI() method in your fragment.
+
+        // Reset the move layouts.
+        layoutMoveOptions.setVisibility(View.GONE);
+        layoutOne.setVisibility(View.VISIBLE);
+    }
+
+    private boolean checkWin() {
         if (gameRound.getHuman().hasPlayed() && gameRound.getComputer().hasPlayed()) {
             if (gameRound.getBoard().isHumanComplete() || gameRound.getBoard().isComputerComplete()) {
                 // Determine the winner based on whose turn it was when the move was applied.
@@ -340,18 +374,12 @@ public class GameFragment extends Fragment {
                 requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentContainerView, endFragment)
                         .commit();
-                return; // Exit early since the game is finished.
+                return true;
             } else {
                 // If the game isn't finished, switch the turn for the next move.
 //                gameRound.setHumanTurn(!gameRound.isHumanTurn());
             }
         }
-
-
-        updateUI();  // Assuming you have an updateUI() method in your fragment.
-
-        // Reset the move layouts.
-        layoutMoveOptions.setVisibility(View.GONE);
-        layoutOne.setVisibility(View.VISIBLE);
+        return false;
     }
 }

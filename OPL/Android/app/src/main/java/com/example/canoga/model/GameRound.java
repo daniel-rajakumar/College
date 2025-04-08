@@ -23,7 +23,8 @@ public class GameRound implements Serializable {
         computer = new Computer(board);
         random = new Random();
         // Default turn (this may be overridden by loaded data)
-        isHumanTurn = decideFirstPlayer();
+//        isHumanTurn = decideFirstPlayer();
+        isHumanTurn = false;
     }
 
     private boolean decideFirstPlayer() {
@@ -36,14 +37,9 @@ public class GameRound implements Serializable {
         return humanRoll > computerRoll;
     }
 
-    public void playTurn() {
-        int diceSum = throwDice();
-        if (isHumanTurn) {
-            human.makeMove(diceSum);
-        } else {
-            computer.makeMove(diceSum);
-        }
-        isHumanTurn = !isHumanTurn;
+    public boolean playComputerTurn(int diceSum) {
+        isHumanTurn = !computer.makeMove(diceSum);
+        return !isHumanTurn;
     }
 
     private int throwDice() {
