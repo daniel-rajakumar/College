@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.example.canoga.R;
 import com.example.canoga.controller.ConfigureController;
 import com.example.canoga.model.Board;
+import com.example.canoga.model.GameRound;
 
 public class BoardView extends View {
     private Board board;
@@ -84,14 +85,28 @@ public class BoardView extends View {
             btnNextConfig.setOnClickListener(v -> {
                 String selected = spinnerBoardSize.getSelectedItem().toString();
                 int boardSize = Integer.parseInt(selected);
-                // Update GameModel via controller
+                // Update GameModel via controller.
                 controller.setBoardSize(boardSize);
-                // Navigate to the Game screen (GameFragment)
+
+                // Create a new GameRound based on the chosen board size.
+                GameRound newRound = controller.getNewGameRound();
+
+                // Check if previous scores were passed via arguments.
+                Bundle args = getArguments();
+                if (args != null) {
+                    int prevHumanScore = args.getInt("prevHumanScore", 0);
+                    int prevComputerScore = args.getInt("prevComputerScore", 0);
+                    newRound.getHuman().updateScore(prevHumanScore);
+                    newRound.getComputer().updateScore(prevComputerScore);
+                }
+
+                // Navigate to the Game screen with the newly created round.
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragmentContainerView, GameFragment.newInstance(controller.getNewGameRound()))
+                        .replace(R.id.fragmentContainerView, GameFragment.newInstance(newRound))
                         .addToBackStack(null)
                         .commit();
             });
         }
+
     }
 }

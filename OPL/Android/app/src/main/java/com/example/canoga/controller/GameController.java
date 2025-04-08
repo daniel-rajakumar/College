@@ -200,5 +200,31 @@ public class GameController {
         System.out.println("Round Score: " + roundScore);
     }
 
+    /**
+     * Restarts the game by creating a new GameRound with the same board size as the previous round
+     * and carries over the players' scores.
+     *
+     * @param previousRound the GameRound that just finished.
+     * @return a new GameRound with the same board configuration and updated player scores.
+     */
+    public GameRound restartGame(GameRound previousRound) {
+        // Retrieve the board size from the previous round.
+        int boardSize = previousRound.getBoard().getSize();
+
+        // Create a new round with the same board size.
+        GameRound newRound = new GameRound(boardSize);
+
+        // Carry over the player's scores.
+        // Since new players start at 0, call updateScore() to add the previous round's score.
+        int humanPrevScore = previousRound.getHuman().getScore();
+        int computerPrevScore = previousRound.getComputer().getScore();
+        newRound.getHuman().updateScore(humanPrevScore);
+        newRound.getComputer().updateScore(computerPrevScore);
+
+        // Optionally, decide who should start the new round (if you have a rule for that)
+        // For example, you could set the next turn based on the previous round outcome.
+
+        return newRound;
+    }
 }
 

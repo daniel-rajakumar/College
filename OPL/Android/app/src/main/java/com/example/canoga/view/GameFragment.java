@@ -1,7 +1,5 @@
 package com.example.canoga.view;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -24,8 +22,6 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.canoga.controller.GameController;
-import com.example.canoga.controller.GameStateParser;
-import com.example.canoga.controller.SaveLoadController;
 import com.example.canoga.model.Computer;
 import com.example.canoga.model.GameRound;
 import com.example.canoga.model.Human;
@@ -35,7 +31,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class GameFragment extends Fragment {
 
@@ -111,7 +106,7 @@ public class GameFragment extends Fragment {
             finishButton.setOnClickListener(v -> {
                 // Navigate to the End fragment.
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragmentContainerView, new end())
+                        .replace(R.id.fragmentContainerView, new EndFragment())
                         .addToBackStack(null)
                         .commit();
             });
@@ -320,9 +315,15 @@ public class GameFragment extends Fragment {
             // Inform the user.
             Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
 
-            // Navigate to the End screen.
+            // Assume 'finishedRound' is your GameRound instance representing the completed game round.
+            EndFragment endFragment = EndFragment.newInstance( gameRound ); // Call the newInstance() factory
             getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainerView, new end())
+                    .replace(R.id.fragmentContainerView, endFragment)
+                    .commit();
+
+            // Navigate to the End screen.
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView, endFragment)
                     .commit();
             return; // Exit early since the game is finished.
         } else {

@@ -12,13 +12,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.canoga.R;
+import com.example.canoga.controller.GameController;
+import com.example.canoga.model.GameRound;
 
-import java.util.Objects;
+public class EndFragment extends Fragment {
 
-public class end extends Fragment {
+    private GameRound finishedRound;
 
-    public static end newInstance() {
-        return new end();
+    public static EndFragment newInstance(GameRound gameRound) {
+        EndFragment fragment = new EndFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("gameRound", gameRound);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            finishedRound = (GameRound) getArguments().getSerializable("gameRound");
+        } else {
+            Toast.makeText(getActivity(), "No game data provided", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -50,12 +66,21 @@ public class end extends Fragment {
             Button btnMainMenu = view.findViewById(R.id.btnMainMenu);
 
             btnRestart.setOnClickListener(v -> {
-                // Restart the game; for example, navigate back to the Game fragment.
+                // Restart the game with the same settings
+                BoardView.ConfigureFragment configFragment = BoardView.ConfigureFragment.newInstance();
+                // Pass the previous round’s scores via the fragment arguments.
+                Bundle args = new Bundle();
+                args.putInt("prevHumanScore", finishedRound.getHuman().getScore());
+                args.putInt("prevComputerScore", finishedRound.getComputer().getScore());
+                configFragment.setArguments(args);
+
+                // Navigate to the configuration fragment.
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragmentContainerView, new GameFragment())
-                        .addToBackStack(null)
+                        .replace(R.id.fragmentContainerView, configFragment)
                         .commit();
             });
+
+
 
             btnMainMenu.setOnClickListener(new View.OnClickListener() {
                 @Override

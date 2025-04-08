@@ -64,16 +64,20 @@ public class Board {
     }
 
     public boolean isHumanComplete() {
+        if (humanSquares.length == 0) return true;  // edge case: empty array considered "complete"
+        boolean first = humanSquares[0];
         for (boolean covered : humanSquares) {
-            if (!covered) return false;
+            if (covered != first) return false;
         }
         return true;
     }
 
     public boolean isComputerComplete() {
         // For this game, assume round ends when computer's row is fully uncovered.
+        if (computerSquares.length == 0) return true; // edge case: empty array considered "complete"
+        boolean first = computerSquares[0];
         for (boolean covered : computerSquares) {
-            if (covered) return false;
+            if (covered != first) return false;
         }
         return true;
     }
