@@ -22,6 +22,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.canoga.controller.GameController;
+import com.example.canoga.controller.TournamentController;
 import com.example.canoga.model.Computer;
 import com.example.canoga.model.GameRound;
 import com.example.canoga.model.Human;
@@ -61,6 +62,17 @@ public class GameFragment extends Fragment {
         // Retrieve the GameRound from the Bundle if provided.
         if (getArguments() != null) {
             gameRound = (GameRound) getArguments().getSerializable("gameRound");
+            assert gameRound != null;
+
+            boolean isValid = TournamentController.getInstance().getCurrentGameMode().equals("LOADED");
+
+            if (isValid) {
+                gameRound.getComputer().setHasPlayed(true);
+                gameRound.getHuman().setHasPlayed(true);
+            }
+
+
+
         }
         // Otherwise, you can initialize a new GameRound if needed.
         if (gameRound == null) {
@@ -293,6 +305,7 @@ public class GameFragment extends Fragment {
 
         if (validMove) {
             Toast.makeText(getActivity(), "Move confirmed", Toast.LENGTH_SHORT).show();
+            gameRound.getCurrentPlayer().setHasPlayed(true);
         } else {
             Toast.makeText(getActivity(), "Invalid move. Turn switched.", Toast.LENGTH_SHORT).show();
             // Switch turn if the move was invalid.
@@ -305,31 +318,35 @@ public class GameFragment extends Fragment {
         // For this game, a win occurs if:
         // - The active player's own row is fully covered, OR
         // - The opponent's row is fully uncovered.
-        if (gameRound.getBoard().isHumanComplete() || gameRound.getBoard().isComputerComplete()) {
-            // Determine the winner based on whose turn it was when the move was applied.
-            String winner = gameRound.isHumanTurn() ? "Human" : "Computer";
 
-            // Delegate finishing the game to the controller (business logic).
-            gameController.finishGame(winner);  // e.g., update tournament scores, etc.
+        if (gameRound.getHuman().hasPlayed() && gameRound.getComputer().hasPlayed()) {
+            if (gameRound.getBoard().isHumanComplete() || gameRound.getBoard().isComputerComplete()) {
+                // Determine the winner based on whose turn it was when the move was applied.
+                String winner = gameRound.isHumanTurn() ? "Human" : "Computer";
 
-            // Inform the user.
-            Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
+                // Delegate finishing the game to the controller (business logic).
+                gameController.finishGame(winner);  // e.g., update tournament scores, etc.
 
-            // Assume 'finishedRound' is your GameRound instance representing the completed game round.
-            EndFragment endFragment = EndFragment.newInstance( gameRound ); // Call the newInstance() factory
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainerView, endFragment)
-                    .commit();
+                // Inform the user.
+                Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
 
-            // Navigate to the End screen.
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainerView, endFragment)
-                    .commit();
-            return; // Exit early since the game is finished.
-        } else {
-            // If the game isn't finished, switch the turn for the next move.
-            gameRound.setHumanTurn(!gameRound.isHumanTurn());
+                // Assume 'finishedRound' is your GameRound instance representing the completed game round.
+                EndFragment endFragment = EndFragment.newInstance( gameRound ); // Call the newInstance() factory
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerView, endFragment)
+                        .commit();
+
+                // Navigate to the End screen.
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerView, endFragment)
+                        .commit();
+                return; // Exit early since the game is finished.
+            } else {
+                // If the game isn't finished, switch the turn for the next move.
+                gameRound.setHumanTurn(!gameRound.isHumanTurn());
+            }
         }
+
 
         updateUI();  // Assuming you have an updateUI() method in your fragment.
 

@@ -8,13 +8,12 @@ import com.example.canoga.model.Tournament;
  * Aggregates game rounds and computes overall scores.
  */
 public class TournamentController {
-    private Tournament tournament;
+    private static Tournament tournament = new Tournament();
 
     /**
      * Constructs the TournamentController and initializes a new Tournament.
      */
     public TournamentController() {
-        tournament = new Tournament();
     }
 
     /**
@@ -48,4 +47,22 @@ public class TournamentController {
     public int getComputerTotalScore() {
         return tournament.getComputerTotalScore();
     }
+
+    public String getCurrentGameMode() {
+        return tournament.getCurrentGameMode();
+    }
+
+    public void setCurrentGameMode(String currentGameMode) {
+        tournament.setCurrentGameMode(currentGameMode);
+    }
+
+    // A public static method to access the singleton instance.
+    public static TournamentController getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
+    private static class SingletonHolder {
+        private static final TournamentController INSTANCE = new TournamentController();
+    }
+
 }

@@ -6,6 +6,7 @@ package com.example.canoga.model;
 public abstract class Player {
     protected int score;
     protected Board board;
+    protected boolean hasPlayed;
 
     /**
      * Constructs a player with a reference to the game board.
@@ -14,6 +15,7 @@ public abstract class Player {
     public Player(Board board) {
         this.board = board;
         this.score = 0;
+        this.hasPlayed = false;
     }
 
     public int getScore() {
@@ -27,6 +29,10 @@ public abstract class Player {
     public void updateScore(int points) {
         score += points;
     }
+
+    public boolean hasPlayed() {return hasPlayed;}
+
+    public void setHasPlayed(boolean hasPlayed) {this.hasPlayed = hasPlayed;}
 
     /**
      * Perform a move given the dice sum.

@@ -10,6 +10,8 @@ public class Tournament {
     private List<GameRound> rounds;
     private int humanTotalScore;
     private int computerTotalScore;
+    private String currentGameMode = "NEW";
+
 
     public Tournament() {
         rounds = new ArrayList<>();
@@ -39,5 +41,13 @@ public class Tournament {
 
     public int getComputerTotalScore() {
         return computerTotalScore;
+    }
+
+    public String getCurrentGameMode() {
+        return currentGameMode;
+    }
+
+    public void setCurrentGameMode(String currentGameMode) {
+        this.currentGameMode = currentGameMode;
     }
 }

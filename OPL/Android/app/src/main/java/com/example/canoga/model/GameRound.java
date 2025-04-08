@@ -101,4 +101,8 @@ public class GameRound implements Serializable {
     public boolean isHumanTurn() {
         return isHumanTurn;
     }
+
+    public Player getCurrentPlayer() {
+        return isHumanTurn ? human : computer;
+    }
 }

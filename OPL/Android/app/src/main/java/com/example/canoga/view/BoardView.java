@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.canoga.R;
 import com.example.canoga.controller.ConfigureController;
+import com.example.canoga.controller.TournamentController;
 import com.example.canoga.model.Board;
 import com.example.canoga.model.GameRound;
 
@@ -88,16 +89,30 @@ public class BoardView extends View {
                 // Update GameModel via controller.
                 controller.setBoardSize(boardSize);
 
+
+                String gameMode = TournamentController.getInstance().getCurrentGameMode();
+
                 // Create a new GameRound based on the chosen board size.
                 GameRound newRound = controller.getNewGameRound();
 
+//                newRound.getHuman().setHasPlayed(true);
+//                newRound.getComputer().setHasPlayed(true);
                 // Check if previous scores were passed via arguments.
                 Bundle args = getArguments();
                 if (args != null) {
-                    int prevHumanScore = args.getInt("prevHumanScore", 0);
-                    int prevComputerScore = args.getInt("prevComputerScore", 0);
-                    newRound.getHuman().updateScore(prevHumanScore);
-                    newRound.getComputer().updateScore(prevComputerScore);
+                    if (gameMode.equals("RESTART")) {
+                        // It is a restarted game; carry over previous scores.
+                        int prevHumanScore = args.getInt("prevHumanScore", 0);
+                        int prevComputerScore = args.getInt("prevComputerScore", 0);
+                        newRound.getHuman().updateScore(prevHumanScore);
+                        newRound.getComputer().updateScore(prevComputerScore);
+                    }
+                    // You can also check a flag "isLoaded" here if necessary
+                    if (args.getBoolean("isLoaded", false)) {
+                        newRound.getHuman().setHasPlayed(true);
+                        newRound.getComputer().setHasPlayed(true);
+                        // Handle loaded game state if needed
+                    }
                 }
 
                 // Navigate to the Game screen with the newly created round.

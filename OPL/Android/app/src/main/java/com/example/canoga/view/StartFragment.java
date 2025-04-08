@@ -16,9 +16,11 @@ import android.widget.Toast;
 
 import com.example.canoga.controller.GameStateParser;
 import com.example.canoga.controller.SaveLoadController;
+import com.example.canoga.controller.TournamentController;
 import com.example.canoga.model.GameRound;
 //import com.example.canogaConfigure;
 import com.example.canoga.R;
+import com.example.canoga.model.Tournament;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -81,6 +83,9 @@ public class StartFragment extends Fragment {
                 if (fileContent != null) {
                     try {
                         // Parse the file content and update the game state.
+                        TournamentController.getInstance().setCurrentGameMode("LOADED");
+
+
                         GameRound loadedRound = GameStateParser.parse(fileContent);
                         // Optionally, store this round in a singleton or pass it to the GameFragment.
                         GameFragment gameFragment = GameFragment.newInstance(loadedRound);

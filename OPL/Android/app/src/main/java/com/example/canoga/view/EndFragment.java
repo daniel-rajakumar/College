@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.canoga.R;
 import com.example.canoga.controller.GameController;
+import com.example.canoga.controller.TournamentController;
 import com.example.canoga.model.GameRound;
 
 public class EndFragment extends Fragment {
@@ -66,6 +67,8 @@ public class EndFragment extends Fragment {
             Button btnMainMenu = view.findViewById(R.id.btnMainMenu);
 
             btnRestart.setOnClickListener(v -> {
+                TournamentController.getInstance().setCurrentGameMode("RESTART");
+
                 // Restart the game with the same settings
                 BoardView.ConfigureFragment configFragment = BoardView.ConfigureFragment.newInstance();
                 // Pass the previous round’s scores via the fragment arguments.
