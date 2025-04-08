@@ -16,6 +16,8 @@ import com.example.canoga.controller.TournamentController;
 import com.example.canoga.model.GameRound;
 import com.example.canoga.model.Player;
 
+import java.util.Objects;
+
 public class EndFragment extends Fragment {
 
     private GameRound finishedRound;
@@ -97,15 +99,13 @@ public class EndFragment extends Fragment {
 
 
 
-            btnMainMenu.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Navigate to the Main Menu fragment (e.g., EndingFragment that uses fragment_main.xml)
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.fragmentContainerView, new StartFragment())
-                            .addToBackStack(null)
-                            .commit();
-                }
+            btnMainMenu.setOnClickListener(v -> {
+                // Navigate to the Main Menu fragment (e.g., EndingFragment that uses fragment_main.xml)
+                ExitFragment endFragment = ExitFragment.newInstance( finishedRound ); // Call the newInstance() factory
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerView, endFragment)
+                        .addToBackStack(null)
+                        .commit();
             });
         } else {
             Toast.makeText(getActivity(), "Error loading end screen", Toast.LENGTH_SHORT).show();

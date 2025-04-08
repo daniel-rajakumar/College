@@ -31,7 +31,7 @@ public class Tournament {
         } else if (computerTotalScore > humanTotalScore) {
             return "Computer";
         } else {
-            return "Draw";
+            return "Both";
         }
     }
 

@@ -40,7 +40,7 @@ public class GameFragment extends Fragment {
     private static final int CREATE_FILE_REQUEST_CODE = 1;
     private static final int LOAD_FILE_REQUEST_CODE = 2;
     private GameRound gameRound;
-    private TextView tvHumanScore, tvComputerScore, tvTurnIndicator;
+    private TextView tvHumanScore, tvComputerScore, tvTurnIndicator, tvDiceSum;
     private BoardView boardView;
 
     private LinearLayout layoutOne;
@@ -96,6 +96,7 @@ public class GameFragment extends Fragment {
         boardView = view.findViewById(R.id.boardView); // Assuming you have a BoardView in fragment_game.xml
         layoutOne = view.findViewById(R.id.linearLayout_one);
         layoutMoveOptions = view.findViewById(R.id.linearLayout_moveOptions);
+        tvDiceSum = view.findViewById(R.id.tvDiceSum);
         return view;
     }
 
@@ -182,6 +183,7 @@ public class GameFragment extends Fragment {
             int dice1 = (int) (Math.random() * 6) + 1;
             int dice2 = (int) (Math.random() * 6) + 1;
             int diceSum = dice1 + dice2;
+
 
             // Update UI with the dice results.
             TextView tvDiceResult = requireView().findViewById(R.id.tvDiceSum);
@@ -338,6 +340,8 @@ public class GameFragment extends Fragment {
                             int diceSum = dice1 + dice2;
                             lastDiceSum = diceSum; // Save the dice sum for future updates
 
+                            tvDiceSum.setText("Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + diceSum + ")");
+
                             // For this example, we assume a move for covering own squares.
                             boolean isCovering = true;
 
@@ -447,6 +451,7 @@ public class GameFragment extends Fragment {
                 break;
             }
         }
+
 
         if (validMove) {
             Toast.makeText(getActivity(), "Move confirmed", Toast.LENGTH_SHORT).show();
