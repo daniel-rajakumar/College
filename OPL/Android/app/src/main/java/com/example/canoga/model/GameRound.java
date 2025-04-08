@@ -24,7 +24,7 @@ public class GameRound implements Serializable {
         random = new Random();
         // Default turn (this may be overridden by loaded data)
 //        isHumanTurn = decideFirstPlayer();
-        isHumanTurn = false;
+        isHumanTurn = true;
     }
 
     private boolean decideFirstPlayer() {

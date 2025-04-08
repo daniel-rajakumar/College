@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class GameFragment extends Fragment {
 
@@ -151,7 +150,7 @@ public class GameFragment extends Fragment {
             }
         });
 
-        Button btnHelp = requireView().findViewById(R.id.btnHelp);
+        Button btnHelp = requireView().findViewById(R.id.btnHelpMove);
         btnHelp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -173,28 +172,26 @@ public class GameFragment extends Fragment {
                 }
 
                 // Calculate valid moves using the lastDiceSum and current mode.
-                List<String> validMoves = gameController.calculateValidMoves(lastDiceSum, isCovering);
-                String bestMove = "No valid moves";
-                if (validMoves != null && !validMoves.isEmpty()) {
-                    // Select the best move from the list.
-                    // (If you have a complex heuristic, you might iterate over validMoves,
-                    //  but here we simply take the first one for demonstration.)
-                    bestMove = validMoves.get(0);
-                }
-
-                // Retrieve the computer's explanation string.
-                String explanation = gameRound.getComputer().getStrategyExplanation();
-
-                // Build a help message combining the mode, best move, and explanation.
-                String helpMessage = "Recommended move type: " + mode +
-                        "\nBest move: " + bestMove +
-                        "\nWhy: " + explanation;
-                Toast.makeText(getActivity(), helpMessage, Toast.LENGTH_LONG).show();
+                TextView tvHelpAnswer = requireView().findViewById(R.id.tvHelpAnswer);
+                tvHelpAnswer.setText(getHelpMessage(mode, lastDiceSum));
             }
         });
 
 
         updateUI();
+    }
+
+    public String getHelpMessage(String mode, int diceSum) {
+        // Calculate valid moves using the existing method.
+        // Convert mode to a boolean: Cover if mode equals "Cover"
+        boolean isCovering = gameController.shouldCover(diceSum);
+        List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
+        String bestMove = gameController.getBestMove(validMoves, isCovering);
+        String explanation = gameController.getExplanation(bestMove, isCovering);
+
+        return "Recommended move type: " + mode +
+                "\nBest move: " + bestMove +
+                "\nWhy: " + explanation;
     }
 
     @Override
@@ -256,13 +253,11 @@ public class GameFragment extends Fragment {
             boardView.setBoard(gameRound.getBoard());
         }
 
-        Button btnHelp = requireView().findViewById(R.id.btnHelp);
         Button btnHelpMove = requireView().findViewById(R.id.btnHelpMove);
+
         if (gameRound.isHumanTurn()) {
-            btnHelp.setVisibility(View.VISIBLE);
             btnHelpMove.setVisibility(View.VISIBLE);
         } else {
-            btnHelp.setVisibility(View.GONE);
             btnHelpMove.setVisibility(View.GONE);
         }
     }
@@ -308,7 +303,7 @@ public class GameFragment extends Fragment {
                                 layoutMoveOptions.setVisibility(View.VISIBLE);
                             } else {
                                 // It's the computer's turn.
-                                boolean computerMoved = gameController.playComputerTurn(diceSum);
+                                boolean computerMoved = gameController.playComputerTurnWithStrategy(diceSum);
                                 if (!computerMoved) {
                                     // If no valid move was possible (for both cover and uncover),
                                     // switch the turn.

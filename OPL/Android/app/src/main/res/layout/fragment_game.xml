@@ -7,6 +7,17 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <TextView
+        android:id="@+id/tvHelpAnswer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="Help Answer"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linearLayout2" />
+
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="0dp"
@@ -16,6 +27,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/diceLayout">
 
+        <!-- Within your linearLayout_one or another appropriate container -->
         <LinearLayout
             android:id="@+id/linearLayout_one"
             android:layout_width="match_parent"
@@ -49,16 +61,8 @@
                 android:layout_weight="1"
                 android:text="Save Game" />
 
-            <Button
-                android:id="@+id/btnHelp"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="Help" />
         </LinearLayout>
 
-        <!-- Within your linearLayout_one or another appropriate container -->
         <Button
             android:visibility="gone"
             android:id="@+id/btnFinishGame"
@@ -229,7 +233,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintTop_toBottomOf="@+id/tvHelpAnswer"
         app:layout_constraintVertical_bias="1.0">
 
         <TextView

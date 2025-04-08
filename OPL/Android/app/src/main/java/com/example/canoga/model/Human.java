@@ -1,5 +1,7 @@
 package com.example.canoga.model;
 
+import java.util.List;
+
 /**
  * Represents the human player.
  */
@@ -16,4 +18,5 @@ public class Human extends Player {
         // For now, return false as a placeholder.
         return false;
     }
+
 }

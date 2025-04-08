@@ -119,7 +119,7 @@ public class Computer extends Player {
      * @param validMoves a list of valid move combinations.
      * @return the best move combination.
      */
-    private List<Integer> selectBestMove(List<List<Integer>> validMoves) {
+    public List<Integer> selectBestMove(List<List<Integer>> validMoves) {
         List<Integer> bestMove = validMoves.get(0);
         int bestMax = Collections.max(bestMove);
         for (List<Integer> move : validMoves) {
@@ -131,5 +131,6 @@ public class Computer extends Player {
         }
         return bestMove;
     }
+
 
 }
