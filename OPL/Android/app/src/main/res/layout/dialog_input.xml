@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:hint="Dice 1"
         android:inputType="number"
-        android:text="2" />
+        android:text="4" />
 
     <EditText
         android:id="@+id/editTextDice2"
@@ -25,6 +25,6 @@
         android:layout_height="wrap_content"
         android:hint="Dice 2"
         android:inputType="number"
-        android:text="2" />
+        android:text="5" />
 
 </LinearLayout>

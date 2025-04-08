@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GameFragment extends Fragment {
 
@@ -487,14 +488,18 @@ public class GameFragment extends Fragment {
                 String winner = gameRound.isHumanTurn() ? "Human" : "Computer";
 
                 // Delegate finishing the game to the controller (business logic).
-                gameController.finishGame(winner);  // e.g., update tournament scores, etc.
+                int winnerScore = gameController.finishGame(winner);  // e.g., update tournament scores, etc.
+
 
                 // Inform the user.
                 Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
 
+
+                gameRound.setWinnerScore(winnerScore);
+                gameRound.setWinner(gameRound.isHumanTurn() ? gameRound.getHuman() : gameRound.getComputer());
                 // Assume 'finishedRound' is your GameRound instance representing the completed game round.
                 EndFragment endFragment = EndFragment.newInstance( gameRound ); // Call the newInstance() factory
-                getActivity().getSupportFragmentManager().beginTransaction()
+                requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentContainerView, endFragment)
                         .commit();
 

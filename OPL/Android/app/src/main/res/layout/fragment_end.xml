@@ -46,10 +46,10 @@
 
     <!-- Main Menu Button -->
     <Button
-        android:id="@+id/btnMainMenu"
+        android:id="@+id/btnExit"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Main Menu"
+        android:text="Exit"
         app:layout_constraintTop_toBottomOf="@id/btnRestart"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

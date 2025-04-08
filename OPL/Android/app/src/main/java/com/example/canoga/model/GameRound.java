@@ -13,6 +13,9 @@ public class GameRound implements Serializable {
     private boolean isHumanTurn;
     private Random random;
 
+    private Player winner;
+    private int winnerScore;
+
     /**
      * Constructs a game round with a chosen board size.
      * @param boardSize The board size (9, 10, or 11).
@@ -25,6 +28,8 @@ public class GameRound implements Serializable {
         // Default turn (this may be overridden by loaded data)
 //        isHumanTurn = decideFirstPlayer();
         isHumanTurn = true;
+        winner = null;
+        winnerScore = 0;
     }
 
     private boolean decideFirstPlayer() {
@@ -109,5 +114,29 @@ public class GameRound implements Serializable {
             return "computer";
         }
         return "draw"; // Draw
+    }
+
+    public void setWinner(Player winner) {
+        this.winner = winner;
+    }
+
+    public Player getWinnerPlayer() {
+        return winner;
+    }
+    public String getWinnerName() {
+        if (winner == human) {
+            return "Human";
+        } else if (winner == computer) {
+            return "Computer";
+        }
+        return "Draw";
+    }
+
+    public void setWinnerScore(int winnerScore) {
+        this.winnerScore = winnerScore;
+    }
+
+    public int getWinnerScore() {
+        return winnerScore;
     }
 }

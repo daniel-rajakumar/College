@@ -159,7 +159,7 @@ public class GameController {
      *
      * @param winner a String indicating the winner ("Human" or "Computer")
      */
-    public void finishGame(String winner) {
+    public int finishGame(String winner) {
         Board board = gameRound.getBoard();
         int roundScore = 0;
 
@@ -218,6 +218,7 @@ public class GameController {
 
         // Optionally log or display the round score.
         System.out.println("Round Score: " + roundScore);
+        return roundScore;
     }
 
     /**

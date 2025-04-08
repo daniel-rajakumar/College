@@ -12,9 +12,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.canoga.R;
-import com.example.canoga.controller.GameController;
 import com.example.canoga.controller.TournamentController;
 import com.example.canoga.model.GameRound;
+import com.example.canoga.model.Player;
 
 public class EndFragment extends Fragment {
 
@@ -59,9 +59,12 @@ public class EndFragment extends Fragment {
             int humanScore = finishedRound.getHuman().getScore();
             int computerScore = finishedRound.getComputer().getScore();
             finalScoreText = "Final Score: Human " + humanScore + ", Computer " + computerScore;
-            String winner = finishedRound.getWinner();
-            winnerText = "Winner: " + winner;
+            String winner = finishedRound.getWinnerName();
+            int winnerScore = finishedRound.getWinnerScore();
+            winnerText = "Winner: " + winner + " (+" + winnerScore + ")";
         }
+
+
 
         // Set texts on the UI elements
         View view = getView();
@@ -73,7 +76,7 @@ public class EndFragment extends Fragment {
 
             // Setup button listeners
             Button btnRestart = view.findViewById(R.id.btnRestart);
-            Button btnMainMenu = view.findViewById(R.id.btnMainMenu);
+            Button btnMainMenu = view.findViewById(R.id.btnExit);
 
             btnRestart.setOnClickListener(v -> {
                 TournamentController.getInstance().setCurrentGameMode("RESTART");
