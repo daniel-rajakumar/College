@@ -115,9 +115,11 @@ public class BoardView extends View {
                     }
                 }
 
+                RollFragment rollFragment = RollFragment.newInstance(newRound);
                 // Navigate to the Game screen with the newly created round.
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragmentContainerView, GameFragment.newInstance(newRound))
+//                        .replace(R.id.fragmentContainerView, GameFragment.newInstance(newRound))
+                        .replace(R.id.fragmentContainerView, rollFragment)
                         .addToBackStack(null)
                         .commit();
             });
