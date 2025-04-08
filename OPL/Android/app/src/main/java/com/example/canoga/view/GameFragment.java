@@ -48,6 +48,8 @@ public class GameFragment extends Fragment {
 
     private GameController gameController;
 
+    private int lastDiceSum = 0;
+
     // Overloaded factory method that accepts a GameRound
     public static GameFragment newInstance(GameRound loadedRound) {
         GameFragment fragment = new GameFragment();
@@ -134,6 +136,22 @@ public class GameFragment extends Fragment {
         btnConfirm.setOnClickListener(this::onClickButtonConfirm);
 
 
+        ToggleButton toggle = requireView().findViewById(R.id.toggleCoverUncover);
+        toggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Here, if the toggle is checked, assume it means "Uncover" is active.
+            // In your previous code, you were using: boolean isCovering = !toggle.isChecked();
+            boolean isCovering = !isChecked;
+            if (lastDiceSum > 0) {
+                List<String> validMoves = gameController.calculateValidMoves(lastDiceSum, isCovering);
+                Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(),
+                        android.R.layout.simple_spinner_item, validMoves);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerOptions.setAdapter(adapter);
+            }
+        });
+
+
         updateUI();
     }
 
@@ -217,6 +235,8 @@ public class GameFragment extends Fragment {
 
                         if (dice1 >= 1 && dice1 <= 6 && dice2 >= 1 && dice2 <= 6) {
                             int diceSum = dice1 + dice2;
+                            lastDiceSum = diceSum; // Save the dice sum for future updates
+
                             // For this example, we assume a move for covering own squares.
                             boolean isCovering = true;
 
@@ -243,6 +263,7 @@ public class GameFragment extends Fragment {
 //                                    gameRound.setHumanTurn(!gameRound.isHumanTurn());
                                     Toast.makeText(getActivity(), "Computer couldn't move. Turn switched.", Toast.LENGTH_SHORT).show();
                                 } else {
+                                    gameRound.getCurrentPlayer().setHasPlayed(true);
                                     Toast.makeText(getActivity(), "Computer moved automatically.", Toast.LENGTH_SHORT).show();
                                 }
                                 updateUI();
@@ -353,7 +374,11 @@ public class GameFragment extends Fragment {
     }
 
     private boolean checkWin() {
-        if (gameRound.getHuman().hasPlayed() && gameRound.getComputer().hasPlayed()) {
+        boolean hasPlayed_human = gameRound.getHuman().hasPlayed();
+        boolean hasPlayed_computer = gameRound.getComputer().hasPlayed();
+
+        Log.d("GameFragment", "Checking win conditions: (Human played: " + hasPlayed_human + ", Computer Played: " + hasPlayed_computer + ")");
+        if (hasPlayed_human && hasPlayed_computer) {
             if (gameRound.getBoard().isHumanComplete() || gameRound.getBoard().isComputerComplete()) {
                 // Determine the winner based on whose turn it was when the move was applied.
                 String winner = gameRound.isHumanTurn() ? "Human" : "Computer";
