@@ -50,9 +50,18 @@ public class EndFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         // TODO: Retrieve final scores and winner from ViewModel or arguments
 
+
         // For demonstration, we'll set some sample values
-        String finalScoreText = "Final Score: Human 45, Computer 38";
-        String winnerText = "Winner: Human";
+        String finalScoreText = "Final Score: Human N/A, Computer N/A";
+        String winnerText = "Winner: N/A";
+
+        if (finishedRound != null) {
+            int humanScore = finishedRound.getHuman().getScore();
+            int computerScore = finishedRound.getComputer().getScore();
+            finalScoreText = "Final Score: Human " + humanScore + ", Computer " + computerScore;
+            String winner = finishedRound.getWinner();
+            winnerText = "Winner: " + winner;
+        }
 
         // Set texts on the UI elements
         View view = getView();

@@ -101,4 +101,13 @@ public class GameRound implements Serializable {
     public Player getCurrentPlayer() {
         return isHumanTurn ? human : computer;
     }
+
+    public String getWinner() {
+        if (human.getScore() > computer.getScore()) {
+            return "human";
+        } else if (computer.getScore() > human.getScore()) {
+            return "computer";
+        }
+        return "draw"; // Draw
+    }
 }

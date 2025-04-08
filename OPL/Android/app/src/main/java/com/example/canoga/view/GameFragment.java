@@ -151,29 +151,82 @@ public class GameFragment extends Fragment {
         });
 
         Button btnHelp = requireView().findViewById(R.id.btnHelpMove);
-        btnHelp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Check if it's the human's turn
-                if (!gameRound.isHumanTurn()) {
-                    Toast.makeText(getActivity(), "Help is available only on your turn.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                // Determine the move mode based on the toggle.
-                ToggleButton toggle = requireView().findViewById(R.id.toggleCoverUncover);
-                // In our convention, if toggle is checked, then it's "Uncover"; otherwise, it's "Cover."
-                boolean isCovering = !toggle.isChecked();
-                String mode = isCovering ? "Cover" : "Uncover";
+        btnHelp.setOnClickListener(v -> {
+            // Check if it's the human's turn
+            if (!gameRound.isHumanTurn()) {
+                Toast.makeText(getActivity(), "Help is available only on your turn.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // Determine the move mode based on the toggle.
+            ToggleButton toggle1 = requireView().findViewById(R.id.toggleCoverUncover);
+            // In our convention, if toggle is checked, then it's "Uncover"; otherwise, it's "Cover."
+            boolean isCovering = !toggle1.isChecked();
+            String mode = isCovering ? "Cover" : "Uncover";
 
-                // Make sure the dice have been rolled.
-                if (lastDiceSum == 0) {
-                    Toast.makeText(getActivity(), "Please roll the dice first.", Toast.LENGTH_SHORT).show();
-                    return;
+            // Make sure the dice have been rolled.
+            if (lastDiceSum == 0) {
+                Toast.makeText(getActivity(), "Please roll the dice first.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Calculate valid moves using the lastDiceSum and current mode.
+            TextView tvHelpAnswer = requireView().findViewById(R.id.tvHelpAnswer);
+            tvHelpAnswer.setText(getHelpMessage(mode, lastDiceSum));
+        });
+
+        // In your GameFragment.java, inside onViewCreated() method:
+        Button rollDiceButton = requireView().findViewById(R.id.btnRollDice);
+        rollDiceButton.setOnClickListener(v -> {
+            // Roll two dice using Random.
+            int dice1 = (int) (Math.random() * 6) + 1;
+            int dice2 = (int) (Math.random() * 6) + 1;
+            int diceSum = dice1 + dice2;
+
+            // Update UI with the dice results.
+            TextView tvDiceResult = requireView().findViewById(R.id.tvDiceSum);
+            tvDiceResult.setText("Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + diceSum + ")");
+
+            // Decide whether the move should be covering or uncovering using our revised heuristic.
+            boolean isCovering = gameController.shouldCover(diceSum);
+
+            // Calculate valid moves available based on the dice sum and move type.
+            List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
+
+            // Determine the best move using our improved evaluation criteria.
+            String bestMove = gameController.getBestMove(validMoves, isCovering);
+
+            // Provide an explanation for the recommendation.
+            String explanation = gameController.getExplanation(bestMove, isCovering);
+
+            // Check whose turn it is.
+            if (gameRound.isHumanTurn()) {
+                // For human turn, update UI: show valid moves in a spinner and display recommendation.
+                Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
+                        android.R.layout.simple_spinner_item, validMoves);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerOptions.setAdapter(adapter);
+
+                // Display the recommended move and its explanation (assumes you have a TextView for this).
+                TextView tvHelpMoveExplanation = requireView().findViewById(R.id.tvHelpAnswer);
+                tvHelpMoveExplanation.setText("Recommended move: " + bestMove + "\n" + explanation);
+
+                // Optionally, switch to the move options layout if needed:
+                View layoutDiceInput = requireView().findViewById(R.id.linearLayout_one);
+                View layoutMoveOptions = requireView().findViewById(R.id.linearLayout_moveOptions);
+                layoutDiceInput.setVisibility(View.GONE);
+                layoutMoveOptions.setVisibility(View.VISIBLE);
+            } else {
+                // For computer turn, execute the move automatically.
+                boolean computerMoved = gameController.playComputerTurnWithStrategy(diceSum);
+                if (!computerMoved) {
+                    // If the computer could not make a move, you might want to switch turns.
+                    Toast.makeText(getActivity(), "Computer couldn't move. Switching turn...", Toast.LENGTH_SHORT).show();
+                    gameRound.setHumanTurn(!gameRound.isHumanTurn());
                 }
 
-                // Calculate valid moves using the lastDiceSum and current mode.
-                TextView tvHelpAnswer = requireView().findViewById(R.id.tvHelpAnswer);
-                tvHelpAnswer.setText(getHelpMessage(mode, lastDiceSum));
+                // Update the UI to reflect the new board and scores.
+                updateUI();
             }
         });
 
@@ -418,6 +471,9 @@ public class GameFragment extends Fragment {
         // Reset the move layouts.
         layoutMoveOptions.setVisibility(View.GONE);
         layoutOne.setVisibility(View.VISIBLE);
+
+        TextView tvHelpAnswer = requireView().findViewById(R.id.tvHelpAnswer);
+        tvHelpAnswer.setText("");
     }
 
     private boolean checkWin() {
