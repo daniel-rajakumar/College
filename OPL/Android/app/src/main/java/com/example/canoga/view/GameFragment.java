@@ -283,35 +283,35 @@ public class GameFragment extends Fragment {
     private void onClickButtonInput(View v) {
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         View dialogView = inflater.inflate(R.layout.dialog_input, null);
-        Button dice1Btn1 = dialogView.findViewById(R.id.dice1_btn1);
-        Button dice1Btn2 = dialogView.findViewById(R.id.dice1_btn2);
-        Button dice1Btn3 = dialogView.findViewById(R.id.dice1_btn3);
-        Button dice1Btn4 = dialogView.findViewById(R.id.dice1_btn4);
-        Button dice1Btn5 = dialogView.findViewById(R.id.dice1_btn5);
-        Button dice1Btn6 = dialogView.findViewById(R.id.dice1_btn6);
-        Button dice2Btn1 = dialogView.findViewById(R.id.dice2_btn1);
-        Button dice2Btn2 = dialogView.findViewById(R.id.dice2_btn2);
-        Button dice2Btn3 = dialogView.findViewById(R.id.dice2_btn3);
-        Button dice2Btn4 = dialogView.findViewById(R.id.dice2_btn4);
-        Button dice2Btn5 = dialogView.findViewById(R.id.dice2_btn5);
-        Button dice2Btn6 = dialogView.findViewById(R.id.dice2_btn6);
+        ToggleButton dice1Btn1 = dialogView.findViewById(R.id.dice1_btn1);
+        ToggleButton dice1Btn2 = dialogView.findViewById(R.id.dice1_btn2);
+        ToggleButton dice1Btn3 = dialogView.findViewById(R.id.dice1_btn3);
+        ToggleButton dice1Btn4 = dialogView.findViewById(R.id.dice1_btn4);
+        ToggleButton dice1Btn5 = dialogView.findViewById(R.id.dice1_btn5);
+        ToggleButton dice1Btn6 = dialogView.findViewById(R.id.dice1_btn6);
+        ToggleButton dice2Btn1 = dialogView.findViewById(R.id.dice2_btn1);
+        ToggleButton dice2Btn2 = dialogView.findViewById(R.id.dice2_btn2);
+        ToggleButton dice2Btn3 = dialogView.findViewById(R.id.dice2_btn3);
+        ToggleButton dice2Btn4 = dialogView.findViewById(R.id.dice2_btn4);
+        ToggleButton dice2Btn5 = dialogView.findViewById(R.id.dice2_btn5);
+        ToggleButton dice2Btn6 = dialogView.findViewById(R.id.dice2_btn6);
 
         final int[] selectedDice1 = {0};
         final int[] selectedDice2 = {0};
 
         // Store them in an array for ease of iteration:
-        Button[] dice1Buttons = { dice1Btn1, dice1Btn2, dice1Btn3, dice1Btn4, dice1Btn5, dice1Btn6 };
-        Button[] dice2Buttons = { dice2Btn1, dice2Btn2, dice2Btn3, dice2Btn4, dice2Btn5, dice2Btn6 };
+        ToggleButton[] dice1Buttons = { dice1Btn1, dice1Btn2, dice1Btn3, dice1Btn4, dice1Btn5, dice1Btn6 };
+        ToggleButton[] dice2Buttons = { dice2Btn1, dice2Btn2, dice2Btn3, dice2Btn4, dice2Btn5, dice2Btn6 };
 
         for (int i = 0; i < dice1Buttons.length; i++) {
             final int value = i + 1;
             dice1Buttons[i].setOnClickListener(v2 -> {
                 // Clear the selected state for all buttons in this group
-                for (Button btn : dice1Buttons) {
-                    btn.setSelected(false);
+                for (ToggleButton btn : dice1Buttons) {
+                    btn.setChecked(false);
                 }
                 // Mark the clicked button as selected
-                v2.setSelected(true);
+                ((ToggleButton) v2).setChecked(true);
                 v2.refreshDrawableState();
                 // Store the selected value (1 to 6)
                 selectedDice1[0] = value;
@@ -322,11 +322,11 @@ public class GameFragment extends Fragment {
             final int value = i + 1;
             dice2Buttons[i].setOnClickListener(v1 -> {
                 // Clear the selected state for all buttons in this group
-                for (Button btn : dice2Buttons) {
-                    btn.setSelected(false);
+                for (ToggleButton btn : dice2Buttons) {
+                    btn.setChecked(false);
                 }
                 // Mark the clicked button as selected
-                v1.setSelected(true);
+                ((ToggleButton) v1).setChecked(true);
                 v1.refreshDrawableState();
                 // Store the selected value (1 to 6)
                 selectedDice2[0] = value;

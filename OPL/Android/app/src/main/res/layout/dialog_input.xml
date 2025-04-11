@@ -21,62 +21,68 @@
                     android:gravity="center"
                     android:layout_marginBottom="16dp">
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice1_btn1"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="I"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="I"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice1_btn2"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="II"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="II"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice1_btn3"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="III"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="III"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice1_btn4"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="IV"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="IV"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice1_btn5"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="V"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="V"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice1_btn6"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="VI"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="VI"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
                 </LinearLayout>
@@ -95,62 +101,68 @@
                     android:orientation="horizontal"
                     android:gravity="center">
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice2_btn1"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="I"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="I"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice2_btn2"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="II"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="II"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice2_btn3"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="III"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="III"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice2_btn4"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="IV"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="IV"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice2_btn5"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="V"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="V"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
 
-                    <Button
+                    <ToggleButton
                         android:id="@+id/dice2_btn6"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/circle_creator"
-                        android:text="VI"
+                        android:backgroundTint="@drawable/circle_creator"
+                        android:textOff="VI"
+                        android:textOn=""
                         android:textColor="@android:color/white"
                         android:textSize="16sp" />
                 </LinearLayout>
