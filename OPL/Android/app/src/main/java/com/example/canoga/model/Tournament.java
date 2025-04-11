@@ -12,7 +12,6 @@ public class Tournament {
     private int computerTotalScore;
     private String currentGameMode = "NEW";
 
-
     public Tournament() {
         rounds = new ArrayList<>();
         humanTotalScore = 0;

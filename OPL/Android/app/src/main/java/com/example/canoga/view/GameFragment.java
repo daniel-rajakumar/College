@@ -229,6 +229,7 @@ public class GameFragment extends Fragment {
         List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
         String bestMove = gameController.getBestMove(validMoves, isCovering);
         String explanation = gameController.getExplanation(bestMove, isCovering);
+        mode = (isCovering ? "Cover" : "Uncover");
         return "(Un)cover: " + mode +
                 "\nMove: " + bestMove +
                 "\nWhy: " + explanation;
