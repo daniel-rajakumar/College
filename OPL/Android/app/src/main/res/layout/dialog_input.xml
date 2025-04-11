@@ -1,30 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enter Dice Values:" />
+                <!-- Section for Dice 1 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select Dice 1:"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp" />
 
-    <EditText
-        android:id="@+id/editTextDice1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Dice 1"
-        android:inputType="number"
-        android:text="4" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp">
 
-    <EditText
-        android:id="@+id/editTextDice2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Dice 2"
-        android:inputType="number"
-        android:text="5" />
+                    <Button
+                        android:id="@+id/dice1_btn1"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="I"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
 
-</LinearLayout>
+                    <Button
+                        android:id="@+id/dice1_btn2"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="II"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice1_btn3"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="III"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice1_btn4"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="IV"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice1_btn5"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="V"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice1_btn6"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="VI"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <!-- Section for Dice 2 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select Dice 2:"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/dice2_btn1"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="I"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice2_btn2"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="II"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice2_btn3"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="III"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice2_btn4"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="IV"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice2_btn5"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="V"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/dice2_btn6"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/circle_creator"
+                        android:text="VI"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+            </LinearLayout>

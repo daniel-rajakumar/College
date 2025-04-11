@@ -11,7 +11,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
-            // Start with the main menu (StartFragment)
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView, StartFragment.newInstance())
                     .commit();

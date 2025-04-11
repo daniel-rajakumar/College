@@ -83,4 +83,16 @@ public class GameLogger {
             return "";
         }
     }
+
+    public String ClearLog() {
+        try {
+            FileOutputStream fos = new FileOutputStream(logFile);
+            fos.write("".getBytes());
+            fos.close();
+            return "Log cleared successfully.";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error clearing log.";
+        }
+    }
 }

@@ -9,13 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -33,21 +31,24 @@ import com.example.canoga.util.GameLogger;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameFragment extends Fragment {
 
     private static final int CREATE_FILE_REQUEST_CODE = 1;
     private static final int LOAD_FILE_REQUEST_CODE = 2;
     private GameRound gameRound;
-    private TextView tvHumanScore, tvComputerScore, tvTurnIndicator, tvDiceSum;
+    private TextView tvHumanScore, tvComputerScore, tvTurnIndicator, tvDiceSum, tvHelpAnswer;
     private BoardView boardView;
     private LinearLayout layoutOne;
     private LinearLayout layoutMoveOptions;
     private GameController gameController;
     private int lastDiceSum = 0;
     TextView tvGameLog;
+
+    String bestMove, explanation;
 
     // Overloaded factory method that accepts a GameRound
     public static GameFragment newInstance(GameRound loadedRound) {
@@ -66,6 +67,7 @@ public class GameFragment extends Fragment {
             GameLogger.init(getActivity());
         }
         GameLogger.getInstance().log("GameFragment: onCreate() called.");
+        GameLogger.getInstance().ClearLog();
 
         // Retrieve the GameRound from the Bundle if provided.
         if (getArguments() != null) {
@@ -100,6 +102,7 @@ public class GameFragment extends Fragment {
         layoutMoveOptions = view.findViewById(R.id.linearLayout_moveOptions);
         tvDiceSum = view.findViewById(R.id.tvDiceSum);
         tvGameLog = view.findViewById(R.id.tvGameLog);
+        tvHelpAnswer = view.findViewById(R.id.tvHelpAnswer);
         return view;
     }
 
@@ -162,10 +165,8 @@ public class GameFragment extends Fragment {
                 Toast.makeText(getActivity(), "Please roll the dice first.", Toast.LENGTH_SHORT).show();
                 return;
             }
-            TextView tvHelpAnswer = requireView().findViewById(R.id.tvHelpAnswer);
-            String helpMsg = getHelpMessage(mode, lastDiceSum);
-            tvHelpAnswer.setText(helpMsg);
-            GameLogger.getInstance().log("GameFragment: Help requested - " + helpMsg);
+
+            tvHelpAnswer.setText(getHelpMessage(mode, lastDiceSum));
         });
 
         Button rollDiceButton = requireView().findViewById(R.id.btnRollDice);
@@ -180,8 +181,8 @@ public class GameFragment extends Fragment {
             boolean isCovering = gameController.shouldCover(diceSum);
             GameLogger.getInstance().log("GameFragment: Move type decided - " + (isCovering ? "Cover" : "Uncover"));
             List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
-            String bestMove = gameController.getBestMove(validMoves, isCovering);
-            String explanation = gameController.getExplanation(bestMove, isCovering);
+            bestMove = gameController.getBestMove(validMoves, isCovering);
+            explanation = gameController.getExplanation(bestMove, isCovering);
             GameLogger.getInstance().log("GameFragment: Best move selected - " + bestMove + ". Explanation: " + explanation);
 
             if (gameRound.isHumanTurn()) {
@@ -216,6 +217,7 @@ public class GameFragment extends Fragment {
                     GameLogger.getInstance().log("GameFragment: Game continues after computer's turn.");
                 }
             }
+            tvHelpAnswer.setText("");
             updateUI();
         });
 
@@ -227,8 +229,8 @@ public class GameFragment extends Fragment {
         List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
         String bestMove = gameController.getBestMove(validMoves, isCovering);
         String explanation = gameController.getExplanation(bestMove, isCovering);
-        return "Recommended move type: " + mode +
-                "\nBest move: " + bestMove +
+        return "(Un)cover: " + mode +
+                "\nMove: " + bestMove +
                 "\nWhy: " + explanation;
     }
 
@@ -281,27 +283,76 @@ public class GameFragment extends Fragment {
     private void onClickButtonInput(View v) {
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         View dialogView = inflater.inflate(R.layout.dialog_input, null);
-        final EditText editTextDice1 = dialogView.findViewById(R.id.editTextDice1);
-        final EditText editTextDice2 = dialogView.findViewById(R.id.editTextDice2);
+        Button dice1Btn1 = dialogView.findViewById(R.id.dice1_btn1);
+        Button dice1Btn2 = dialogView.findViewById(R.id.dice1_btn2);
+        Button dice1Btn3 = dialogView.findViewById(R.id.dice1_btn3);
+        Button dice1Btn4 = dialogView.findViewById(R.id.dice1_btn4);
+        Button dice1Btn5 = dialogView.findViewById(R.id.dice1_btn5);
+        Button dice1Btn6 = dialogView.findViewById(R.id.dice1_btn6);
+        Button dice2Btn1 = dialogView.findViewById(R.id.dice2_btn1);
+        Button dice2Btn2 = dialogView.findViewById(R.id.dice2_btn2);
+        Button dice2Btn3 = dialogView.findViewById(R.id.dice2_btn3);
+        Button dice2Btn4 = dialogView.findViewById(R.id.dice2_btn4);
+        Button dice2Btn5 = dialogView.findViewById(R.id.dice2_btn5);
+        Button dice2Btn6 = dialogView.findViewById(R.id.dice2_btn6);
+
+        final int[] selectedDice1 = {0};
+        final int[] selectedDice2 = {0};
+
+        // Store them in an array for ease of iteration:
+        Button[] dice1Buttons = { dice1Btn1, dice1Btn2, dice1Btn3, dice1Btn4, dice1Btn5, dice1Btn6 };
+        Button[] dice2Buttons = { dice2Btn1, dice2Btn2, dice2Btn3, dice2Btn4, dice2Btn5, dice2Btn6 };
+
+        for (int i = 0; i < dice1Buttons.length; i++) {
+            final int value = i + 1;
+            dice1Buttons[i].setOnClickListener(v2 -> {
+                // Clear the selected state for all buttons in this group
+                for (Button btn : dice1Buttons) {
+                    btn.setSelected(false);
+                }
+                // Mark the clicked button as selected
+                v2.setSelected(true);
+                v2.refreshDrawableState();
+                // Store the selected value (1 to 6)
+                selectedDice1[0] = value;
+            });
+        }
+
+        for (int i = 0; i < dice2Buttons.length; i++) {
+            final int value = i + 1;
+            dice2Buttons[i].setOnClickListener(v1 -> {
+                // Clear the selected state for all buttons in this group
+                for (Button btn : dice2Buttons) {
+                    btn.setSelected(false);
+                }
+                // Mark the clicked button as selected
+                v1.setSelected(true);
+                v1.refreshDrawableState();
+                // Store the selected value (1 to 6)
+                selectedDice2[0] = value;
+            });
+        }
+
+        int diceSum = selectedDice1[0] + selectedDice2[0];
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Input Move")
                 .setView(dialogView)
                 .setPositiveButton("Submit", (dialog, which) -> {
-                    String dice1Str = editTextDice1.getText().toString().trim();
-                    String dice2Str = editTextDice2.getText().toString().trim();
+                    String dice1Str = selectedDice1[0] + "";
+                    String dice2Str = selectedDice2[0] + "";
 
                     if (!dice1Str.isEmpty() && !dice2Str.isEmpty()) {
                         int dice1 = Integer.parseInt(dice1Str);
                         int dice2 = Integer.parseInt(dice2Str);
                         if (dice1 >= 1 && dice1 <= 6 && dice2 >= 1 && dice2 <= 6) {
-                            int diceSum = dice1 + dice2;
-                            lastDiceSum = diceSum;
-                            tvDiceSum.setText("Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + diceSum + ")");
-                            GameLogger.getInstance().log("GameFragment: Manual dice input - " + dice1 + ", " + dice2 + " (Sum: " + diceSum + ")");
+                            int d = dice1 + dice2;
+                            lastDiceSum = d;
+                            tvDiceSum.setText("Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + lastDiceSum + ")");
+                            GameLogger.getInstance().log("GameFragment: Manual dice input - " + dice1 + ", " + dice2 + " (Sum: " + lastDiceSum + ")");
                             boolean isCovering = true;
                             if (gameRound.isHumanTurn()) {
-                                List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
+                                List<String> validMoves = gameController.calculateValidMoves(lastDiceSum, isCovering);
                                 Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
                                 ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(),
                                         android.R.layout.simple_spinner_item, validMoves);
@@ -311,7 +362,7 @@ public class GameFragment extends Fragment {
                                 layoutMoveOptions.setVisibility(View.VISIBLE);
                                 GameLogger.getInstance().log("GameFragment: Human manual input - move options displayed.");
                             } else {
-                                boolean computerMoved = gameController.playComputerTurnWithStrategy(diceSum);
+                                boolean computerMoved = gameController.playComputerTurnWithStrategy(lastDiceSum);
                                 if (!computerMoved) {
                                     Toast.makeText(getActivity(), "Computer couldn't move. Turn switched.", Toast.LENGTH_SHORT).show();
                                     GameLogger.getInstance().log("GameFragment: Computer manual input - invalid move; switching turn.");
@@ -319,6 +370,8 @@ public class GameFragment extends Fragment {
                                     gameRound.getCurrentPlayer().setHasPlayed(true);
                                     Toast.makeText(getActivity(), "Computer moved automatically.", Toast.LENGTH_SHORT).show();
                                     GameLogger.getInstance().log("GameFragment: Computer manual input - move executed.");
+                                    Toast.makeText(getActivity(), "Computer moved: " + bestMove, Toast.LENGTH_SHORT).show();
+////                                    tvHelpAnswer.setText("Computer moved: " + bestMove + " and " + explanation);
                                 }
                                 updateUI();
                                 if (checkWin()) {
@@ -338,6 +391,7 @@ public class GameFragment extends Fragment {
     }
 
     private void onClickButtonConfirm(View v) {
+        tvHelpAnswer.setText("");
         Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
         String selectedMove = (String) spinnerOptions.getSelectedItem();
         if (selectedMove == null || selectedMove.equals("No valid moves")) {
@@ -397,8 +451,6 @@ public class GameFragment extends Fragment {
         updateUI();
         layoutMoveOptions.setVisibility(View.GONE);
         layoutOne.setVisibility(View.VISIBLE);
-        TextView tvHelpAnswer = requireView().findViewById(R.id.tvHelpAnswer);
-        tvHelpAnswer.setText("");
     }
 
     private boolean checkWin() {
