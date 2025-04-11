@@ -1,5 +1,7 @@
 package com.example.canoga.model;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 import java.util.Random;
 
@@ -105,6 +107,13 @@ public class GameRound implements Serializable {
 
     public Player getCurrentPlayer() {
         return isHumanTurn ? human : computer;
+    }
+
+    public String getCurrentPlayerName() {
+        if (isHumanTurn) {
+            return "Human";
+        }
+        return "Computer";
     }
 
     public String getWinner() {

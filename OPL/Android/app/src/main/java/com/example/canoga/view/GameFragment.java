@@ -66,25 +66,21 @@ public class GameFragment extends Fragment {
         if(getActivity() != null) {
             GameLogger.init(getActivity());
         }
-        GameLogger.getInstance().log("GameFragment: onCreate() called.");
         GameLogger.getInstance().ClearLog();
 
         // Retrieve the GameRound from the Bundle if provided.
         if (getArguments() != null) {
             gameRound = (GameRound) getArguments().getSerializable("gameRound");
-            GameLogger.getInstance().log("GameFragment: Loaded game round from arguments.");
             assert gameRound != null;
             boolean isValid = TournamentController.getInstance().getCurrentGameMode().equals("LOADED");
             if (isValid) {
                 gameRound.getComputer().setHasPlayed(true);
                 gameRound.getHuman().setHasPlayed(true);
-                GameLogger.getInstance().log("GameFragment: Loaded game round marked as LOADED mode.");
             }
         }
         // Otherwise, initialize a new GameRound if needed.
         if (gameRound == null) {
             gameRound = new GameRound(9);
-            GameLogger.getInstance().log("GameFragment: Created new game round with board size 9.");
         }
     }
 
@@ -109,7 +105,6 @@ public class GameFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        GameLogger.getInstance().log("GameFragment: onViewCreated() called.");
 
         Button btnSave = view.findViewById(R.id.btnSave);
         btnSave.setOnClickListener(v -> {
@@ -118,13 +113,11 @@ public class GameFragment extends Fragment {
             intent.setType("text/plain");
             intent.putExtra(Intent.EXTRA_TITLE, "game_save.txt");
             startActivityForResult(intent, CREATE_FILE_REQUEST_CODE);
-            GameLogger.getInstance().log("GameFragment: Save button clicked; launching document creation.");
         });
 
         Button finishButton = view.findViewById(R.id.btnFinishGame);
         if (finishButton != null) {
             finishButton.setOnClickListener(v -> {
-                GameLogger.getInstance().log("GameFragment: Finish Game button clicked.");
                 requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentContainerView, new EndFragment())
                         .addToBackStack(null)
@@ -148,7 +141,6 @@ public class GameFragment extends Fragment {
                         android.R.layout.simple_spinner_item, validMoves);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerOptions.setAdapter(adapter);
-                GameLogger.getInstance().log("GameFragment: Toggle changed, updated move options.");
             }
         });
 
@@ -177,14 +169,13 @@ public class GameFragment extends Fragment {
             int diceSum = dice1 + dice2;
             lastDiceSum = diceSum;
             tvDiceSum.setText("Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + diceSum + ")");
-            GameLogger.getInstance().log("GameFragment: Dice rolled - " + dice1 + " and " + dice2 + " (Sum: " + diceSum + ")");
+
+            GameLogger.getInstance().log(gameRound.getCurrentPlayerName(), "Rolled: " + dice1 + " and " + dice2);
 
             boolean isCovering = gameController.shouldCover(diceSum);
-            GameLogger.getInstance().log("GameFragment: Move type decided - " + (isCovering ? "Cover" : "Uncover"));
             List<String> validMoves = gameController.calculateValidMoves(diceSum, isCovering);
             bestMove = gameController.getBestMove(validMoves, isCovering);
             explanation = gameController.getExplanation(bestMove, isCovering);
-            GameLogger.getInstance().log("GameFragment: Best move selected - " + bestMove + ". Explanation: " + explanation);
 
             if (gameRound.isHumanTurn()) {
                 Spinner spinnerOptions = requireView().findViewById(R.id.spinnerOptions);
@@ -198,24 +189,19 @@ public class GameFragment extends Fragment {
                 View layoutMoveOptions = requireView().findViewById(R.id.linearLayout_moveOptions);
                 layoutDiceInput.setVisibility(View.GONE);
                 layoutMoveOptions.setVisibility(View.VISIBLE);
-                GameLogger.getInstance().log("GameFragment: Human turn - showing move options.");
             } else {
                 boolean computerMoved = gameController.playComputerTurnWithStrategy(diceSum);
                 if (!computerMoved) {
                     Toast.makeText(getActivity(), "Computer couldn't move. Switching turn...", Toast.LENGTH_SHORT).show();
-                    GameLogger.getInstance().log("GameFragment: Computer move invalid, switching turn.");
                     gameRound.setHumanTurn(!gameRound.isHumanTurn());
                 } else {
                     gameRound.getCurrentPlayer().setHasPlayed(true);
                     Toast.makeText(getActivity(), "Computer moved automatically.", Toast.LENGTH_SHORT).show();
-                    GameLogger.getInstance().log("GameFragment: Computer move executed successfully.");
                 }
                 updateUI();
                 if (checkWin()) {
-                    GameLogger.getInstance().log("GameFragment: Game finished after computer's turn.");
                     return;
                 } else {
-                    GameLogger.getInstance().log("GameFragment: Game continues after computer's turn.");
                 }
             }
             tvHelpAnswer.setText("");
@@ -239,7 +225,6 @@ public class GameFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        GameLogger.getInstance().log("GameFragment: onActivityCreated() called.");
     }
 
     @Override
@@ -256,12 +241,10 @@ public class GameFragment extends Fragment {
                 outputStream.write(gameData.getBytes());
                 outputStream.close();
                 Toast.makeText(getActivity(), "Game saved successfully.", Toast.LENGTH_SHORT).show();
-                GameLogger.getInstance().log("GameFragment: Game state saved to file.");
             }
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(getActivity(), "Error saving game.", Toast.LENGTH_SHORT).show();
-            GameLogger.getInstance().log("GameFragment: Error saving game state - " + e.getMessage());
         }
     }
 
@@ -335,7 +318,13 @@ public class GameFragment extends Fragment {
             });
         }
 
-        int diceSum = selectedDice1[0] + selectedDice2[0];
+        String dice1Str_ = selectedDice1[0] + "";
+        String dice2Str_ = selectedDice2[0] + "";
+        int dice1_ = Integer.parseInt(dice1Str_);
+        int dice2_ = Integer.parseInt(dice2Str_);
+
+        if (dice1_ > 0 && dice2_ > 0)
+            GameLogger.getInstance().log(gameRound.getCurrentPlayerName(), "Input dice: " + dice1_ + " and " + dice2_);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Input Move")
@@ -351,7 +340,7 @@ public class GameFragment extends Fragment {
                             int d = dice1 + dice2;
                             lastDiceSum = d;
                             tvDiceSum.setText("Dice rolled: " + dice1 + " and " + dice2 + " (Sum: " + lastDiceSum + ")");
-                            GameLogger.getInstance().log("GameFragment: Manual dice input - " + dice1 + ", " + dice2 + " (Sum: " + lastDiceSum + ")");
+                            GameLogger.getInstance().log(gameRound.getCurrentPlayerName(), "Input dice: " + dice1 + " and " + dice2);
                             boolean isCovering = true;
                             if (gameRound.isHumanTurn()) {
                                 List<String> validMoves = gameController.calculateValidMoves(lastDiceSum, isCovering);
@@ -362,22 +351,21 @@ public class GameFragment extends Fragment {
                                 spinnerOptions.setAdapter(adapter);
                                 layoutOne.setVisibility(View.GONE);
                                 layoutMoveOptions.setVisibility(View.VISIBLE);
-                                GameLogger.getInstance().log("GameFragment: Human manual input - move options displayed.");
                             } else {
                                 boolean computerMoved = gameController.playComputerTurnWithStrategy(lastDiceSum);
                                 if (!computerMoved) {
                                     Toast.makeText(getActivity(), "Computer couldn't move. Turn switched.", Toast.LENGTH_SHORT).show();
-                                    GameLogger.getInstance().log("GameFragment: Computer manual input - invalid move; switching turn.");
                                 } else {
                                     gameRound.getCurrentPlayer().setHasPlayed(true);
                                     Toast.makeText(getActivity(), "Computer moved automatically.", Toast.LENGTH_SHORT).show();
-                                    GameLogger.getInstance().log("GameFragment: Computer manual input - move executed.");
                                     Toast.makeText(getActivity(), "Computer moved: " + bestMove, Toast.LENGTH_SHORT).show();
+
+                                    if (bestMove != null)
+                                        GameLogger.getInstance().log("Computer", "Moved: " + bestMove);
 ////                                    tvHelpAnswer.setText("Computer moved: " + bestMove + " and " + explanation);
                                 }
                                 updateUI();
                                 if (checkWin()) {
-                                    GameLogger.getInstance().log("GameFragment: Game over after manual input move.");
                                     return;
                                 }
                             }
@@ -399,7 +387,6 @@ public class GameFragment extends Fragment {
         if (selectedMove == null || selectedMove.equals("No valid moves")) {
             Toast.makeText(getActivity(), "No valid move selected", Toast.LENGTH_SHORT).show();
             gameRound.setHumanTurn(!gameRound.isHumanTurn());
-            GameLogger.getInstance().log("GameFragment: No valid move; turn switched.");
             updateUI();
             layoutMoveOptions.setVisibility(View.GONE);
             layoutOne.setVisibility(View.VISIBLE);
@@ -413,7 +400,6 @@ public class GameFragment extends Fragment {
                 try {
                     moveSquares.add(Integer.parseInt(token));
                 } catch (NumberFormatException e) {
-                    GameLogger.getInstance().log("GameFragment: Error parsing move token: " + token);
                 }
             }
         }
@@ -433,18 +419,18 @@ public class GameFragment extends Fragment {
             }
             if (!success) {
                 validMove = false;
-                GameLogger.getInstance().log("GameFragment: Invalid move detected for square: " + square);
                 break;
             }
         }
 
+
         if (validMove) {
+            GameLogger.getInstance().log(gameRound.getCurrentPlayerName(), "Moved: " + selectedMove);
             Toast.makeText(getActivity(), "Move confirmed", Toast.LENGTH_SHORT).show();
-            GameLogger.getInstance().log("GameFragment: Move confirmed: " + selectedMove);
             gameRound.getCurrentPlayer().setHasPlayed(true);
         } else {
+            GameLogger.getInstance().log(gameRound.getCurrentPlayerName(), "Tired to move: " + selectedMove);
             Toast.makeText(getActivity(), "Invalid move. Turn switched.", Toast.LENGTH_SHORT).show();
-            GameLogger.getInstance().log("GameFragment: Move invalid; switching turn.");
             gameRound.setHumanTurn(!gameRound.isHumanTurn());
         }
 
@@ -458,12 +444,10 @@ public class GameFragment extends Fragment {
     private boolean checkWin() {
         boolean hasPlayed_human = gameRound.getHuman().hasPlayed();
         boolean hasPlayed_computer = gameRound.getComputer().hasPlayed();
-        GameLogger.getInstance().log("GameFragment: Checking win conditions (Human played: " + hasPlayed_human + ", Computer played: " + hasPlayed_computer + ")");
         if (hasPlayed_human && hasPlayed_computer) {
             if (gameRound.getBoard().isHumanComplete() || gameRound.getBoard().isComputerComplete()) {
                 String winner = gameRound.isHumanTurn() ? "Human" : "Computer";
                 int winnerScore = gameController.finishGame(winner);
-                GameLogger.getInstance().log("GameFragment: " + winner + " wins the round with score: " + winnerScore);
                 Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
                 gameRound.setWinnerScore(winnerScore);
                 gameRound.setWinner(gameRound.isHumanTurn() ? gameRound.getHuman() : gameRound.getComputer());
