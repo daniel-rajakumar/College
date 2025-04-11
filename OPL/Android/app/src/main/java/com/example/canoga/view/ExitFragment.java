@@ -58,12 +58,13 @@ public class ExitFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-//        mViewModel = new ViewModelProvider(this).get(FragmentExitViewModel.class);
         // TODO: Use the ViewModel
 
         TextView textView_winner = requireView().findViewById(R.id.textView_winner);
-        textView_winner.setText("Winner: " + TournamentController.getInstance().getTournamentWinner());
 
+        TournamentController.getInstance().addRound(gameRound);
+
+        textView_winner.setText("Winner: " + TournamentController.getInstance().getTournamentWinner());
     }
 
 }
