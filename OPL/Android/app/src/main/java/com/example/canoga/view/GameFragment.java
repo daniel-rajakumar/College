@@ -159,6 +159,7 @@ public class GameFragment extends Fragment {
                 return;
             }
             ToggleButton toggle1 = requireView().findViewById(R.id.toggleCoverUncover);
+            toggle1.setChecked(true);
             boolean isCovering = !toggle1.isChecked();
             String mode = isCovering ? "Cover" : "Uncover";
             if (lastDiceSum == 0) {
