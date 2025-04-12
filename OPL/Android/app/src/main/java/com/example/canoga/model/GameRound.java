@@ -1,12 +1,13 @@
 package com.example.canoga.model;
 
 import androidx.annotation.NonNull;
-
 import java.io.Serializable;
 import java.util.Random;
 
 /**
  * Manages a single game round.
+ * <p>
+ * This class encapsulates the board, players, turn management, and game state serialization.
  */
 public class GameRound implements Serializable {
     private Board board;
@@ -20,23 +21,29 @@ public class GameRound implements Serializable {
 
     /**
      * Constructs a game round with a chosen board size.
-     * @param boardSize The board size (9, 10, or 11).
+     *
+     * @param boardSize the board size (9, 10, or 11)
      */
     public GameRound(int boardSize) {
         board = new Board(boardSize);
         human = new Human(board);
         computer = new Computer(board);
         random = new Random();
-        // Default turn (this may be overridden by loaded data)
-//        isHumanTurn = decideFirstPlayer();
+        // Default turn set to human. This can be overridden by loaded game data.
         isHumanTurn = true;
         winner = null;
         winnerScore = 0;
     }
 
+    /**
+     * Decides the first player by simulating dice rolls for both players.
+     *
+     * @return true if the human wins the toss; false if the computer wins
+     */
     private boolean decideFirstPlayer() {
         int humanRoll = (random.nextInt(6) + 1) + (random.nextInt(6) + 1);
         int computerRoll = (random.nextInt(6) + 1) + (random.nextInt(6) + 1);
+        // Repeat until there is a tie-breaker.
         while (humanRoll == computerRoll) {
             humanRoll = (random.nextInt(6) + 1) + (random.nextInt(6) + 1);
             computerRoll = (random.nextInt(6) + 1) + (random.nextInt(6) + 1);
@@ -44,17 +51,36 @@ public class GameRound implements Serializable {
         return humanRoll > computerRoll;
     }
 
+    /**
+     * Plays the computer's turn based on the dice sum.
+     * <p>
+     * The computer attempts its move and the current turn is switched accordingly.
+     *
+     * @param diceSum the total value of the dice thrown
+     * @return true if the computer successfully plays its turn; false otherwise
+     */
     public boolean playComputerTurn(int diceSum) {
+        // The computer makes a move. If move is valid, the turn remains with computer.
         isHumanTurn = !computer.makeMove(diceSum);
         return !isHumanTurn;
     }
 
+    /**
+     * Simulates throwing two dice.
+     *
+     * @return the sum of two dice rolls
+     */
     private int throwDice() {
         int die1 = random.nextInt(6) + 1;
         int die2 = random.nextInt(6) + 1;
         return die1 + die2;
     }
 
+    /**
+     * Serializes the current game state into a string representation.
+     *
+     * @return a string representing the current game state
+     */
     public String serialize() {
         StringBuilder sb = new StringBuilder();
         sb.append("Board Size: ").append(board.getSize()).append("\n");
@@ -72,66 +98,137 @@ public class GameRound implements Serializable {
         return sb.toString();
     }
 
-    // Setters used by the parser:
+    // === Setters used by parsers to restore saved game state ===
+
+    /**
+     * Sets the board.
+     *
+     * @param board the board to set
+     */
     public void setBoard(Board board) {
         this.board = board;
     }
 
+    /**
+     * Sets the human player.
+     *
+     * @param human the human player to set
+     */
     public void setHuman(Human human) {
         this.human = human;
     }
 
+    /**
+     * Sets the computer player.
+     *
+     * @param computer the computer player to set
+     */
     public void setComputer(Computer computer) {
         this.computer = computer;
     }
 
+    /**
+     * Sets the current turn.
+     *
+     * @param isHumanTurn true if it is the human's turn; false otherwise
+     */
     public void setHumanTurn(boolean isHumanTurn) {
         this.isHumanTurn = isHumanTurn;
     }
 
+    // === Getters ===
+
+    /**
+     * Returns the human player.
+     *
+     * @return the human player
+     */
     public Human getHuman() {
         return human;
     }
 
+    /**
+     * Returns the computer player.
+     *
+     * @return the computer player
+     */
     public Computer getComputer() {
         return computer;
     }
 
+    /**
+     * Returns the game board.
+     *
+     * @return the board
+     */
     public Board getBoard() {
         return board;
     }
 
+    /**
+     * Returns true if it is currently the human's turn.
+     *
+     * @return true if human's turn; false otherwise
+     */
     public boolean isHumanTurn() {
         return isHumanTurn;
     }
 
+    /**
+     * Returns the current player.
+     *
+     * @return the current player (human or computer)
+     */
     public Player getCurrentPlayer() {
         return isHumanTurn ? human : computer;
     }
 
+    /**
+     * Returns the name of the current player.
+     *
+     * @return "Human" if it's the human's turn; otherwise "Computer"
+     */
     public String getCurrentPlayerName() {
-        if (isHumanTurn) {
-            return "Human";
-        }
-        return "Computer";
+        return isHumanTurn ? "Human" : "Computer";
     }
 
+    /**
+     * Determines the winner based on the players' scores.
+     *
+     * @return "human" if the human wins, "computer" if the computer wins, or "draw" on a tie
+     */
     public String getWinner() {
         if (human.getScore() > computer.getScore()) {
             return "human";
         } else if (computer.getScore() > human.getScore()) {
             return "computer";
         }
-        return "draw"; // Draw
+        return "draw";
     }
 
+    /**
+     * Sets the winning player.
+     *
+     * @param winner the player who won the game
+     */
     public void setWinner(Player winner) {
         this.winner = winner;
     }
 
+    /**
+     * Returns the winning player.
+     *
+     * @return the winning player; may be null if no winner has been determined
+     */
     public Player getWinnerPlayer() {
         return winner;
     }
+
+    /**
+     * Returns the name of the winner.
+     *
+     * @return "Human", "Computer", or "Draw" if there is a tie or no winner
+     */
     public String getWinnerName() {
         if (winner == human) {
             return "Human";
@@ -141,15 +238,30 @@ public class GameRound implements Serializable {
         return "Draw";
     }
 
+    /**
+     * Sets the winner's score.
+     *
+     * @param winnerScore the score of the winning player
+     */
     public void setWinnerScore(int winnerScore) {
         this.winnerScore = winnerScore;
     }
 
+    /**
+     * Returns the winner's score.
+     *
+     * @return the winner's score
+     */
     public int getWinnerScore() {
         return winnerScore;
     }
 
-    public void setCurrentPlayer(String computer) {
-        isHumanTurn = computer.equals("Human");
+    /**
+     * Sets the current player based on a string value.
+     *
+     * @param playerName "Human" to set human's turn; any other value sets it to computer's turn.
+     */
+    public void setCurrentPlayer(String playerName) {
+        isHumanTurn = playerName.equals("Human");
     }
 }

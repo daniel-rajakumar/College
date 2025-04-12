@@ -1,0 +1,21 @@
+Editor:
+- Android Studio
+
+Ai use:
+- Chatgpt was used to translation from my previous project (Computer strategy, serialization, and calculating the winner)
+- Chatgpt was also used to understand the project requirements and creating a project plan. Started with basic projects set up.
+- Chatgpt was used to debug some of the issues I encountered during development, especially with the backtracking algorithm (which was translated from my previous project).
+- Github Co-pilot was used to generate all the javaDoc comments. Used to write detailed `Log.d()` functions for debugging purposes.
+- Also used Github Co-pilot to generate some of the UI code snippets and XML layouts.
+
+Videos:
+- Youtube (https://www.youtube.com/watch?v=PiExmkR3aps&t=799s) used this to implement fragments in the code.
+- Youtube (https://www.youtube.com/watch?v=DUg2SWWK18I&t=30s) used this to understand MVC architecture and how to implement it in my project.
+
+Online:
+- I used Reddit and Stackoverflow for debugging help.
+
+Documentation:
+- I used the [expressjs documentation](https://expressjs.com/en/5x/api.html) get started with it.
+
+

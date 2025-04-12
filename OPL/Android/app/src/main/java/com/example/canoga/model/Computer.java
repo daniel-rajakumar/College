@@ -5,95 +5,93 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents the computer player.
+ * Represents the computer player and implements its move strategy.
  */
 public class Computer extends Player {
 
+    /**
+     * Constructs a Computer player with the specified board.
+     *
+     * @param board the game board associated with this player
+     */
     public Computer(Board board) {
         super(board);
     }
 
     /**
      * Provides a rationale for the move selected by the computer.
-     * @return Strategy explanation.
+     *
+     * @return a string explaining the strategy behind the move
      */
     public String getStrategyExplanation() {
         return "Computer recommends covering squares X and Y for optimal play.";
     }
 
-
     /**
-     * Implements the computer’s move strategy.
-     * The method tries to find valid moves (covering or uncovering) that sum to diceSum.
-     * For covering moves, it uses computer's own row; for uncovering moves, it uses human's row.
-     * The heuristic selects the combination with the highest valued square.
+     * Implements the computer's move strategy based on the dice sum.
+     * <p>
+     * First, it attempts a covering move on the computer's row. If no valid covering move
+     * is found, it then attempts an uncovering move on the human's row.
+     * <p>
+     * The heuristic selects the move combination containing the highest numbered square.
      *
-     * @param diceSum the total value of the dice thrown.
-     * @return true if a move is made; false if no valid move exists.
+     * @param diceSum the total value of the dice thrown
+     * @return true if a move is successfully made; false if no valid move exists
      */
     @Override
     public boolean makeMove(int diceSum) {
-        // First try for a covering move on computer's row.
+        // Attempt a covering move on the computer's row.
         List<Integer> availableCovering = new ArrayList<>();
         boolean[] compSquares = board.getComputerSquares();
         for (int i = 0; i < compSquares.length; i++) {
-            // For covering, a square is available if it is not already covered (false).
-            if (!compSquares[i]) {
-                availableCovering.add(i + 1); // Convert from 0-indexed to 1-indexed
+            if (!compSquares[i]) { // Available if not covered.
+                availableCovering.add(i + 1); // Convert 0-indexed to 1-indexed.
             }
         }
-        // Sort the available squares in ascending order (optional but helps pruning in backtracking).
         Collections.sort(availableCovering);
         List<List<Integer>> validCoverMoves = new ArrayList<>();
         findCombinations(availableCovering, diceSum, 0, new ArrayList<>(), validCoverMoves);
 
         if (!validCoverMoves.isEmpty()) {
-            // Select the best covering move.
             List<Integer> bestMove = selectBestMove(validCoverMoves);
-            // Execute the covering move by marking the chosen squares.
             for (Integer square : bestMove) {
                 board.coverComputerSquare(square);
             }
             return true;
         }
 
-        // If no covering move exists, try an uncovering move on the human's row.
+        // If no covering move exists, attempt an uncovering move on the human's row.
         List<Integer> availableUncovering = new ArrayList<>();
         boolean[] humanSquares = board.getHumanSquares();
         for (int i = 0; i < humanSquares.length; i++) {
-            // For uncovering move, a square is available if it is covered (true).
-            if (humanSquares[i]) {
-                availableUncovering.add(i + 1); // Convert to 1-indexed
+            if (humanSquares[i]) { // Available if covered.
+                availableUncovering.add(i + 1);
             }
         }
-        // Sort the available squares.
         Collections.sort(availableUncovering);
         List<List<Integer>> validUncoverMoves = new ArrayList<>();
         findCombinations(availableUncovering, diceSum, 0, new ArrayList<>(), validUncoverMoves);
 
         if (!validUncoverMoves.isEmpty()) {
-            // Select the best uncover move.
             List<Integer> bestMove = selectBestMove(validUncoverMoves);
-            // Execute the uncover move by unmarking the chosen human squares.
             for (Integer square : bestMove) {
                 board.uncoverHumanSquare(square);
             }
             return true;
         }
 
-        // If no valid move is found, return false.
+        // No valid move found.
         return false;
     }
 
     /**
-     * Backtracking helper method to find all combinations of numbers in 'available'
-     * that sum to the target value.
+     * Recursively finds all combinations of numbers from the available list that sum up to the target value.
      *
-     * @param available a sorted list of available square numbers.
-     * @param target    the remaining sum to achieve.
-     * @param start     the start index in 'available'.
-     * @param current   the current combination.
-     * @param result    the list of valid combinations.
+     * @param available a sorted list of available square numbers
+     * @param target    the remaining sum to achieve
+     * @param start     the start index in the available list
+     * @param current   the current combination being built
+     * @param result    the list to store all valid combinations
      */
     private void findCombinations(List<Integer> available, int target, int start,
                                   List<Integer> current, List<List<Integer>> result) {
@@ -104,7 +102,7 @@ public class Computer extends Player {
         for (int i = start; i < available.size(); i++) {
             int val = available.get(i);
             if (val > target) {
-                break;  // As the list is sorted, no need to check further.
+                break;  // No need to continue since the list is sorted.
             }
             current.add(val);
             findCombinations(available, target - val, i + 1, current, result);
@@ -113,11 +111,11 @@ public class Computer extends Player {
     }
 
     /**
-     * Selects the "best" move from the list of valid moves.
-     * The heuristic used here is to pick the combination that contains the highest numbered square.
+     * Selects the "best" move from the list of valid move combinations.
+     * The heuristic is to choose the combination that contains the highest numbered square.
      *
-     * @param validMoves a list of valid move combinations.
-     * @return the best move combination.
+     * @param validMoves a list of valid move combinations
+     * @return the selected best move combination
      */
     public List<Integer> selectBestMove(List<List<Integer>> validMoves) {
         List<Integer> bestMove = validMoves.get(0);
@@ -131,6 +129,4 @@ public class Computer extends Player {
         }
         return bestMove;
     }
-
-
 }

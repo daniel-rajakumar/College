@@ -18,4 +18,4 @@ Online:
 - I used Reddit and Stackoverflow for debugging help. For instance, when my webpage wasn’t loading locally, I discovered through these forums that I was using the wrong port number.
 
 Documentation: 
-- I used the [expressjs documentation](https://expressjs.com/en/5x/api.html) get started with it.
+- I used the get started guide: https://developer.android.com/get-started/overview

@@ -22,32 +22,43 @@ import com.example.canoga.controller.TournamentController;
 import com.example.canoga.model.Board;
 import com.example.canoga.model.GameRound;
 
+/**
+ * Custom view for displaying a game board.
+ */
 public class BoardView extends View {
     private Board board;
-    private Paint paint;
-
     private Paint squarePaint;
     private Paint textPaint;
     private Paint borderPaint;
 
-    // Layout settings: spacing and circle size.
+    // Layout settings: circle radius and spacing between circles.
     private int squareRadius = 35;
     private int squareSpacing = 20;
 
+    /**
+     * Constructor for inflating via XML.
+     *
+     * @param context the context.
+     * @param attrs the attribute set.
+     */
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
     /**
-     * Sets the board to be displayed.
-     * @param board The game board.
+     * Sets the board to be displayed and invalidates the view.
+     *
+     * @param board the game board.
      */
     public void setBoard(Board board) {
         this.board = board;
         invalidate();
     }
 
+    /**
+     * Initializes paints for drawing board elements.
+     */
     private void init() {
         squarePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -64,6 +75,11 @@ public class BoardView extends View {
         borderPaint.setStrokeWidth(3);
     }
 
+    /**
+     * Draws the board with human and computer rows.
+     *
+     * @param canvas the canvas on which the board is drawn.
+     */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -71,66 +87,72 @@ public class BoardView extends View {
 
         int boardSize = board.getSize();
 
-        // Calculate starting positions.
+        // Set starting positions for the board drawing.
         float startX = squareSpacing;
         float startY = squareSpacing;
 
-        // Draw Human Row.
-        // Display row label.
+        // Draw Human row label.
         canvas.drawText("Human:", startX + squareRadius, startY + squareRadius + 10, textPaint);
-        float rowY = startY + squareRadius * 2 + squareSpacing; // Leave space for label
+        float rowY = startY + squareRadius * 2 + squareSpacing; // Adjust for label height
 
+        // Draw human squares.
         boolean[] humanSquares = board.getHumanSquares();
         for (int i = 0; i < boardSize; i++) {
             float cx = startX + i * (2 * squareRadius + squareSpacing) + squareRadius;
             float cy = rowY;
-            // Determine color for uncovered (light green) or covered (gray).
-            if (humanSquares[i]) {
-                squarePaint.setColor(Color.GRAY);
-            } else {
-                squarePaint.setColor(Color.parseColor("#A5D6A7")); // light green
-            }
-            // Draw circle for square.
+            // Set color based on square state: covered or uncovered.
+            squarePaint.setColor(humanSquares[i] ? Color.GRAY : Color.parseColor("#A5D6A7"));
             canvas.drawCircle(cx, cy, squareRadius, squarePaint);
-            // Draw border.
             canvas.drawCircle(cx, cy, squareRadius, borderPaint);
-            // If uncovered, draw the square number.
             if (!humanSquares[i]) {
-                canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize()/3), textPaint);
+                canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize() / 3), textPaint);
             }
         }
 
-        // Draw Computer Row.
-        // Move further down.
+        // Prepare to draw the computer row.
         rowY += 2 * squareRadius + 2 * squareSpacing;
         canvas.drawText("Computer:", startX + squareRadius + 15, rowY - squareRadius - 10, textPaint);
+
+        // Draw computer squares.
         boolean[] computerSquares = board.getComputerSquares();
         for (int i = 0; i < boardSize; i++) {
             float cx = startX + i * (2 * squareRadius + squareSpacing) + squareRadius;
             float cy = rowY;
-            // For computer row, use different colors.
-            if (computerSquares[i]) {
-                squarePaint.setColor(Color.GRAY);
-            } else {
-                squarePaint.setColor(Color.parseColor("#90CAF9")); // light blue
-            }
+            // Set color based on square state: covered or uncovered.
+            squarePaint.setColor(computerSquares[i] ? Color.GRAY : Color.parseColor("#90CAF9"));
             canvas.drawCircle(cx, cy, squareRadius, squarePaint);
             canvas.drawCircle(cx, cy, squareRadius, borderPaint);
             if (!computerSquares[i]) {
-                canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize()/3), textPaint);
+                canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize() / 3), textPaint);
             }
         }
     }
 
+    /**
+     * Fragment for board configuration.
+     */
     public static class ConfigureFragment extends Fragment {
         private Spinner spinnerBoardSize;
         private Button btnNextConfig;
         private ConfigureController controller;
 
+        /**
+         * Factory method to create a new instance of ConfigureFragment.
+         *
+         * @return a new instance of fragment ConfigureFragment.
+         */
         public static ConfigureFragment newInstance() {
             return new ConfigureFragment();
         }
 
+        /**
+         * Inflates the configuration layout.
+         *
+         * @param inflater LayoutInflater.
+         * @param container parent container.
+         * @param savedInstanceState saved instance state.
+         * @return the inflated view.
+         */
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater,
                                  @Nullable ViewGroup container,
@@ -138,6 +160,12 @@ public class BoardView extends View {
             return inflater.inflate(R.layout.fragment_configure, container, false);
         }
 
+        /**
+         * Initializes UI components and sets up controller actions.
+         *
+         * @param view inflated view.
+         * @param savedInstanceState saved instance state.
+         */
         @Override
         public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
             spinnerBoardSize = view.findViewById(R.id.spinnerBoardSize);
@@ -147,44 +175,34 @@ public class BoardView extends View {
             btnNextConfig.setOnClickListener(v -> {
                 String selected = spinnerBoardSize.getSelectedItem().toString();
                 int boardSize = Integer.parseInt(selected);
-                // Update GameModel via controller.
+
+                // Update board size in the controller and create a new game round.
                 controller.setBoardSize(boardSize);
-
-
                 String gameMode = TournamentController.getInstance().getCurrentGameMode();
-
-                // Create a new GameRound based on the chosen board size.
                 GameRound newRound = controller.getNewGameRound();
 
-//                newRound.getHuman().setHasPlayed(true);
-//                newRound.getComputer().setHasPlayed(true);
-                // Check if previous scores were passed via arguments.
+                // Update scores if this is a restarted game or loaded game.
                 Bundle args = getArguments();
                 if (args != null) {
-                    if (gameMode.equals("RESTART")) {
-                        // It is a restarted game; carry over previous scores.
+                    if ("RESTART".equals(gameMode)) {
                         int prevHumanScore = args.getInt("prevHumanScore", 0);
                         int prevComputerScore = args.getInt("prevComputerScore", 0);
                         newRound.getHuman().updateScore(prevHumanScore);
                         newRound.getComputer().updateScore(prevComputerScore);
                     }
-                    // You can also check a flag "isLoaded" here if necessary
                     if (args.getBoolean("isLoaded", false)) {
                         newRound.getHuman().setHasPlayed(true);
                         newRound.getComputer().setHasPlayed(true);
-                        // Handle loaded game state if needed
                     }
                 }
 
                 RollFragment rollFragment = RollFragment.newInstance(newRound);
-                // Navigate to the Game screen with the newly created round.
+                // Navigate to the RollFragment.
                 requireActivity().getSupportFragmentManager().beginTransaction()
-//                        .replace(R.id.fragmentContainerView, GameFragment.newInstance(newRound))
                         .replace(R.id.fragmentContainerView, rollFragment)
                         .addToBackStack(null)
                         .commit();
             });
         }
-
     }
 }
