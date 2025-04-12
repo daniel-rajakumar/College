@@ -5,14 +5,15 @@ import com.example.canoga.model.GameRound;
 
 /**
  * Controller for the configuration view.
- * This class handles updating the game model with user-selected configuration options,
- * such as the board size.
+ * <p>
+ * This class handles updating the game model based on user-selected configuration options,
+ * such as the board size, and provides a method to create a new game round.
  */
 public class ConfigureController {
     private GameModel model;
 
     /**
-     * Constructs the ConfigureController and obtains the singleton GameModel.
+     * Constructs the ConfigureController and obtains the singleton GameModel instance.
      */
     public ConfigureController() {
         model = GameModel.getInstance();
@@ -20,13 +21,19 @@ public class ConfigureController {
 
     /**
      * Sets the board size in the GameModel.
-     * @param boardSize The board size selected by the user (must be 9, 10, or 11).
-     * @throws IllegalArgumentException if the board size is out of range.
+     *
+     * @param boardSize the board size selected by the user (must be 9, 10, or 11)
+     * @throws IllegalArgumentException if the board size is out of allowed range
      */
     public void setBoardSize(int boardSize) {
         model.setBoardSize(boardSize);
     }
 
+    /**
+     * Creates a new GameRound using the current board size from the GameModel.
+     *
+     * @return a new instance of GameRound configured with the current board size
+     */
     public GameRound getNewGameRound() {
         return new GameRound(model.getBoardSize());
     }

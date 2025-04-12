@@ -9,30 +9,35 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 /**
- * Controller for saving and loading game state.
- * Uses the Android Storage Access Framework to write and read text files.
+ * Controller for saving and loading the game state.
+ * <p>
+ * This class uses the Android Storage Access Framework to write and read game state data
+ * as text files.
  */
 public class SaveLoadController {
     private ContentResolver contentResolver;
 
     /**
-     * Constructs the controller with the ContentResolver.
-     * @param contentResolver The ContentResolver from the activity.
+     * Constructs the SaveLoadController with a ContentResolver.
+     *
+     * @param contentResolver The ContentResolver obtained from the activity.
      */
     public SaveLoadController(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
     }
 
     /**
-     * Saves the game state to the specified URI.
-     * @param uri The file URI chosen by the user.
-     * @param gameData The game state data to save.
-     * @return true if saved successfully, false otherwise.
+     * Saves the game state data to the specified URI.
+     *
+     * @param uri      The file URI chosen by the user.
+     * @param gameData The game state data to save as a String.
+     * @return true if the data was saved successfully; false otherwise.
      */
     public boolean saveGameState(Uri uri, String gameData) {
         try {
             OutputStream os = contentResolver.openOutputStream(uri);
             if (os != null) {
+                // Write the game data bytes to the output stream.
                 os.write(gameData.getBytes());
                 os.flush();
                 os.close();
@@ -46,6 +51,7 @@ public class SaveLoadController {
 
     /**
      * Loads game state data from the specified URI.
+     *
      * @param uri The file URI chosen by the user.
      * @return The loaded game state as a String, or null if an error occurs.
      */
@@ -54,6 +60,7 @@ public class SaveLoadController {
         try {
             InputStream is = contentResolver.openInputStream(uri);
             if (is != null) {
+                // Read the data line by line.
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 String line;
                 while ((line = reader.readLine()) != null) {

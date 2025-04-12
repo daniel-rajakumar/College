@@ -74,7 +74,7 @@ public class GameFragment extends Fragment {
         if(getActivity() != null) {
             GameLogger.init(getActivity());
         }
-        GameLogger.getInstance().ClearLog();
+        GameLogger.getInstance().clearLog();
 
         // Retrieve GameRound from arguments if available.
         if (getArguments() != null) {

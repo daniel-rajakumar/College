@@ -6,22 +6,19 @@ import com.example.canoga.model.GameRound;
 import com.example.canoga.model.Human;
 
 /**
- * Parses a serialized game state from a text file and updates the models.
- * Expected file format:
- *
- * Computer:
- *    Squares: 0 2 0 4 5 0 7 0 0
- *    Score: 34
- *
- * Human:
- *    Squares: 1 2 0 4 5 6 0 0 0
- *    Score: 36
- *
- * First Turn: Computer
- * Next Turn: Human
+ * Parses the serialized game state data and updates the corresponding models.
+ * <p>
+ * This class is responsible for interpreting the game state data and creating instances of
+ * GameRound, Board, Human, and Computer based on the parsed information.
  */
 public class GameStateParser {
 
+    /**
+     * Parses the provided game state data and updates the corresponding models.
+     *
+     * @param data the serialized game state data
+     * @return a new GameRound instance with the parsed state
+     */
     public static GameRound parse(String data) {
         String[] lines = data.split("\n");
         int boardSize = 0;
@@ -29,12 +26,17 @@ public class GameStateParser {
         int humanScore = 0;
         boolean[] computerSquares = null;
         boolean[] humanSquares = null;
-        boolean isHumanTurn = false; // will be determined by "Next Turn:" line
+        boolean isHumanTurn = false; // Determined by the "Next Turn:" line
 
         String currentSection = "";
         for (String line : lines) {
             line = line.trim();
-            if (line.isEmpty()) continue;
+            // Skip empty lines.
+            if (line.isEmpty()) {
+                continue;
+            }
+
+            // Identify section headers.
             if (line.startsWith("Computer:")) {
                 currentSection = "Computer";
                 continue;
@@ -42,7 +44,7 @@ public class GameStateParser {
                 currentSection = "Human";
                 continue;
             } else if (line.startsWith("First Turn:")) {
-                // We can ignore this if we only use "Next Turn:" for current turn.
+                // This line is ignored because "Next Turn:" determines the current turn.
                 continue;
             } else if (line.startsWith("Next Turn:")) {
                 String nextTurn = line.split(":")[1].trim();
@@ -50,11 +52,13 @@ public class GameStateParser {
                 continue;
             }
 
+            // Process section details.
             if (currentSection.equals("Computer")) {
                 if (line.startsWith("Squares:")) {
                     String[] tokens = line.substring("Squares:".length()).trim().split(" ");
-                    boardSize = tokens.length;
+                    boardSize = tokens.length; // Set board size based on tokens count.
                     computerSquares = new boolean[boardSize];
+                    // Mark squares as covered if token != 0.
                     for (int i = 0; i < tokens.length; i++) {
                         int val = Integer.parseInt(tokens[i]);
                         computerSquares[i] = (val != 0);
@@ -65,11 +69,11 @@ public class GameStateParser {
             } else if (currentSection.equals("Human")) {
                 if (line.startsWith("Squares:")) {
                     String[] tokens = line.substring("Squares:".length()).trim().split(" ");
-                    // If boardSize hasn't been set, use tokens.length.
                     if (boardSize == 0) {
                         boardSize = tokens.length;
                     }
                     humanSquares = new boolean[boardSize];
+                    // Mark squares as covered if token != 0.
                     for (int i = 0; i < tokens.length; i++) {
                         int val = Integer.parseInt(tokens[i]);
                         humanSquares[i] = (val != 0);
@@ -80,13 +84,14 @@ public class GameStateParser {
             }
         }
 
-        // Create a new Board and update its state.
+        // Create and update a new Board.
         Board board = new Board(boardSize);
-        // Assume board.getHumanSquares() returns a boolean[] that can be updated.
         boolean[] boardHuman = board.getHumanSquares();
         boolean[] boardComputer = board.getComputerSquares();
+        // Invert value: parser indicates "1" means covered, so update board accordingly.
         if (humanSquares != null) {
             for (int i = 0; i < boardSize; i++) {
+                // In our board, a false value means uncovered.
                 boardHuman[i] = !humanSquares[i];
             }
         }
@@ -96,13 +101,13 @@ public class GameStateParser {
             }
         }
 
-        // Create player objects and update their scores.
+        // Create Human and Computer players and update their scores.
         Human human = new Human(board);
         human.updateScore(humanScore);
         Computer computer = new Computer(board);
         computer.updateScore(computerScore);
 
-        // Create a new GameRound and update its state.
+        // Create a new GameRound and set its state.
         GameRound round = new GameRound(boardSize);
         round.setBoard(board);
         round.setHuman(human);
