@@ -327,7 +327,6 @@ human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice) :-
     write("> "), read(Help),
     ( Help = help ->
         help_player(CurH, CurC, Sum, _Advice)
-        % human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice)
     ;
         true
     ),
@@ -342,7 +341,13 @@ human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice) :-
         valid_combinations(CurH, Sum, Combos),
         ( Combos = [] ->
             writeln("🚫 No cover moves available. Turn ends."), nl,
-            FinalH = CurH, FinalC = CurC, LastDice = Sum
+            ( check_round_end(human, CurC, CurH, Winner, Method),
+              Winner \= none ->
+                 format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+                 FinalH = CurH, FinalC = CurC, LastDice = Sum
+            ;
+                 FinalH = CurH, FinalC = CurC, LastDice = Sum
+            )
         ;
             writeln("👉 Cover options:"), show_numbered_options(Combos,1,cover),
             write("Select option number: "), read(I),
@@ -351,13 +356,26 @@ human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice) :-
             NewC = CurC,
             format("✅ You covered: ~w~n", [Choice]), nl,
             display_board(NewH, NewC), nl,
-            human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
+            ( check_round_end(human, NewC, NewH, Winner, Method),
+              Winner \= none ->
+                 format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+                 FinalH = NewH, FinalC = NewC, LastDice = Sum
+            ;
+                 human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
+            )
         )
+
     ; Action = uncover ->
         valid_combinations(CurC, Sum, Combos),
         ( Combos = [] ->
             writeln("🚫 No uncover moves available. Turn ends."), nl,
-            FinalH = CurH, FinalC = CurC, LastDice = Sum
+            ( check_round_end(human, CurC, CurH, Winner, Method),
+              Winner \= none ->
+                 format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+                 FinalH = CurH, FinalC = CurC, LastDice = Sum
+            ;
+                 FinalH = CurH, FinalC = CurC, LastDice = Sum
+            )
         ;
             writeln("👉 Uncover options:"), show_numbered_options(Combos,1,uncover),
             write("Select option number: "), read(I),
@@ -366,10 +384,16 @@ human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice) :-
             NewH = CurH,
             format("✅ You uncovered: ~w~n", [Choice]), nl,
             display_board(NewH, NewC), nl,
-            human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
+            ( check_round_end(human, NewC, NewH, Winner, Method),
+              Winner \= none ->
+                 format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+                 FinalH = NewH, FinalC = NewC, LastDice = Sum
+            ;
+                 human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
+            )
         )
+
     ;
-        % Invalid input here
         writeln("⚠️ Invalid choice. Please type cover. or uncover."), nl,
         human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice)
     ).
@@ -394,7 +418,7 @@ computer_turn_loop(CurC, CurH, FinalC, FinalH, LastDice) :-
     ( can_throw_one_die(CurC) -> DiceCount = 2 ; DiceCount = 2 ),
 
     % 2) Optional manual dice input
-    write(""), nl, nl,
+    nl, nl,
     write("🎲 (Computer) Enter dice manually? (yes/no): "), read(Man),
     ( Man = yes ->
         manual_dice_input(DiceCount, Sum)
@@ -424,14 +448,22 @@ computer_turn_loop(CurC, CurH, FinalC, FinalH, LastDice) :-
 
       % 6) Apply move
       ( Action = cover ->
-          apply_cover(CurC, Choice, NewC), NewH = CurH
+          apply_cover(CurC, Choice, NewC),
+          NewH = CurH
       ;
-          apply_uncover(CurH, Choice, NewH), NewC = CurC
+          apply_uncover(CurH, Choice, NewH),
+          NewC = CurC
       ),
 
       % 7) Show and recurse
       display_board(NewH, NewC), nl,
-      computer_turn_loop(NewC, NewH, FinalC, FinalH, LastDice)
+      ( check_round_end(computer, NewC, NewH, Winner, Method),
+        Winner \= none ->
+           format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+           FinalC = NewC, FinalH = NewH, LastDice = Sum
+      ;
+           computer_turn_loop(NewC, NewH, FinalC, FinalH, LastDice)
+      )
     ).
 
 
