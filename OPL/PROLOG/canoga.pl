@@ -102,9 +102,25 @@ validate_input/2. % for human choices
 
 
 
-
-
 start_game :-
+    write("🟨 Do you want to load a saved game or start a new one? (load/new): "),
+    read(Choice),
+    (
+        Choice = load ->
+            write("📂 Enter the file name to load from (with quotes): "), read(File),
+            load_game(File, GameState),
+            play_tournament(GameState)
+        ;
+        Choice = new ->
+            new_game_setup(GameState),
+            play_tournament(GameState)
+        ;
+        write("⚠️ Invalid choice. Try again."), nl,
+        start_game  % Recurse on invalid input
+    ).
+
+
+new_game_setup(GameState) :-
     choose_board_size(Size),
     initialize_board(Size, HumanBoard, ComputerBoard),
     determine_first_player(First),
@@ -116,8 +132,8 @@ start_game :-
         [HumanBoard, HumanScore],
         First,
         Next
-    ],
-    play_tournament(GameState).
+    ].
+
 
 
 
@@ -187,13 +203,48 @@ continue_round(GameState) :-
 
 
 
-human_turn(HumanBoard, ComputerBoard, NewHumanBoard, DiceSum) :-
-    format("Your board: ~w~n", [HumanBoard]),
+human_turn(HumanBoard, CompBoard, NewHumanBoard, DiceSum) :-
     ask_dice_choice(HumanBoard, DiceCount),
     throw_dice(DiceCount, DiceSum),
-    format("🎲 You rolled: ~w~n", [DiceSum]),
+    format("🎲 You rolled a ~w~n", [DiceSum]),
 
-    NewHumanBoard = HumanBoard.
+
+    
+    
+    % Get valid cover and uncover moves
+    valid_combinations(HumanBoard, DiceSum, CoverCombos),
+    valid_combinations(CompBoard, DiceSum, UncoverCombos),
+
+    % Show both options
+    write("✅ Available options:"), nl,
+
+    write("👉 Cover your own squares:"), nl,
+    ( CoverCombos = [] -> write("   (no valid cover moves)"), nl ; show_numbered_options(CoverCombos, 1, cover)),
+    nl,
+    write("👉 Or uncover opponents squares:"), nl,
+    ( UncoverCombos = [] -> write("   (no valid uncover moves)"), nl ; show_numbered_options(UncoverCombos, 1, uncover)).
+
+
+
+
+    % Ask user to choose
+    write("Would you like to (cover/uncover)? "), read(Action),
+    (
+        Action = cover, CoverCombos \= [] ->
+            write("Which combo to use? "), read(Chosen),
+            apply_cover(HumanBoard, Chosen, NewHumanBoard)
+        ;
+        Action = uncover, UncoverCombos \= [] ->
+            write("Which combo to use? "), read(Chosen),
+            apply_uncover(CompBoard, Chosen, UpdatedCompBoard),
+            NewHumanBoard = HumanBoard,  % no change to human
+            % TODO: You'll return UpdatedCompBoard from turn logic
+            format("Applied uncover: ~w~n", [UpdatedCompBoard])
+        ;
+        write("⚠️ No valid moves or invalid choice. Turn ends."), nl,
+        NewHumanBoard = HumanBoard
+    ).
+
 
 
 ask_dice_choice(Board, DiceCount) :-
@@ -242,3 +293,89 @@ print_square(0) :- write(" --").
 print_square(N) :- format(" ~|~`0t~d~2+", [N]).
 
 
+
+
+
+/* *********************************************
+   Generate Valid Moves (Sum Combinations)
+********************************************* */
+
+% Find all subsets of 1-4 squares that sum to the given total
+valid_combinations(Squares, Sum, Combos) :-
+    include(\=(0), Squares, Available),     % only uncovered squares
+    findall(Combo,
+        (subset_of_max4(Available, Combo), sum_list(Combo, Sum)),
+        Combos).
+
+% Generate subset of up to 4 elements
+subset_of_max4(List, Subset) :-
+    subset(List, Subset),
+    length(Subset, L), L >= 1, L =< 4.
+
+% Built-in helper (Prolog doesn't have it by default in SWI)
+subset([], []).
+subset([E|Tail], [E|NTail]) :- subset(Tail, NTail).
+subset([_|Tail], NTail)     :- subset(Tail, NTail).
+
+
+
+
+
+
+
+
+apply_cover(Board, Combo, NewBoard) :-
+    maplist({Board}/[X]>>replace_first(Board, X, 0, BoardTmp), Combo, [NewBoard]).
+
+apply_uncover(Board, Combo, NewBoard) :-
+    maplist({Board}/[X]>>replace_first(Board, X, X, BoardTmp), Combo, [NewBoard]).
+
+% Replace element at index matching Value with NewVal
+replace_first([H|T], Val, NewVal, [NewVal|T]) :- H =:= Val, !.
+replace_first([H|T], Val, NewVal, [H|R]) :-
+    replace_first(T, Val, NewVal, R).
+
+
+
+
+/* *********************************************
+   Display Numbered Move Options
+********************************************* */
+
+show_numbered_options([], _, _) :- true.
+
+show_numbered_options([Option|Rest], Index, Type) :-
+    format("  ~w. ~w~n", [Index, Option]),
+    NextIndex is Index + 1,
+    show_numbered_options(Rest, NextIndex, Type).
+
+
+
+
+
+/* *********************************************
+   Save Game State to File
+********************************************* */
+
+save_game(FileName, GameState) :-
+    open(FileName, write, Stream),
+    writeq(Stream, GameState),     % write in a safe format
+    write(Stream, '.'),            % terminate with a period
+    nl(Stream),
+    close(Stream),
+    format("💾 Game saved to '~w'.~n", [FileName]).
+
+
+
+load_game(FileName, GameState) :-
+    open(FileName, read, Stream),
+    read(Stream, GameState),       % read the game state
+    close(Stream),
+    format("📂 Game loaded from '~w'.~n", [FileName]),
+    play_tournament(GameState).
+
+
+start_from_file :-
+    write("Enter file name to load: "), read(File),
+    load_game(File, GameState),
+    play_tournament(GameState).
