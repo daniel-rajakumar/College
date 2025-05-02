@@ -188,14 +188,16 @@ play_round([[CompBoard, CompScore], [HumanBoard, HumanScore], First, _]) :-
 
     % 2) Execute both turns in order of First
     ( First = human ->
-        human_turn(   HumanBoard, CompBoard, TempHuman, _Dice1),
+        % human_turn(   HumanBoard, CompBoard, TempHuman, _Dice1),
+        human_turn(HumanBoard, CompBoard, NewHumanBoard, NewCompBoard, _Dice1),
         computer_turn(CompBoard, HumanBoard, NewCompBoard, NewHumanBoard, _Dice1),
 
         LastPlayer = computer,
         NewHuman = TempHuman
     ;
         computer_turn(CompBoard, HumanBoard, NewCompBoard, NewHumanBoard, _Dice2),
-        human_turn(   HumanBoard, TempComp,   NewHuman, _Dice2),
+        % human_turn(   HumanBoard, TempComp,   NewHuman, _Dice2),
+        human_turn(HumanBoard, CompBoard, NewHumanBoard, NewCompBoard, _Dice2),
         LastPlayer = human,
         NewComp = TempComp
     ),
@@ -245,78 +247,132 @@ clear_screen :-
 ********************************************* */
 % Replace the stub declaration with arity 4
 
+%! sum_list(+List:list(number), -Sum:number)
+%  True when Sum is the arithmetic sum of all numbers in List.
+sum_list([], 0).
+sum_list([H|T], Sum) :-
+    sum_list(T, Rest),
+    Sum is H + Rest.
+
+%! best_combo(+Combos:list(list(number)), -Best:list(number))
+%  Selects the sub-list in Combos whose elements have the greatest sum.
+best_combo([First|Rest], Best) :-
+    sum_list(First, Sum0),
+    best_combo(Rest, First, Sum0, Best).
+
+% auxiliary accumulator version
+best_combo([],        Best, _CurrentMax, Best).
+best_combo([H|T], CurrBest, CurrMax, Best) :-
+    sum_list(H, SumH),
+    ( SumH > CurrMax
+    -> NewBest = H, NewMax = SumH
+    ;  NewBest = CurrBest, NewMax = CurrMax
+    ),
+    best_combo(T, NewBest, NewMax, Best).
+
+help_player(CurH, CurC, Sum, Advice) :-
+    valid_combinations(CurH, Sum, CoverOpts),
+    valid_combinations(CurC, Sum, UncoverOpts),
+    format("💡 Help Mode – for roll ~w:~n", [Sum]),
+    ( CoverOpts = [] ->
+        writeln("  • No cover options.")
+    ; writeln("  • Cover options:"),
+      maplist({}/[Opt]>>format("    - ~w~n",[Opt]), CoverOpts)
+    ),
+    ( UncoverOpts = [] ->
+        writeln("  • No uncover options.")
+    ; writeln("  • Uncover options:"),
+      maplist({}/[Opt]>>format("    - ~w~n",[Opt]), UncoverOpts)
+    ),
+    % Decide & explain
+    computer_decide_cover_or_uncover(CurH, CurC, Sum, ChoiceType),
+    ( ChoiceType = none ->
+        Advice = none,
+        writeln("  → No valid moves at all.")
+    ;
+        ( ChoiceType = cover -> Options = CoverOpts ; Options = UncoverOpts ),
+        best_combo(Options, BestMove),
+        format("  → I recommend you ~w: ~w because it ~w the highest total.~n",
+               [ChoiceType, BestMove,
+                (ChoiceType=cover -> "covers" ; "uncovers")]),
+        Advice = BestMove
+    ),
+    writeln("").
+
 /* *********************************************
    Human Turn Integration
 ********************************************* */
 
-% human_turn(+CurH, +CurC, -FinalH, -LastDice)
-human_turn(CurH, CurC, FinalH, LastDice) :-
-    human_turn_loop(CurH, CurC, FinalH, _, LastDice).
+%! human_turn(+OldH,+OldC,-FinalH,-FinalC,-LastDice)
+%  Human keeps rolling and choosing cover/uncover until no valid moves
+human_turn(OldH, OldC, FinalH, FinalC, LastDice) :-
+    human_turn_loop(OldH, OldC, FinalH, FinalC, LastDice).
 
-% human_turn_loop(+BoardH, +BoardC, -FinalH, -FinalC, -LastDice)
+
+%! human_turn_loop(+CurH,+CurC,-FinalH,-FinalC,-LastDice)
 human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice) :-
-    % 1) Decide dice count (you can customize this prompt)
-    ( can_throw_one_die(CurH) ->
-        % write("Squares 7+ are covered. Throw 1 or 2 dice? "), read(DiceCount),
-        ( member(DiceCount, [1,2]) -> true ; write("Invalid; using 2."), DiceCount = 2 )
-    ; DiceCount = 2
-    ),
+    % --- 1) Decide dice count ---
+    ( can_throw_one_die(CurH) -> DiceCount = 1 ; DiceCount = 2 ),
 
-    % 2) Ask for manual or auto roll
-    write(""), nl, nl,
+    % --- 2) Roll (manual or auto) ---
     write("🎲 (Human) Enter dice manually? (yes/no): "), read(Man),
     ( Man = yes ->
         manual_dice_input(DiceCount, Sum)
     ; throw_dice(DiceCount, Sum)
     ),
-    format("🎲 You rolled ~w.~n", [Sum]),
+    format("🎲 You rolled ~w~n", [Sum]), nl,
 
-    % 3) Ask cover vs uncover
-    write("Would you like to cover or uncover? "), read(Action0),
-    ( Action0 = cover -> Action = cover
-    ; Action0 = uncover -> Action = uncover
-    ; write("⚠️ Invalid; turn ends."), FinalH = CurH, FinalC = CurC, LastDice = Sum, !
-    ),
-
-    % 4) Generate appropriate combos
-    ( Action = cover ->
-        valid_cover_combinations(CurH, Sum, Combos),
-        OwnIn = CurH, OppIn = CurC
-    ; % uncover
-        valid_uncover_combinations(CurC, Sum, Combos),
-        OwnIn = CurC, OppIn = CurH
-    ),
-
-    % 5) No valid moves?
-    ( Combos = [] ->
-        format("🚫 No valid ~w moves; turn ends.~n", [Action]),
-        FinalH = CurH, FinalC = CurC, LastDice = Sum
+    % --- 3) Optional Help Prompt ---
+    writeln("Type 'help.' for move assistance, or anything else to continue."),
+    write("> "), read(Help),
+    ( Help = help ->
+        help_player(CurH, CurC, Sum, _Advice)
+        % human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice)
     ;
-        % 6) Show options and let human pick
-        write("Available moves:"), nl,
-        show_numbered_options(Combos, 1, Action),
-        write("Select move #: "), read(I),
-        choose_combo(Combos, I, Choice),
+        true
+    ),
 
-        % 7) Apply the move
-        ( Action = cover ->
-            apply_cover(CurH, Choice, NewH), NewC = CurC
+    % --- 4) Now prompt only cover or uncover ---
+    nl,
+    writeln("Would you like to:"),
+    writeln("  cover."), writeln("  uncover."),
+    write("> "), read(Action),
+
+    ( Action = cover ->
+        valid_combinations(CurH, Sum, Combos),
+        ( Combos = [] ->
+            writeln("🚫 No cover moves available. Turn ends."), nl,
+            FinalH = CurH, FinalC = CurC, LastDice = Sum
         ;
-            apply_uncover(CurC, Choice, NewC), NewH = CurH
-        ),
-        format("✅ You ~w: ~w.~n", [Action, Choice]),
-
-        % 8) Display updated board
-        display_board(NewH, NewC), nl,
-
-        % 9) Recurse for any further moves
-        human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
+            writeln("👉 Cover options:"), show_numbered_options(Combos,1,cover),
+            write("Select option number: "), read(I),
+            choose_combo(Combos, I, Choice),
+            apply_cover(CurH, Choice, NewH),
+            NewC = CurC,
+            format("✅ You covered: ~w~n", [Choice]), nl,
+            display_board(NewH, NewC), nl,
+            human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
+        )
+    ; Action = uncover ->
+        valid_combinations(CurC, Sum, Combos),
+        ( Combos = [] ->
+            writeln("🚫 No uncover moves available. Turn ends."), nl,
+            FinalH = CurH, FinalC = CurC, LastDice = Sum
+        ;
+            writeln("👉 Uncover options:"), show_numbered_options(Combos,1,uncover),
+            write("Select option number: "), read(I),
+            choose_combo(Combos, I, Choice),
+            apply_uncover(CurC, Choice, NewC),
+            NewH = CurH,
+            format("✅ You uncovered: ~w~n", [Choice]), nl,
+            display_board(NewH, NewC), nl,
+            human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
+        )
+    ;
+        % Invalid input here
+        writeln("⚠️ Invalid choice. Please type cover. or uncover."), nl,
+        human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice)
     ).
-
-
-
-
-
 
 /* *********************************************
    Computer Turn
