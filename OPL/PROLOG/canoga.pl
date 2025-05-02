@@ -204,13 +204,17 @@ continue_round(GameState) :-
 
 
 human_turn(HumanBoard, CompBoard, NewHumanBoard, DiceSum) :-
+    write("🎲 Would you like to enter the dice manually? (yes/no): "),
+    read(Manual),
     ask_dice_choice(HumanBoard, DiceCount),
-    throw_dice(DiceCount, DiceSum),
+    (
+        Manual = yes ->
+            manual_dice_input(DiceCount, DiceSum)
+        ;
+        throw_dice(DiceCount, DiceSum)
+    ),
     format("🎲 You rolled a ~w~n", [DiceSum]),
 
-
-    
-    
     % Get valid cover and uncover moves
     valid_combinations(HumanBoard, DiceSum, CoverCombos),
     valid_combinations(CompBoard, DiceSum, UncoverCombos),
@@ -379,3 +383,25 @@ start_from_file :-
     write("Enter file name to load: "), read(File),
     load_game(File, GameState),
     play_tournament(GameState).
+
+
+/* *********************************************
+   Manual Dice Input
+********************************************* */
+
+manual_dice_input(1, Sum) :-
+    write("Enter result for 1 die (1-6): "),
+    read(D1),
+    (between(1, 6, D1) -> Sum = D1 ; write("Invalid. Using 1."), Sum = 1).
+
+manual_dice_input(2, Sum) :-
+    write("Enter result for die 1 (1-6): "),
+    read(D1),
+    write("Enter result for die 2 (1-6): "),
+    read(D2),
+    (
+        between(1, 6, D1), between(1, 6, D2) ->
+            Sum is D1 + D2
+        ;
+            write("Invalid input. Using [1,1]."), Sum = 2
+    ).
