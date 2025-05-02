@@ -179,7 +179,7 @@ play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
     display_scores(HumanScore, CompScore),
     display_turn_info(Next),
 
-    format("Next turn: ~w~n", [Next]),
+    % format("Next turn: ~w~n", [Next]),
     (
         Next = human ->
             human_turn(HumanBoard, CompBoard, NewHumanBoard, _),
@@ -191,8 +191,29 @@ play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
             NewNext = human,
             NewState = [[NewCompBoard, CompScore], [HumanBoard, HumanScore], First, NewNext]
     ),
-    continue_round(NewState).
 
+    NewState = [[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext],
+    
+    % write("🔁 Checking for round end..."), nl,
+    % write("New state: "), write(NewState), nl,
+
+    (
+    check_round_end(NewCompBoard, NewHumanBoard, Winner, Method) ->
+        format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+        calculate_score(Winner, Method, NewHumanBoard, NewCompBoard, RoundScore),
+        format("🏅 Round score: ~w~n", [RoundScore]),
+        update_tournament_state(Winner, RoundScore,
+                                [NewCompBoard, CompScore],
+                                [NewHumanBoard, HumanScore],
+                                UpdatedComp, UpdatedHuman),
+                                
+        UpdatedHuman = [_, HumanScore],
+        UpdatedComp = [_, CompScore],
+        display_scores(HumanScore, CompScore),
+        ask_play_again([UpdatedComp, UpdatedHuman, Winner, Winner])
+    ;
+    continue_round([[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext])
+).
     
 
 continue_round(GameState) :-
@@ -214,7 +235,7 @@ human_turn(HumanBoard, CompBoard, NewHumanBoard, DiceSum) :-
         ;
             throw_dice(DiceCount, DiceSum)
     ),
-    format("🎲 You rolled a ~w~n", [DiceSum]),
+    format("🎲 You rolled a ~w~n", [DiceSum]), nl,
 
     % Get valid move sets
     valid_combinations(HumanBoard, DiceSum, CoverCombos),
@@ -332,7 +353,7 @@ display_scores(HumanScore, ComputerScore) :-
 
 
 display_turn_info(Player) :-
-    format("🔁 It is ~w turn.~n", [Player]).
+    format("🔁 It is ~w turn.~n", [Player]), nl.
 
 print_squares(Squares) :-
     maplist(print_square, Squares), nl.
@@ -463,3 +484,107 @@ manual_dice_input(2, Sum) :-
         ;
             write("Invalid input. Using [1,1]."), Sum = 2
     ).
+
+
+
+
+/* *********************************************
+   Check if Round Has Ended
+********************************************* */
+check_round_end(CompBoard, HumanBoard, Winner, Method) :-
+    (
+        all_zeros(HumanBoard) ->
+            Winner = computer,
+            Method = uncover
+        ;
+        all_zeros(CompBoard) ->
+            Winner = human,
+            Method = uncover
+        ;
+        all_nonzeros(HumanBoard) ->
+            Winner = human,
+            Method = cover
+        ;
+        all_nonzeros(CompBoard) ->
+            Winner = computer,
+            Method = cover
+        ;
+        fail  % Round not over
+    ).
+
+% helper to check if all squares are 0
+all_zeros([]).
+all_zeros([0|T]) :- all_zeros(T).
+
+% helper to check if all squares are covered (non-zero)
+all_nonzeros([]).
+all_nonzeros([H|T]) :- H =\= 0, all_nonzeros(T).
+
+
+/* *********************************************
+   Calculate Score for Winner of the Round
+********************************************* */
+calculate_score(Winner, Method, HumanBoard, CompBoard, Score) :-
+    (
+        Winner = human, Method = cover ->
+            sum_uncovered(CompBoard, Score)
+        ;
+        Winner = human, Method = uncover ->
+            sum_covered(HumanBoard, Score)
+        ;
+        Winner = computer, Method = cover ->
+            sum_uncovered(HumanBoard, Score)
+        ;
+        Winner = computer, Method = uncover ->
+            sum_covered(CompBoard, Score)
+    ).
+
+sum_uncovered([], 0).
+sum_uncovered([0|T], Total) :- sum_uncovered(T, Total).
+sum_uncovered([H|T], Total) :- H =\= 0, sum_uncovered(T, Rest), Total is Rest + H.
+
+sum_covered([], 0).
+sum_covered([0|T], Total) :- sum_covered(T, Total).
+sum_covered([H|T], Total) :- H =\= 0, sum_covered(T, Rest), Total is Rest + H.
+
+
+/* *********************************************
+   Update Scores After Round
+********************************************* */
+update_tournament_state(
+    Winner, Score, 
+    [CompBoard, CompScore], [HumanBoard, HumanScore], 
+    NewComp, NewHuman
+) :-
+    (
+        Winner = human ->
+            NewHuman = [HumanBoard, NewScore],
+            NewScore is HumanScore + Score,
+            NewComp = [CompBoard, CompScore]
+        ;
+        Winner = computer ->
+            NewComp = [CompBoard, NewScore],
+            NewScore is CompScore + Score,
+            NewHuman = [HumanBoard, HumanScore]
+    ).
+
+
+ask_play_again(GameState) :-
+    write("🔁 Play another round? (yes/no): "), read(Resp),
+    (
+        Resp = yes ->
+            play_round(GameState)
+        ;
+        GameState = [[_, CScore], [_, HScore], _, _],
+        write("🏁 Tournament Over! Final Scores:"), nl,
+        format("🤖 Computer: ~w~n", [CScore]),
+        format("⭐ Human: ~w~n", [HScore]),
+        (
+            CScore > HScore -> write("🤖 Computer wins the tournament!");
+            HScore > CScore -> write("⭐ Human wins the tournament!");
+            HScore =:= CScore -> write("🤝 It is a draw!")
+        ),
+        nl
+    ).
+
+
