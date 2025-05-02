@@ -185,10 +185,11 @@ play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
             human_turn(HumanBoard, CompBoard, NewHumanBoard, _),
             NewNext = computer,
             NewState = [ [CompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext ];
+
         Next = computer ->
-            write('Computer plays...'), nl,
+            computer_turn(CompBoard, HumanBoard, NewCompBoard, _),
             NewNext = human,
-            NewState = [ [CompBoard, CompScore], [HumanBoard, HumanScore], First, NewNext ]
+            NewState = [[NewCompBoard, CompScore], [HumanBoard, HumanScore], First, NewNext]
     ),
     continue_round(NewState).
 
@@ -246,6 +247,55 @@ human_turn(HumanBoard, CompBoard, NewHumanBoard, DiceSum) :-
         NewHumanBoard = HumanBoard
     ).
 
+/* *********************************************
+   Computer Turn Logic
+********************************************* */
+computer_turn(CompBoard, HumanBoard, NewCompBoard, DiceSum) :-
+
+    % Auto decide dice count
+    can_throw_one_die(CompBoard) ->
+        DiceCount = 1 ; DiceCount = 2,
+
+    throw_dice(DiceCount, DiceSum),
+    format("🤖 Computer rolled a ~w (~w die)~n", [DiceSum, DiceCount]),
+
+    % Find options
+    valid_combinations(CompBoard, DiceSum, CoverCombos),
+    valid_combinations(HumanBoard, DiceSum, UncoverCombos),
+
+    % Choose action: prefer covering if available
+    (
+        CoverCombos \= [] ->
+            Action = cover,
+            ChosenCombo = CoverCombos
+        ;
+        UncoverCombos \= [] ->
+            Action = uncover,
+            ChosenCombo = UncoverCombos
+        ;
+        write("🤖 No valid moves. Turn ends."), nl,
+        NewCompBoard = CompBoard,
+        !
+    ),
+
+    % Choose a move using first available option (basic strategy)
+    ChosenCombo = [BestMove|_],
+
+    % Apply the move
+    (
+        Action = cover ->
+            apply_cover(CompBoard, BestMove, NewCompBoard),
+            format("🤖 Computer chose to COVER: ~w~n", [BestMove])
+        ;
+        Action = uncover ->
+            apply_uncover(HumanBoard, BestMove, _NewHumanBoard),  % For now, we ignore updating HumanBoard
+            NewCompBoard = CompBoard,
+            format("🤖 Computer chose to UNCOVER your squares: ~w~n", [BestMove])
+    ).
+
+
+
+
 ask_dice_choice(Board, DiceCount) :-
     can_throw_one_die(Board) ->
         write("Squares 7 and up are covered. Throw 1 or 2 dice? "), read(DiceCount),
@@ -261,7 +311,6 @@ can_throw_one_die(Board) :-
 check_range_covered(Board, Start, End) :-
     forall(between(Start, End, I),
            (nth1(I, Board, Val), Val =\= 0)).
-
 
 
 /* *********************************************
