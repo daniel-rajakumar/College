@@ -155,9 +155,9 @@ determine_first_player(Player) :-
     throw_dice(2, ComputerSum),
     format('Human rolled ~w. Computer rolled ~w.~n', [HumanSum, ComputerSum]),
     (
-        HumanSum > ComputerSum -> Player = computer;
+        HumanSum > ComputerSum -> Player = human;
         % ComputerSum > HumanSum -> Player = computer;
-        ComputerSum > HumanSum -> Player = computer;
+        ComputerSum > HumanSum -> Player = human;
         
         Next = human,
         write('Tie! Rolling again...'), nl, determine_first_player(Player)
@@ -240,58 +240,80 @@ clear_screen :-
     put_code(27), write('[2J'),    % clear screen
     put_code(27), write('[H').     % move cursor to top-left
 
+/* *********************************************
+   Human Turn
+********************************************* */
+% Replace the stub declaration with arity 4
 
-% human_turn(+CurH, +CurC, -FinalH, -_DiceSum)
-human_turn(CurH, CurC, FinalH, _) :-
-    human_turn_loop(CurH, CurC, FinalH).
+/* *********************************************
+   Human Turn Integration
+********************************************* */
 
-% human_turn_loop(+BoardH, +BoardC, -FinalH)
-human_turn_loop(BoardH, BoardC, FinalH) :-
-    % Roll (manual or auto)
-    write(""), nl, nl, nl,
-    write("🎲 (Human) Enter dice manually? (yes/no): "), read(Manual),
-    ask_dice_choice(BoardH, DiceCount),
-    ( Manual = yes -> manual_dice_input(DiceCount, DiceSum)
-    ; throw_dice(DiceCount, DiceSum)
+% human_turn(+CurH, +CurC, -FinalH, -LastDice)
+human_turn(CurH, CurC, FinalH, LastDice) :-
+    human_turn_loop(CurH, CurC, FinalH, _, LastDice).
+
+% human_turn_loop(+BoardH, +BoardC, -FinalH, -FinalC, -LastDice)
+human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice) :-
+    % 1) Decide dice count (you can customize this prompt)
+    ( can_throw_one_die(CurH) ->
+        % write("Squares 7+ are covered. Throw 1 or 2 dice? "), read(DiceCount),
+        ( member(DiceCount, [1,2]) -> true ; write("Invalid; using 2."), DiceCount = 2 )
+    ; DiceCount = 2
     ),
-    format("🎲 You rolled ~w~n", [DiceSum]), nl,
 
-    % Ask cover or uncover
-    write("Would you like to (cover/uncover)? "), read(Action),
+    % 2) Ask for manual or auto roll
+    write(""), nl, nl,
+    write("🎲 (Human) Enter dice manually? (yes/no): "), read(Man),
+    ( Man = yes ->
+        manual_dice_input(DiceCount, Sum)
+    ; throw_dice(DiceCount, Sum)
+    ),
+    format("🎲 You rolled ~w.~n", [Sum]),
+
+    % 3) Ask cover vs uncover
+    write("Would you like to cover or uncover? "), read(Action0),
+    ( Action0 = cover -> Action = cover
+    ; Action0 = uncover -> Action = uncover
+    ; write("⚠️ Invalid; turn ends."), FinalH = CurH, FinalC = CurC, LastDice = Sum, !
+    ),
+
+    % 4) Generate appropriate combos
     ( Action = cover ->
-        valid_combinations(BoardH, DiceSum, Combos),
-        Apply = apply_cover, TargetBoard = BoardH, OtherBoard = BoardC
-    ; Action = uncover ->
-        valid_combinations(BoardC, DiceSum, Combos),
-        Apply = apply_uncover, TargetBoard = BoardC, OtherBoard = BoardH
-    ; 
-        write("⚠️ Invalid action; try again."), nl,
-        human_turn_loop(BoardH, BoardC, FinalH), !
+        valid_cover_combinations(CurH, Sum, Combos),
+        OwnIn = CurH, OppIn = CurC
+    ; % uncover
+        valid_uncover_combinations(CurC, Sum, Combos),
+        OwnIn = CurC, OppIn = CurH
     ),
 
-    % If no valid combos, end turn
+    % 5) No valid moves?
     ( Combos = [] ->
-        write("🚫 No valid "), write(Action), write(" moves. Turn ends."), nl,
-        FinalH = BoardH
+        format("🚫 No valid ~w moves; turn ends.~n", [Action]),
+        FinalH = CurH, FinalC = CurC, LastDice = Sum
     ;
-        % Else pick and apply
-        write("👉 Options:"), nl,
-        show_numbered_options(Combos,1,Action),
-        write("Select #: "), read(I),
+        % 6) Show options and let human pick
+        write("Available moves:"), nl,
+        show_numbered_options(Combos, 1, Action),
+        write("Select move #: "), read(I),
         choose_combo(Combos, I, Choice),
-        ( Action = cover ->
-            apply_cover(BoardH, Choice, NewBoardH),
-            NewOtherBoard = BoardC
-        ;
-            apply_uncover(BoardC, Choice, NewOtherBoard),
-            NewBoardH = BoardH
-        ),
-        format("✅ You ~w: ~w~n", [Action, Choice]),
-        display_board(NewBoardH, NewOtherBoard), nl,
 
-        % Loop again with updated boards
-        human_turn_loop(NewBoardH, NewOtherBoard, FinalH)
+        % 7) Apply the move
+        ( Action = cover ->
+            apply_cover(CurH, Choice, NewH), NewC = CurC
+        ;
+            apply_uncover(CurC, Choice, NewC), NewH = CurH
+        ),
+        format("✅ You ~w: ~w.~n", [Action, Choice]),
+
+        % 8) Display updated board
+        display_board(NewH, NewC), nl,
+
+        % 9) Recurse for any further moves
+        human_turn_loop(NewH, NewC, FinalH, FinalC, LastDice)
     ).
+
+
 
 
 
@@ -316,6 +338,7 @@ computer_turn_loop(CurC, CurH, FinalC, FinalH, LastDice) :-
     ( can_throw_one_die(CurC) -> DiceCount = 2 ; DiceCount = 2 ),
 
     % 2) Optional manual dice input
+    write(""), nl, nl,
     write("🎲 (Computer) Enter dice manually? (yes/no): "), read(Man),
     ( Man = yes ->
         manual_dice_input(DiceCount, Sum)
