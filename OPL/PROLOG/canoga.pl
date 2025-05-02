@@ -292,85 +292,118 @@ human_turn_loop(BoardH, BoardC, FinalH) :-
         human_turn_loop(NewBoardH, NewOtherBoard, FinalH)
     ).
 
+
+
+
 /* *********************************************
-   Computer Turn Logic
+   Computer Turn
 ********************************************* */
-computer_turn(CurC, CurH, FinalC, FinalH, DiceSum) :-
-    computer_turn_loop(CurC, CurH, FinalC, FinalH, DiceSum).
+% Replace the stub declaration with arity 5
+% computer_turn(+CurC, +CurH, -NewC, -NewH, -LastDiceSum).
 
-computer_turn_loop(BoardC, BoardH, FinalC, FinalH, DiceSum) :-
-    % Roll the dice
-    random_between(1, 6, D1),
-    random_between(1, 6, D2),
-    DiceSum is D1 + D2,
-    format("🤖 Computer rolled ~w~n", [DiceSum]), nl,
+computer_turn(CurC, CurH, FinalC, FinalH, LastDice) :-
+    computer_turn_loop(CurC, CurH, FinalC, FinalH, LastDice).
 
-    % Decide to cover or uncover
-    computer_decide_cover_or_uncover(BoardC, BoardH, DiceSum, Action),
-    ( Action = cover ->
-        valid_combinations(BoardC, DiceSum, Combos),
-        Apply = apply_cover, TargetBoard = BoardC, OtherBoard = BoardH
-    ; Action = uncover ->
-        valid_combinations(BoardH, DiceSum, Combos),
-        Apply = apply_uncover, TargetBoard = BoardH, OtherBoard = BoardC
+computer_turn_loop(CurC, CurH, FinalC, FinalH, LastDice) :-
+    % 1) Decide whether to throw 1 or 2 dice
+    ( can_throw_one_die(CurC) ->
+        DiceCount = 2
+    ; DiceCount = 2
     ),
-    
-    % If no valid combos, end turn
+
+    % 2) Ask if you want to enter the dice manually
+    write("🎲 (Computer) Enter dice manually? (yes/no): "), read(Manual),
+    ( Manual = yes ->
+        manual_dice_input(DiceCount, Sum)
+    ; throw_dice(DiceCount, Sum)
+    ),
+
+    format("🎲 Computer rolled ~w.~n", [Sum]),
+
+    % 3) Decide cover vs uncover
+    computer_decide_cover_or_uncover(CurC, CurH, Sum, Action),
+    format("🤖 Computer chooses to ~w.~n", [Action]),
+
+    % 4) Generate valid moves
+    ( Action = cover ->
+        valid_combinations(CurC, Sum, Combos),
+        OwnIn = CurC, OppIn = CurH
+    ; % uncover
+        valid_combinations(CurH, Sum, Combos),
+        OwnIn = CurH, OppIn = CurC
+    ),
+
+    % 5) If no moves, end turn
     ( Combos = [] ->
-        write("🚫 No valid "), write(Action), write(" moves. Turn ends."), nl,
-        FinalC = BoardC,
-        FinalH = BoardH
+        format("🚫 No valid ~w moves; computer turn ends.~n", [Action]),
+        FinalC = CurC, FinalH = CurH, LastDice = Sum
     ;
-        % Else pick and apply
-        computer_choose_squares(Combos, Action, Choice),
+        % 6) Pick best combo
+        computer_choose_squares(Combos, OwnIn, OppIn, Sum, Choice),
+        format("✅ Computer ~w squares: ~w.~n", [Action, Choice]),
+
+        % 7) Apply it
         ( Action = cover ->
-            apply_cover(BoardC, Choice, NewBoardC),
-            NewOtherBoard = BoardH
+            apply_cover(CurC, Choice, NewC), NewH = CurH
         ;
-            apply_uncover(BoardH, Choice, NewOtherBoard),
-            NewBoardC = BoardC
+            apply_uncover(CurH, Choice, NewH), NewC = CurC
         ),
-        format("🤖 Computer ~w: ~w~n", [Action, Choice]),
-        display_board(NewBoardC, NewOtherBoard), nl,
 
-        % Loop again with updated boards
-        computer_turn_loop(NewBoardC, NewOtherBoard, FinalC, FinalH, DiceSum)
+        % 8) Show updated board
+        display_board(NewH, NewC), nl,
+
+        % 9) Recurse for further moves
+        computer_turn_loop(NewC, NewH, FinalC, FinalH, LastDice)
     ).
-
-computer_decide_cover_or_uncover(BoardC, BoardH, DiceSum, Action) :-
-    % Simple strategy: if the computer can cover, it will
-    ( can_cover(BoardC, DiceSum) ->
-        Action = cover
-    ;
-        % Otherwise, it will uncover
-        Action = uncover
-    ).
-
-computer_choose_squares(Combos, Action, Choice) :-
-    % Randomly select a valid combination
-    random_member(Choice, Combos),
-    format("🤖 Computer chose to ~w: ~w~n", [Action, Choice]).
-
-computer_strategy_explanation(Combos, Action, Choice) :-
-    % Explain the computer's choice
-    format("🤖 Computer strategy: ~w~n", [Action]),
-    format("🤖 Computer chose: ~w~n", [Choice]),
-    write("🤖 Computer reasoning: "), nl,
-    write("🤖 The computer chose this move because it maximizes its score."), nl.
 
 /* *********************************************
-   Covering and Uncovering Squares
+   Computer Strategy Predicates
 ********************************************* */
-can_cover(Board, DiceSum) :-
-    valid_combinations(Board, DiceSum, Combos),
-    Combos \= [].
-can_uncover(Board, DiceSum) :-
-    valid_combinations(Board, DiceSum, Combos),
-    Combos \= [].
-cover_squares(Board, SquaresToCover, NewBoard) :-
-    apply_cover(Board, SquaresToCover, NewBoard).
-uncover_squares(Board, SquaresToUncover, NewBoard) :-
-    apply_uncover(Board, SquaresToUncover, NewBoard).
+
+% Prefer covering if there is at least one valid cover move; otherwise uncover.
+computer_decide_cover_or_uncover(CurC, CurH, Sum, cover) :-
+    valid_combinations(CurC, Sum, CoverOpts),
+    CoverOpts \= [], !.
+computer_decide_cover_or_uncover(_, _, _, uncover).
+
+% Choose the “best” combination based on the decided action:
+%  - cover: pick the combo with the most squares (maximizes coverage)
+%  - uncover: pick the combo with the fewest squares (minimizes opponent’s gain)
+computer_choose_squares(Combos, CurC, CurH, Sum, Choice) :-
+    computer_decide_cover_or_uncover(CurC, CurH, Sum, Action),
+    ( Action = cover ->
+        best_combo_max_length(Combos, Choice)
+    ; % uncover
+        best_combo_min_length(Combos, Choice)
+    ).
+
+% Helper: select the combo with the maximum length
+best_combo_max_length([C], C).
+best_combo_max_length([C1,C2|Rest], Best) :-
+    length(C1, L1), length(C2, L2),
+    ( L1 >= L2 -> Temp = C1 ; Temp = C2 ),
+    best_combo_max_length([Temp|Rest], Best).
+
+% Helper: select the combo with the minimum length
+best_combo_min_length([C], C).
+best_combo_min_length([C1,C2|Rest], Best) :-
+    length(C1, L1), length(C2, L2),
+    ( L1 =< L2 -> Temp = C1 ; Temp = C2 ),
+    best_combo_min_length([Temp|Rest], Best).
+
+% Optional: explain in prose why the computer chose cover or uncover
+computer_strategy_explanation(CurC, CurH, Sum) :-
+    valid_combinations(CurC, Sum, CoverOpts),
+    valid_combinations(CurH, Sum, UncoverOpts),
+    ( CoverOpts \= [], UncoverOpts \= [] ->
+        format("Strategy: both cover (~w options) and uncover (~w options) are available; defaulting to cover.~n",
+               [CoverOpts, UncoverOpts])
+    ; CoverOpts \= [] ->
+        format("Strategy: only cover (~w options) is available.~n", [CoverOpts])
+    ; UncoverOpts \= [] ->
+        format("Strategy: only uncover (~w options) is available.~n", [UncoverOpts])
+    ; write("Strategy: no valid moves available."), nl
+    ).
 
 
 
