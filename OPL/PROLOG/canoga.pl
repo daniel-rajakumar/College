@@ -312,7 +312,7 @@ human_turn(OldH, OldC, FinalH, FinalC, LastDice) :-
 %! human_turn_loop(+CurH,+CurC,-FinalH,-FinalC,-LastDice)
 human_turn_loop(CurH, CurC, FinalH, FinalC, LastDice) :-
     % --- 1) Decide dice count ---
-    ( can_throw_one_die(CurH) -> DiceCount = 1 ; DiceCount = 2 ),
+    ( can_throw_one_die(CurH) -> DiceCount = 2 ; DiceCount = 2 ),
 
     % --- 2) Roll (manual or auto) ---
     write("🎲 (Human) Enter dice manually? (yes/no): "), read(Man),
