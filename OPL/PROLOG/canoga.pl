@@ -174,60 +174,47 @@ throw_dice(2, Sum) :-
 play_tournament(GameState) :-
     play_round(GameState).
 
-play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
+/* *********************************************
+   Play a Single Round (two‐move cycle, then win‐check)
+********************************************* */
+play_round([[CompBoard, CompScore], [HumanBoard, HumanScore], First, _]) :-
+    % 1) Display the current state
     display_board(HumanBoard, CompBoard),
     display_scores(HumanScore, CompScore),
-    display_turn_info(Next),
-    LastPlayer = Next,
+    display_turn_info(First),
 
-    % format("Next turn: ~w~n", [Next]),
-    (
-        Next = human ->
-            human_turn(HumanBoard, CompBoard, NewHumanBoard, _),
-            NewNext = computer,
-            NewState = [ [CompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext ];
-
-        Next = computer ->
-            computer_turn(CompBoard, HumanBoard, NewCompBoard, _),
-            NewNext = human,
-            NewState = [[NewCompBoard, CompScore], [HumanBoard, HumanScore], First, NewNext]
+    % 2) Execute both turns in order of First
+    ( First = human ->
+        human_turn(   HumanBoard, CompBoard, TempHuman, _Dice1),
+        computer_turn(CompBoard,   TempHuman, NewComp,   _Dice2),
+        LastPlayer = computer,
+        NewHuman = TempHuman
+    ;
+        computer_turn(CompBoard,   HumanBoard, TempComp, _Dice1),
+        human_turn(   HumanBoard, TempComp,   NewHuman, _Dice2),
+        LastPlayer = human,
+        NewComp = TempComp
     ),
 
-
-    NewState = [[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext],
-
-    
-    % write("🔁 Checking for round end..."), nl,
-    % write("New state: "), write(NewState), nl,
-
-    (
-      check_round_end(LastPlayer, NewCompBoard, NewHumanBoard, Winner, Method) ->
-          format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
-          calculate_score(Winner, Method, NewHumanBoard, NewCompBoard, RoundScore),
-          format("🏅 Round score: ~w~n", [RoundScore]),
-          update_tournament_state(Winner, RoundScore,
-                                  [NewCompBoard, CompScore],
-                                    [NewHumanBoard, HumanScore],
-                                    UpdatedComp, UpdatedHuman),
-
-                        % Get index 0 and 1 from UpdatedComp and UpdatedHuman
-                        nth0(0, UpdatedComp, NewCompBoard1),
-                        nth0(1, UpdatedComp, NewCompScore1),
-                        nth0(0, UpdatedHuman, NewHumanBoard1),
-                        nth0(1, UpdatedHuman, NewHumanScore1),
-
-                        write("updated score for human: "), write(NewHumanScore1), nl,
-                        write("updated score for computer: "), write(NewCompScore1), nl,
-                        write("updated board for human: "), write(NewHumanBoard1), nl,
-                        write("updated board for computer: "), write(NewCompBoard1), nl,
-
-                        display_scores(NewHumanScore1, NewCompScore1),
-                        ask_play_again([[NewCompBoard1, NewCompScore1], [NewHumanBoard1, NewHumanScore1], Winner, Method])
-                      ;
-      % continue_round([[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext])
-      write("No round end detected."), nl
+    % 3) After both have moved, check for a win
+    ( check_round_end(LastPlayer, NewComp, NewHuman, Winner, Method) ->
+        % If someone won, handle end‐of‐round
+        format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+        calculate_score(Winner, Method, NewHuman, NewComp, RoundScore),
+        format("🏅 Round score: ~w~n", [RoundScore]),
+        update_tournament_state(Winner, RoundScore,
+                                [NewComp,   CompScore],
+                                [NewHuman, HumanScore],
+                                UpdatedComp, UpdatedHuman),
+        UpdatedComp = [_, FinalCompScore],
+        UpdatedHuman = [_, FinalHumanScore],
+        display_scores(FinalHumanScore, FinalCompScore),
+        ask_play_again([UpdatedComp, UpdatedHuman, Winner, Winner])
+    ;
+        % No win yet: swap first‐player for next cycle and continue
+        NextFirst = First,  % keep same alternation: if human started, human starts next cycle
+        play_round([[NewComp, CompScore], [NewHuman, HumanScore], NextFirst, _])
     ).
-    
 
 % continue_round(GameState) :-
 continue_round([[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext]) :-
