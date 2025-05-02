@@ -178,6 +178,7 @@ play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
     display_board(HumanBoard, CompBoard),
     display_scores(HumanScore, CompScore),
     display_turn_info(Next),
+    LastPlayer = Next,
 
     % format("Next turn: ~w~n", [Next]),
     (
@@ -194,27 +195,38 @@ play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
 
 
     NewState = [[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext],
+
     
     % write("🔁 Checking for round end..."), nl,
     % write("New state: "), write(NewState), nl,
 
     (
-    check_round_end(NewCompBoard, NewHumanBoard, Winner, Method) ->
-        format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
-        calculate_score(Winner, Method, NewHumanBoard, NewCompBoard, RoundScore),
-        format("🏅 Round score: ~w~n", [RoundScore]),
-        update_tournament_state(Winner, RoundScore,
-                                [NewCompBoard, CompScore],
-                                [NewHumanBoard, HumanScore],
-                                UpdatedComp, UpdatedHuman),
-                                
-        UpdatedHuman = [_, HumanScore],
-        UpdatedComp = [_, CompScore],
-        display_scores(HumanScore, CompScore),
-        ask_play_again([UpdatedComp, UpdatedHuman, Winner, Winner])
-    ;
-    continue_round([[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext])
-).
+      check_round_end(LastPlayer, NewCompBoard, NewHumanBoard, Winner, Method) ->
+          format("🎉 ~w wins this round by ~w!~n", [Winner, Method]),
+          calculate_score(Winner, Method, NewHumanBoard, NewCompBoard, RoundScore),
+          format("🏅 Round score: ~w~n", [RoundScore]),
+          update_tournament_state(Winner, RoundScore,
+                                  [NewCompBoard, CompScore],
+                                    [NewHumanBoard, HumanScore],
+                                    UpdatedComp, UpdatedHuman),
+
+                        % Get index 0 and 1 from UpdatedComp and UpdatedHuman
+                        nth0(0, UpdatedComp, NewCompBoard1),
+                        nth0(1, UpdatedComp, NewCompScore1),
+                        nth0(0, UpdatedHuman, NewHumanBoard1),
+                        nth0(1, UpdatedHuman, NewHumanScore1),
+
+                        write("updated score for human: "), write(NewHumanScore1), nl,
+                        write("updated score for computer: "), write(NewCompScore1), nl,
+                        write("updated board for human: "), write(NewHumanBoard1), nl,
+                        write("updated board for computer: "), write(NewCompBoard1), nl,
+
+                        display_scores(NewHumanScore1, NewCompScore1),
+                        ask_play_again([[NewCompBoard1, NewCompScore1], [NewHumanBoard1, NewHumanScore1], Winner, Method])
+                      ;
+      % continue_round([[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext])
+      write("No round end detected."), nl
+    ).
     
 
 % continue_round(GameState) :-
@@ -509,26 +521,65 @@ manual_dice_input(2, Sum) :-
 /* *********************************************
    Check if Round Has Ended
 ********************************************* */
-check_round_end(CompBoard, HumanBoard, Winner, Method) :-
+check_round_end(LastPlayer, CompBoard, HumanBoard, Winner, Method) :-
+    write("🔁 Checking for round end..."), nl,
+    write("Last player: "), write(LastPlayer), nl,
+    write("Computer board: "), write(CompBoard), nl,
+    write("Human board: "), write(HumanBoard), nl,
+
+  LastPlayer = human ->
     (
         all_zeros(HumanBoard) ->
-            Winner = computer,
-            Method = uncover
-        ;
-        all_zeros(CompBoard) ->
             Winner = human,
-            Method = uncover
+            Method = cover,
+            write("Human board all zeros"), nl
         ;
         all_nonzeros(HumanBoard) ->
-            Winner = human,
-            Method = cover
+            Winner = computer,
+            Method = uncover,
+            write("Human board all non-zeros"), nl
+        ;
+        all_zeros(CompBoard) ->
+            Winner = computer,
+            Method = cover,
+            write("Computer board all zeros"), nl
         ;
         all_nonzeros(CompBoard) ->
-            Winner = computer,
-            Method = cover
+            Winner = human,
+            Method = uncover,
+            write("Computer board all non-zeros"), nl
+
         ;
-        fail  % Round not over
+        Winner = none,
+        Method = none
+    )
+    ;
+    (
+        all_zeros(CompBoard) ->
+            Winner = computer,
+            Method = cover,
+            write("Computer board all zeros"), nl
+        ;
+        all_nonzeros(CompBoard) ->
+            Winner = human,
+            Method = uncover,
+            write("Computer board all non-zeros"), nl
+        ;
+        all_zeros(HumanBoard) ->
+            Winner = human,
+            Method = cover,
+            write("Human board all zeros"), nl
+        ;
+        all_nonzeros(HumanBoard) ->
+            Winner = computer,
+            Method = uncover,
+            write("Human board all non-zeros"), nl
+        ;
+        Winner = none,
+        Method = none
     ).
+
+
 
 % helper to check if all squares are 0
 all_zeros([]).
@@ -587,11 +638,31 @@ update_tournament_state(
     ).
 
 
-ask_play_again(GameState) :-
+ask_play_again([[CompBoard, CompScore], [HumanBoard, HumanScore], _, _]) :-
     write("🔁 Play another round? (yes/no): "), read(Resp),
     (
         Resp = yes ->
-            play_round(GameState)
+            choose_board_size(Size),   % reuses your existing prompt for 9, 10, or 11
+
+            % 2. Reinitialize both boards (full covered)
+            numlist(1, Size, NewHumanBoard),
+            numlist(1, Size, NewCompBoard),
+
+            % 3. Decide who goes first this round
+            determine_first_player(First),
+            Next = First,
+
+            % 4. Clear screen and show fresh UI
+            clear_screen,
+            display_board(NewHumanBoard, NewCompBoard),
+            display_scores(HumanScore, CompScore),
+            display_turn_info(Next),
+
+            % 5. Kick off the next round with reset boards
+            play_round([[NewCompBoard, CompScore],
+                        [NewHumanBoard, HumanScore],
+                        First,
+                        Next])
         ;
         GameState = [[_, CScore], [_, HScore], _, _],
         write("🏁 Tournament Over! Final Scores:"), nl,
