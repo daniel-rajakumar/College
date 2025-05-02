@@ -192,6 +192,7 @@ play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
             NewState = [[NewCompBoard, CompScore], [HumanBoard, HumanScore], First, NewNext]
     ),
 
+
     NewState = [[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext],
     
     % write("🔁 Checking for round end..."), nl,
@@ -216,12 +217,25 @@ play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
 ).
     
 
-continue_round(GameState) :-
+% continue_round(GameState) :-
+continue_round([[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext]) :-
+    display_board(NewCompBoard, NewHumanBoard),
     write('Continue playing? (yes/no): '), read(Response),
+    % clear the screen
     (
-        Response = yes -> play_round(GameState);
-        Response = no -> write('Game ended.')
+        Response = yes ->
+            clear_screen,
+            play_round([[NewCompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext])
+
+        ;
+        Response = no ->
+            write('Game ended.')
     ).
+
+clear_screen :-
+    forall(between(1, 50, _), nl),
+    put_code(27), write('[2J'),    % clear screen
+    put_code(27), write('[H').     % move cursor to top-left
 
 
 
@@ -273,18 +287,24 @@ human_turn(HumanBoard, CompBoard, NewHumanBoard, DiceSum) :-
 ********************************************* */
 computer_turn(CompBoard, HumanBoard, NewCompBoard, DiceSum) :-
 
-    % Auto decide dice count
-    can_throw_one_die(CompBoard) ->
-        DiceCount = 1 ; DiceCount = 2,
+    (can_throw_one_die(CompBoard) -> DiceCount = 1 ; DiceCount = 2),
 
-    throw_dice(DiceCount, DiceSum),
+    % Ask for manual dice input
+    write("🧪 Would you like to manually enter dice for the computer? (yes/no): "),
+    read(Manual),
+    (
+        Manual = yes ->
+            manual_dice_input(DiceCount, DiceSum)
+        ;
+            throw_dice(DiceCount, DiceSum)
+    ),
+
     format("🤖 Computer rolled a ~w (~w die)~n", [DiceSum, DiceCount]),
 
-    % Find options
+    % Find possible actions
     valid_combinations(CompBoard, DiceSum, CoverCombos),
     valid_combinations(HumanBoard, DiceSum, UncoverCombos),
 
-    % Choose action: prefer covering if available
     (
         CoverCombos \= [] ->
             Action = cover,
@@ -299,22 +319,20 @@ computer_turn(CompBoard, HumanBoard, NewCompBoard, DiceSum) :-
         !
     ),
 
-    % Choose a move using first available option (basic strategy)
     ChosenCombo = [BestMove|_],
 
-    % Apply the move
     (
         Action = cover ->
             apply_cover(CompBoard, BestMove, NewCompBoard),
-            format("🤖 Computer chose to COVER: ~w~n", [BestMove])
+            format("🤖 Computer chose to COVER: ~w~n", [BestMove]),
+            display_board(HumanBoard, NewCompBoard)
         ;
         Action = uncover ->
-            apply_uncover(HumanBoard, BestMove, _NewHumanBoard),  % For now, we ignore updating HumanBoard
+            apply_uncover(HumanBoard, BestMove, _UpdatedHumanBoard),
             NewCompBoard = CompBoard,
-            format("🤖 Computer chose to UNCOVER your squares: ~w~n", [BestMove])
+            format("🤖 Computer chose to UNCOVER your squares: ~w~n", [BestMove]),
+            display_board(_UpdatedHumanBoard, NewCompBoard)
     ).
-
-
 
 
 ask_dice_choice(Board, DiceCount) :-
