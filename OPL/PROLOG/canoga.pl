@@ -158,21 +158,25 @@ throw_dice(2, Sum) :-
 play_tournament(GameState) :-
     play_round(GameState).
 
-
 play_round([ [CompBoard, CompScore], [HumanBoard, HumanScore], First, Next ]) :-
+    display_board(HumanBoard, CompBoard),
+    display_scores(HumanScore, CompScore),
+    display_turn_info(Next),
+
     format("Next turn: ~w~n", [Next]),
-    % Just alternate turns with dummy move
     (
         Next = human ->
-            write('Human plays...'), nl,
-            NewNext = computer;
+            human_turn(HumanBoard, CompBoard, NewHumanBoard, _),
+            NewNext = computer,
+            NewState = [ [CompBoard, CompScore], [NewHumanBoard, HumanScore], First, NewNext ];
         Next = computer ->
             write('Computer plays...'), nl,
-            NewNext = human
+            NewNext = human,
+            NewState = [ [CompBoard, CompScore], [HumanBoard, HumanScore], First, NewNext ]
     ),
-    NewState = [ [CompBoard, CompScore], [HumanBoard, HumanScore], First, NewNext ],
     continue_round(NewState).
 
+    
 
 continue_round(GameState) :-
     write('Continue playing? (yes/no): '), read(Response),
@@ -180,3 +184,61 @@ continue_round(GameState) :-
         Response = yes -> play_round(GameState);
         Response = no -> write('Game ended.')
     ).
+
+
+
+human_turn(HumanBoard, ComputerBoard, NewHumanBoard, DiceSum) :-
+    format("Your board: ~w~n", [HumanBoard]),
+    ask_dice_choice(HumanBoard, DiceCount),
+    throw_dice(DiceCount, DiceSum),
+    format("🎲 You rolled: ~w~n", [DiceSum]),
+
+    NewHumanBoard = HumanBoard.
+
+
+ask_dice_choice(Board, DiceCount) :-
+    can_throw_one_die(Board) ->
+        write("Squares 7 and up are covered. Throw 1 or 2 dice? "), read(DiceCount),
+        (member(DiceCount, [1,2]) -> true ; write("Invalid choice, using 2."), DiceCount = 2);
+    DiceCount = 2.
+
+
+can_throw_one_die(Board) :-
+    length(Board, Length),
+    Start is 7,
+    check_range_covered(Board, Start, Length).
+
+check_range_covered(Board, Start, End) :-
+    forall(between(Start, End, I),
+           (nth1(I, Board, Val), Val =\= 0)).
+
+
+
+/* *********************************************
+   Display the Game Board
+********************************************* */
+
+display_board(Human, Computer) :-
+    nl,
+    write("📍 Current Game Board"), nl,
+    write("┌────────────────────────────────────────────┐"), nl,
+    write("│  Human:   "), print_squares(Human), nl,
+    write("│  Computer:"), print_squares(Computer), nl,
+    write("└────────────────────────────────────────────┘"), nl.
+
+display_scores(HumanScore, ComputerScore) :-
+    nl,
+    format("⭐ Human Score: ~w~n", [HumanScore]),
+    format("🤖 Computer Score: ~w~n", [ComputerScore]), nl.
+
+
+display_turn_info(Player) :-
+    format("🔁 It is ~w turn.~n", [Player]).
+
+print_squares(Squares) :-
+    maplist(print_square, Squares), nl.
+
+print_square(0) :- write(" --").
+print_square(N) :- format(" ~|~`0t~d~2+", [N]).
+
+
