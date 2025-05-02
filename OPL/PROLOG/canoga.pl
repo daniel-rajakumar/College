@@ -248,6 +248,7 @@ human_turn(CurH, CurC, FinalH, _) :-
 % human_turn_loop(+BoardH, +BoardC, -FinalH)
 human_turn_loop(BoardH, BoardC, FinalH) :-
     % Roll (manual or auto)
+    write(""), nl, nl, nl,
     write("🎲 (Human) Enter dice manually? (yes/no): "), read(Manual),
     ask_dice_choice(BoardH, DiceCount),
     ( Manual = yes -> manual_dice_input(DiceCount, DiceSum)
@@ -301,70 +302,94 @@ human_turn_loop(BoardH, BoardC, FinalH) :-
 % Replace the stub declaration with arity 5
 % computer_turn(+CurC, +CurH, -NewC, -NewH, -LastDiceSum).
 
+/* *********************************************
+   Computer Turn Integration
+********************************************* */
+
+% main entry
 computer_turn(CurC, CurH, FinalC, FinalH, LastDice) :-
     computer_turn_loop(CurC, CurH, FinalC, FinalH, LastDice).
 
+% updated loop
 computer_turn_loop(CurC, CurH, FinalC, FinalH, LastDice) :-
-    % 1) Decide whether to throw 1 or 2 dice
-    ( can_throw_one_die(CurC) ->
-        DiceCount = 2
-    ; DiceCount = 2
-    ),
+    % 1) Decide dice count
+    ( can_throw_one_die(CurC) -> DiceCount = 2 ; DiceCount = 2 ),
 
-    % 2) Ask if you want to enter the dice manually
-    write("🎲 (Computer) Enter dice manually? (yes/no): "), read(Manual),
-    ( Manual = yes ->
+    % 2) Optional manual dice input
+    write("🎲 (Computer) Enter dice manually? (yes/no): "), read(Man),
+    ( Man = yes ->
         manual_dice_input(DiceCount, Sum)
     ; throw_dice(DiceCount, Sum)
     ),
-
     format("🎲 Computer rolled ~w.~n", [Sum]),
 
-    % 3) Decide cover vs uncover
+    % 3) Smarter decision
     computer_decide_cover_or_uncover(CurC, CurH, Sum, Action),
-    format("🤖 Computer chooses to ~w.~n", [Action]),
-
-    % 4) Generate valid moves
-    ( Action = cover ->
-        valid_combinations(CurC, Sum, Combos),
-        OwnIn = CurC, OppIn = CurH
-    ; % uncover
-        valid_combinations(CurH, Sum, Combos),
-        OwnIn = CurH, OppIn = CurC
-    ),
-
-    % 5) If no moves, end turn
-    ( Combos = [] ->
-        format("🚫 No valid ~w moves; computer turn ends.~n", [Action]),
+    ( Action = none ->
+        write("⏹️ No valid moves; computer turn ends.~n"),
         FinalC = CurC, FinalH = CurH, LastDice = Sum
     ;
-        % 6) Pick best combo
-        computer_choose_squares(Combos, OwnIn, OppIn, Sum, Choice),
-        format("✅ Computer ~w squares: ~w.~n", [Action, Choice]),
+      format("🤖 Computer chooses to ~w.~n", [Action]),
+      % 4) Generate the right combos
+      ( Action = cover ->
+          valid_cover_combinations(CurC, Sum, Combos),
+          OwnIn = CurC, OppIn = CurH
+      ; /* uncover */
+          valid_uncover_combinations(CurH, Sum, Combos),
+          OwnIn = CurH, OppIn = CurC
+      ),
 
-        % 7) Apply it
-        ( Action = cover ->
-            apply_cover(CurC, Choice, NewC), NewH = CurH
-        ;
-            apply_uncover(CurH, Choice, NewH), NewC = CurC
-        ),
+      % 5) Pick best subset
+      computer_choose_squares(Combos, OwnIn, OppIn, Sum, Choice),
+      format("✅ Computer ~w squares: ~w.~n", [Action, Choice]),
 
-        % 8) Show updated board
-        display_board(NewH, NewC), nl,
+      % 6) Apply move
+      ( Action = cover ->
+          apply_cover(CurC, Choice, NewC), NewH = CurH
+      ;
+          apply_uncover(CurH, Choice, NewH), NewC = CurC
+      ),
 
-        % 9) Recurse for further moves
-        computer_turn_loop(NewC, NewH, FinalC, FinalH, LastDice)
+      % 7) Show and recurse
+      display_board(NewH, NewC), nl,
+      computer_turn_loop(NewC, NewH, FinalC, FinalH, LastDice)
     ).
 
+
 /* *********************************************
-   Computer Strategy Predicates
+   Filtered Move Generators
 ********************************************* */
 
-% Prefer covering if there is at least one valid cover move; otherwise uncover.
-computer_decide_cover_or_uncover(CurC, CurH, Sum, cover) :-
-    valid_combinations(CurC, Sum, CoverOpts),
-    CoverOpts \= [], !.
-computer_decide_cover_or_uncover(_, _, _, uncover).
+% only use non-zeros when we’re covering
+valid_cover_combinations(Squares, Sum, Combos) :-
+    include(\=(0), Squares, Available),
+    findall(C, ( subset_of_max4(Available, C),
+                 sum_list(C, Sum)
+               ),
+            Combos).
+
+% only use zeros when we’re uncovering
+valid_uncover_combinations(Squares, Sum, Combos) :-
+    include(=(0), Squares, Covered),
+    findall(C, ( subset_of_max4(Covered, C),
+                 sum_list(C, Sum)
+               ),
+            Combos).
+
+computer_decide_cover_or_uncover(CurC, CurH, Sum, Action) :-
+    valid_cover_combinations(CurC, Sum, CoverOpts),
+    valid_uncover_combinations(CurH, Sum, UncoverOpts),
+    ( CoverOpts == [], UncoverOpts == [] ->
+        Action = none
+    ; CoverOpts == [] ->
+        Action = uncover
+    ; UncoverOpts == [] ->
+        Action = cover
+    ; % both non-empty: pick whichever has more options
+      length(CoverOpts, NC), length(UncoverOpts, NU),
+      ( NC >= NU -> Action = cover ; Action = uncover )
+    ).
+
 
 % Choose the “best” combination based on the decided action:
 %  - cover: pick the combo with the most squares (maximizes coverage)
@@ -373,8 +398,11 @@ computer_choose_squares(Combos, CurC, CurH, Sum, Choice) :-
     computer_decide_cover_or_uncover(CurC, CurH, Sum, Action),
     ( Action = cover ->
         best_combo_max_length(Combos, Choice)
-    ; % uncover
+    ; Action = uncover ->
         best_combo_min_length(Combos, Choice)
+    ; Action = none ->
+        format("⏹️ No valid moves; turn ends.~n"),
+        FinalC = CurC, FinalH = CurH, LastDice = Sum
     ).
 
 % Helper: select the combo with the maximum length
@@ -409,9 +437,9 @@ computer_strategy_explanation(CurC, CurH, Sum) :-
 
 
 ask_dice_choice(Board, DiceCount) :-
-    can_throw_one_die(Board) ->
-        write("Squares 7 and up are covered. Throw 1 or 2 dice? "), read(DiceCount),
-        (member(DiceCount, [1,2]) -> true ; write("Invalid choice, using 2."), DiceCount = 2);
+    % can_throw_one_die(Board) ->
+    %     write("Squares 7 and up are covered. Throw 1 or 2 dice? "), read(DiceCount),
+    %     (member(DiceCount, [1,2]) -> true ; write("Invalid choice, using 2."), DiceCount = 2);
     DiceCount = 2.
 
 
