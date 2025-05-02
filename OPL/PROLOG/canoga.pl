@@ -211,45 +211,40 @@ human_turn(HumanBoard, CompBoard, NewHumanBoard, DiceSum) :-
         Manual = yes ->
             manual_dice_input(DiceCount, DiceSum)
         ;
-        throw_dice(DiceCount, DiceSum)
+            throw_dice(DiceCount, DiceSum)
     ),
     format("🎲 You rolled a ~w~n", [DiceSum]),
 
-    % Get valid cover and uncover moves
+    % Get valid move sets
     valid_combinations(HumanBoard, DiceSum, CoverCombos),
     valid_combinations(CompBoard, DiceSum, UncoverCombos),
 
-    % Show both options
-    write("✅ Available options:"), nl,
-
-    write("👉 Cover your own squares:"), nl,
-    ( CoverCombos = [] -> write("   (no valid cover moves)"), nl ; show_numbered_options(CoverCombos, 1, cover)),
-    nl,
-    write("👉 Or uncover opponents squares:"), nl,
-    ( UncoverCombos = [] -> write("   (no valid uncover moves)"), nl ; show_numbered_options(UncoverCombos, 1, uncover)).
-
-
-
-
-    % Ask user to choose
+    % Ask action
     write("Would you like to (cover/uncover)? "), read(Action),
+
     (
         Action = cover, CoverCombos \= [] ->
-            write("Which combo to use? "), read(Chosen),
-            apply_cover(HumanBoard, Chosen, NewHumanBoard)
+            write("👉 Available cover options:"), nl,
+            show_numbered_options(CoverCombos, 1, cover),
+            write("Select option number: "), read(Index),
+            choose_combo(CoverCombos, Index, Chosen),
+            apply_cover(HumanBoard, Chosen, NewHumanBoard),
+            format("✅ You covered: ~w~n", [Chosen])
+
         ;
         Action = uncover, UncoverCombos \= [] ->
-            write("Which combo to use? "), read(Chosen),
-            apply_uncover(CompBoard, Chosen, UpdatedCompBoard),
-            NewHumanBoard = HumanBoard,  % no change to human
-            % TODO: You'll return UpdatedCompBoard from turn logic
-            format("Applied uncover: ~w~n", [UpdatedCompBoard])
+            write("👉 Available uncover options:"), nl,
+            show_numbered_options(UncoverCombos, 1, uncover),
+            write("Select option number: "), read(Index),
+            choose_combo(UncoverCombos, Index, Chosen),
+            apply_uncover(CompBoard, Chosen, _NewCompBoard),  % ← save if needed
+            NewHumanBoard = HumanBoard,
+            format("✅ You uncovered: ~w~n", [Chosen])
+
         ;
-        write("⚠️ No valid moves or invalid choice. Turn ends."), nl,
+        write("⚠️ No valid moves for selected action or invalid input. Turn ends."), nl,
         NewHumanBoard = HumanBoard
     ).
-
-
 
 ask_dice_choice(Board, DiceCount) :-
     can_throw_one_die(Board) ->
@@ -327,17 +322,25 @@ subset([_|Tail], NTail)     :- subset(Tail, NTail).
 
 
 
+apply_cover(Board, SquaresToCover, NewBoard) :-
+    replace_many(Board, SquaresToCover, 0, NewBoard).
 
-apply_cover(Board, Combo, NewBoard) :-
-    maplist({Board}/[X]>>replace_first(Board, X, 0, BoardTmp), Combo, [NewBoard]).
+apply_uncover(Board, SquaresToUncover, NewBoard) :-
+    replace_many(Board, SquaresToUncover, _, NewBoard).
 
-apply_uncover(Board, Combo, NewBoard) :-
-    maplist({Board}/[X]>>replace_first(Board, X, X, BoardTmp), Combo, [NewBoard]).
 
-% Replace element at index matching Value with NewVal
-replace_first([H|T], Val, NewVal, [NewVal|T]) :- H =:= Val, !.
-replace_first([H|T], Val, NewVal, [H|R]) :-
-    replace_first(T, Val, NewVal, R).
+% Replace the first occurrence of Value in a list with Replacement
+replace_first([Value|T], Value, Replacement, [Replacement|T]) :- !.
+replace_first([H|T], Value, Replacement, [H|NewT]) :-
+    replace_first(T, Value, Replacement, NewT).
+
+
+% Replace a list of values (Targets) with a given Replacement
+replace_many(Board, [], _, Board).
+
+replace_many(Board, [X|Xs], Replacement, ResultBoard) :-
+    replace_first(Board, X, Replacement, TempBoard),
+    replace_many(TempBoard, Xs, Replacement, ResultBoard).
 
 
 
@@ -346,13 +349,19 @@ replace_first([H|T], Val, NewVal, [H|R]) :-
    Display Numbered Move Options
 ********************************************* */
 
-show_numbered_options([], _, _) :- true.
+show_numbered_options([], _, _) :-
+    write("   (no valid options)"), nl.
 
-show_numbered_options([Option|Rest], Index, Type) :-
+show_numbered_options([Option|Rest], Index, _) :-
     format("  ~w. ~w~n", [Index, Option]),
     NextIndex is Index + 1,
-    show_numbered_options(Rest, NextIndex, Type).
+    show_numbered_options(Rest, NextIndex, _).
 
+
+choose_combo(Combos, Index, Combo) :-
+    nth1(Index, Combos, Combo), !.
+choose_combo(_, _, []) :-
+    write("⚠️ Invalid selection. Move skipped."), nl.
 
 
 
