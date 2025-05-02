@@ -155,8 +155,11 @@ determine_first_player(Player) :-
     throw_dice(2, ComputerSum),
     format('Human rolled ~w. Computer rolled ~w.~n', [HumanSum, ComputerSum]),
     (
-        HumanSum > ComputerSum -> Player = human;
+        HumanSum > ComputerSum -> Player = computer;
+        % ComputerSum > HumanSum -> Player = computer;
         ComputerSum > HumanSum -> Player = computer;
+        
+        Next = human,
         write('Tie! Rolling again...'), nl, determine_first_player(Player)
     ).
 
@@ -186,11 +189,12 @@ play_round([[CompBoard, CompScore], [HumanBoard, HumanScore], First, _]) :-
     % 2) Execute both turns in order of First
     ( First = human ->
         human_turn(   HumanBoard, CompBoard, TempHuman, _Dice1),
-        computer_turn(CompBoard,   TempHuman, NewComp,   _Dice2),
+        computer_turn(CompBoard, HumanBoard, NewCompBoard, NewHumanBoard, _Dice1),
+
         LastPlayer = computer,
         NewHuman = TempHuman
     ;
-        computer_turn(CompBoard,   HumanBoard, TempComp, _Dice1),
+        computer_turn(CompBoard, HumanBoard, NewCompBoard, NewHumanBoard, _Dice2),
         human_turn(   HumanBoard, TempComp,   NewHuman, _Dice2),
         LastPlayer = human,
         NewComp = TempComp
@@ -237,101 +241,138 @@ clear_screen :-
     put_code(27), write('[H').     % move cursor to top-left
 
 
+% human_turn(+CurH, +CurC, -FinalH, -_DiceSum)
+human_turn(CurH, CurC, FinalH, _) :-
+    human_turn_loop(CurH, CurC, FinalH).
 
-human_turn(HumanBoard, CompBoard, NewHumanBoard, DiceSum) :-
-    write("🎲 Would you like to enter the dice manually? (yes/no): "),
-    read(Manual),
-    ask_dice_choice(HumanBoard, DiceCount),
-    (
-        Manual = yes ->
-            manual_dice_input(DiceCount, DiceSum)
-        ;
-            throw_dice(DiceCount, DiceSum)
+% human_turn_loop(+BoardH, +BoardC, -FinalH)
+human_turn_loop(BoardH, BoardC, FinalH) :-
+    % Roll (manual or auto)
+    write("🎲 (Human) Enter dice manually? (yes/no): "), read(Manual),
+    ask_dice_choice(BoardH, DiceCount),
+    ( Manual = yes -> manual_dice_input(DiceCount, DiceSum)
+    ; throw_dice(DiceCount, DiceSum)
     ),
-    format("🎲 You rolled a ~w~n", [DiceSum]), nl,
+    format("🎲 You rolled ~w~n", [DiceSum]), nl,
 
-    % Get valid move sets
-    valid_combinations(HumanBoard, DiceSum, CoverCombos),
-    valid_combinations(CompBoard, DiceSum, UncoverCombos),
-
-    % Ask action
+    % Ask cover or uncover
     write("Would you like to (cover/uncover)? "), read(Action),
+    ( Action = cover ->
+        valid_combinations(BoardH, DiceSum, Combos),
+        Apply = apply_cover, TargetBoard = BoardH, OtherBoard = BoardC
+    ; Action = uncover ->
+        valid_combinations(BoardC, DiceSum, Combos),
+        Apply = apply_uncover, TargetBoard = BoardC, OtherBoard = BoardH
+    ; 
+        write("⚠️ Invalid action; try again."), nl,
+        human_turn_loop(BoardH, BoardC, FinalH), !
+    ),
 
-    (
-        Action = cover, CoverCombos \= [] ->
-            write("👉 Available cover options:"), nl,
-            show_numbered_options(CoverCombos, 1, cover),
-            write("Select option number: "), read(Index),
-            choose_combo(CoverCombos, Index, Chosen),
-            apply_cover(HumanBoard, Chosen, NewHumanBoard),
-            format("✅ You covered: ~w~n", [Chosen])
-
+    % If no valid combos, end turn
+    ( Combos = [] ->
+        write("🚫 No valid "), write(Action), write(" moves. Turn ends."), nl,
+        FinalH = BoardH
+    ;
+        % Else pick and apply
+        write("👉 Options:"), nl,
+        show_numbered_options(Combos,1,Action),
+        write("Select #: "), read(I),
+        choose_combo(Combos, I, Choice),
+        ( Action = cover ->
+            apply_cover(BoardH, Choice, NewBoardH),
+            NewOtherBoard = BoardC
         ;
-        Action = uncover, UncoverCombos \= [] ->
-            write("👉 Available uncover options:"), nl,
-            show_numbered_options(UncoverCombos, 1, uncover),
-            write("Select option number: "), read(Index),
-            choose_combo(UncoverCombos, Index, Chosen),
-            apply_uncover(CompBoard, Chosen, _NewCompBoard),  % ← save if needed
-            NewHumanBoard = HumanBoard,
-            format("✅ You uncovered: ~w~n", [Chosen])
+            apply_uncover(BoardC, Choice, NewOtherBoard),
+            NewBoardH = BoardH
+        ),
+        format("✅ You ~w: ~w~n", [Action, Choice]),
+        display_board(NewBoardH, NewOtherBoard), nl,
 
-        ;
-        write("⚠️ No valid moves for selected action or invalid input. Turn ends."), nl,
-        NewHumanBoard = HumanBoard
+        % Loop again with updated boards
+        human_turn_loop(NewBoardH, NewOtherBoard, FinalH)
     ).
 
 /* *********************************************
    Computer Turn Logic
 ********************************************* */
-computer_turn(CompBoard, HumanBoard, NewCompBoard, DiceSum) :-
+computer_turn(CurC, CurH, FinalC, FinalH, DiceSum) :-
+    computer_turn_loop(CurC, CurH, FinalC, FinalH, DiceSum).
 
-    (can_throw_one_die(CompBoard) -> DiceCount = 1 ; DiceCount = 2),
+computer_turn_loop(BoardC, BoardH, FinalC, FinalH, DiceSum) :-
+    % Roll the dice
+    random_between(1, 6, D1),
+    random_between(1, 6, D2),
+    DiceSum is D1 + D2,
+    format("🤖 Computer rolled ~w~n", [DiceSum]), nl,
 
-    % Ask for manual dice input
-    write("🧪 Would you like to manually enter dice for the computer? (yes/no): "),
-    read(Manual),
-    (
-        Manual = yes ->
-            manual_dice_input(DiceCount, DiceSum)
-        ;
-            throw_dice(DiceCount, DiceSum)
+    % Decide to cover or uncover
+    computer_decide_cover_or_uncover(BoardC, BoardH, DiceSum, Action),
+    ( Action = cover ->
+        valid_combinations(BoardC, DiceSum, Combos),
+        Apply = apply_cover, TargetBoard = BoardC, OtherBoard = BoardH
+    ; Action = uncover ->
+        valid_combinations(BoardH, DiceSum, Combos),
+        Apply = apply_uncover, TargetBoard = BoardH, OtherBoard = BoardC
     ),
-
-    format("🤖 Computer rolled a ~w (~w die)~n", [DiceSum, DiceCount]),
-
-    % Find possible actions
-    valid_combinations(CompBoard, DiceSum, CoverCombos),
-    valid_combinations(HumanBoard, DiceSum, UncoverCombos),
-
-    (
-        CoverCombos \= [] ->
-            Action = cover,
-            ChosenCombo = CoverCombos
+    
+    % If no valid combos, end turn
+    ( Combos = [] ->
+        write("🚫 No valid "), write(Action), write(" moves. Turn ends."), nl,
+        FinalC = BoardC,
+        FinalH = BoardH
+    ;
+        % Else pick and apply
+        computer_choose_squares(Combos, Action, Choice),
+        ( Action = cover ->
+            apply_cover(BoardC, Choice, NewBoardC),
+            NewOtherBoard = BoardH
         ;
-        UncoverCombos \= [] ->
-            Action = uncover,
-            ChosenCombo = UncoverCombos
-        ;
-        write("🤖 No valid moves. Turn ends."), nl,
-        NewCompBoard = CompBoard,
-        !
-    ),
+            apply_uncover(BoardH, Choice, NewOtherBoard),
+            NewBoardC = BoardC
+        ),
+        format("🤖 Computer ~w: ~w~n", [Action, Choice]),
+        display_board(NewBoardC, NewOtherBoard), nl,
 
-    ChosenCombo = [BestMove|_],
-
-    (
-        Action = cover ->
-            apply_cover(CompBoard, BestMove, NewCompBoard),
-            format("🤖 Computer chose to COVER: ~w~n", [BestMove]),
-            display_board(HumanBoard, NewCompBoard)
-        ;
-        Action = uncover ->
-            apply_uncover(HumanBoard, BestMove, _UpdatedHumanBoard),
-            NewCompBoard = CompBoard,
-            format("🤖 Computer chose to UNCOVER your squares: ~w~n", [BestMove]),
-            display_board(_UpdatedHumanBoard, NewCompBoard)
+        % Loop again with updated boards
+        computer_turn_loop(NewBoardC, NewOtherBoard, FinalC, FinalH, DiceSum)
     ).
+
+computer_decide_cover_or_uncover(BoardC, BoardH, DiceSum, Action) :-
+    % Simple strategy: if the computer can cover, it will
+    ( can_cover(BoardC, DiceSum) ->
+        Action = cover
+    ;
+        % Otherwise, it will uncover
+        Action = uncover
+    ).
+
+computer_choose_squares(Combos, Action, Choice) :-
+    % Randomly select a valid combination
+    random_member(Choice, Combos),
+    format("🤖 Computer chose to ~w: ~w~n", [Action, Choice]).
+
+computer_strategy_explanation(Combos, Action, Choice) :-
+    % Explain the computer's choice
+    format("🤖 Computer strategy: ~w~n", [Action]),
+    format("🤖 Computer chose: ~w~n", [Choice]),
+    write("🤖 Computer reasoning: "), nl,
+    write("🤖 The computer chose this move because it maximizes its score."), nl.
+
+/* *********************************************
+   Covering and Uncovering Squares
+********************************************* */
+can_cover(Board, DiceSum) :-
+    valid_combinations(Board, DiceSum, Combos),
+    Combos \= [].
+can_uncover(Board, DiceSum) :-
+    valid_combinations(Board, DiceSum, Combos),
+    Combos \= [].
+cover_squares(Board, SquaresToCover, NewBoard) :-
+    apply_cover(Board, SquaresToCover, NewBoard).
+uncover_squares(Board, SquaresToUncover, NewBoard) :-
+    apply_uncover(Board, SquaresToUncover, NewBoard).
+
+
 
 
 ask_dice_choice(Board, DiceCount) :-
