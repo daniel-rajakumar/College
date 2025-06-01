@@ -1,3 +1,0 @@
-BUG REPORT:
-
-1) Round is not stopping after someone wins, as it should stop

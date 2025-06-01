@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: C__
+# Project: c__
 # Configurations: Debug
 # =============================================================================
 
@@ -41,77 +41,77 @@ include CMakeFiles/rules.ninja
 
 cmake_ninja_workdir = /Users/danielrajakumar/code/College/OPL/C++/cmake-build-debug/
 # =============================================================================
-# Object build statements for EXECUTABLE target C__
+# Object build statements for EXECUTABLE target c__
 
 
 #############################################
-# Order-only phony target for C__
+# Order-only phony target for c__
 
-build cmake_object_order_depends_target_C__: phony || .
+build cmake_object_order_depends_target_c__: phony || .
 
-build CMakeFiles/C__.dir/Source_Files/main.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/main.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/main.cpp.o.d
+build CMakeFiles/c__.dir/main.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/main.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/main.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir
 
-build CMakeFiles/C__.dir/Source_Files/Player.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Player.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Player.cpp.o.d
+build CMakeFiles/c__.dir/Source_Files/Player.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Player.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/Source_Files/Player.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Source_Files/Computer.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Computer.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Computer.cpp.o.d
+build CMakeFiles/c__.dir/Source_Files/Computer.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Computer.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/Source_Files/Computer.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Source_Files/Human.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Human.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Human.cpp.o.d
+build CMakeFiles/c__.dir/Source_Files/Human.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Human.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/Source_Files/Human.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Tournament.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o.d
+build CMakeFiles/c__.dir/Source_Files/Tournament.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Tournament.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/Source_Files/Tournament.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Source_Files/Board.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Board.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Board.cpp.o.d
+build CMakeFiles/c__.dir/Source_Files/Board.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Board.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/Source_Files/Board.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Source_Files/BoardView.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/BoardView.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/BoardView.cpp.o.d
+build CMakeFiles/c__.dir/Source_Files/BoardView.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/BoardView.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/Source_Files/BoardView.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir/Source_Files
 
-build CMakeFiles/C__.dir/Source_Files/Round.cpp.o: CXX_COMPILER__C___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Round.cpp || cmake_object_order_depends_target_C__
-  DEP_FILE = CMakeFiles/C__.dir/Source_Files/Round.cpp.o.d
+build CMakeFiles/c__.dir/Source_Files/Round.cpp.o: CXX_COMPILER__c___unscanned_Debug /Users/danielrajakumar/code/College/OPL/C++/Source$ Files/Round.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles/c__.dir/Source_Files/Round.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/C__.dir
-  OBJECT_FILE_DIR = CMakeFiles/C__.dir/Source_Files
+  OBJECT_DIR = CMakeFiles/c__.dir
+  OBJECT_FILE_DIR = CMakeFiles/c__.dir/Source_Files
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target C__
+# Link build statements for EXECUTABLE target c__
 
 
 #############################################
-# Link the executable C__
+# Link the executable c__
 
-build C__: CXX_EXECUTABLE_LINKER__C___Debug CMakeFiles/C__.dir/Source_Files/main.cpp.o CMakeFiles/C__.dir/Source_Files/Player.cpp.o CMakeFiles/C__.dir/Source_Files/Computer.cpp.o CMakeFiles/C__.dir/Source_Files/Human.cpp.o CMakeFiles/C__.dir/Source_Files/Tournament.cpp.o CMakeFiles/C__.dir/Source_Files/Board.cpp.o CMakeFiles/C__.dir/Source_Files/BoardView.cpp.o CMakeFiles/C__.dir/Source_Files/Round.cpp.o
+build c__: CXX_EXECUTABLE_LINKER__c___Debug CMakeFiles/c__.dir/main.cpp.o CMakeFiles/c__.dir/Source_Files/Player.cpp.o CMakeFiles/c__.dir/Source_Files/Computer.cpp.o CMakeFiles/c__.dir/Source_Files/Human.cpp.o CMakeFiles/c__.dir/Source_Files/Tournament.cpp.o CMakeFiles/c__.dir/Source_Files/Board.cpp.o CMakeFiles/c__.dir/Source_Files/BoardView.cpp.o CMakeFiles/c__.dir/Source_Files/Round.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -mmacosx-version-min=15.1
-  OBJECT_DIR = CMakeFiles/C__.dir
+  OBJECT_DIR = CMakeFiles/c__.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_FILE = C__
-  TARGET_PDB = C__.dbg
+  TARGET_FILE = c__
+  TARGET_PDB = c__.dbg
 
 
 #############################################
@@ -147,7 +147,14 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /Users/danielrajakumar/code/College/OPL/C++/cmake-build-debug
 
-build all: phony C__
+build codegen: phony
+
+# =============================================================================
+
+#############################################
+# Folder: /Users/danielrajakumar/code/College/OPL/C++/cmake-build-debug
+
+build all: phony c__
 
 # =============================================================================
 # Built-in targets

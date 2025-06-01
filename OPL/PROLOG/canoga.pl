@@ -155,7 +155,7 @@ determine_first_player(Player) :-
     throw_dice(2, ComputerSum),
     format('Human rolled ~w. Computer rolled ~w.~n', [HumanSum, ComputerSum]),
     (
-        HumanSum > ComputerSum -> Player = human;
+        HumanSum > ComputerSum -> Player = computer;
         % ComputerSum > HumanSum -> Player = computer;
         ComputerSum > HumanSum -> Player = human;
         
@@ -839,41 +839,32 @@ update_tournament_state(
 
 
 ask_play_again([[CompBoard, CompScore], [HumanBoard, HumanScore], _, _]) :-
-    write("🔁 Play another round? (yes/no): "), read(Resp),
+    write("🎉 You won this round! Do you want to play another round? (yes/no): "), read(Resp),
     (
         Resp = yes ->
-            choose_board_size(Size),   % reuses your existing prompt for 9, 10, or 11
-
-            % 2. Reinitialize both boards (full covered)
+            write("Enter board size (9, 10, or 11): "), read(Size),
             numlist(1, Size, NewHumanBoard),
             numlist(1, Size, NewCompBoard),
-
-            % 3. Decide who goes first this round
             determine_first_player(First),
             Next = First,
-
-            % 4. Clear screen and show fresh UI
             clear_screen,
             display_board(NewHumanBoard, NewCompBoard),
             display_scores(HumanScore, CompScore),
             display_turn_info(Next),
-
-            % 5. Kick off the next round with reset boards
             play_round([[NewCompBoard, CompScore],
                         [NewHumanBoard, HumanScore],
                         First,
                         Next])
         ;
-        GameState = [[_, CScore], [_, HScore], _, _],
-        write("🏁 Tournament Over! Final Scores:"), nl,
-        format("🤖 Computer: ~w~n", [CScore]),
-        format("⭐ Human: ~w~n", [HScore]),
-        (
-            CScore > HScore -> write("🤖 Computer wins the tournament!");
-            HScore > CScore -> write("⭐ Human wins the tournament!");
-            HScore =:= CScore -> write("🤝 It is a draw!")
-        ),
-        nl
+            write("🏁 Tournament Over! Final Scores:"), nl,
+            format("🤖 Computer: ~w~n", [CompScore]),
+            format("⭐ Human: ~w~n", [HumanScore]),
+            (
+                CompScore > HumanScore -> write("🤖 Computer wins the tournament!");
+                HumanScore > CompScore -> write("⭐ Human wins the tournament!");
+                HumanScore =:= CompScore -> write("🤝 It is a draw!")
+            ),
+            nl
     ).
 
 

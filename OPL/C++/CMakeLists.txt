@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.30)
-project(C__)
+cmake_minimum_required(VERSION 3.31)
+project(c__)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(C__ "Source Files/main.cpp"
+add_executable(c__ "main.cpp"
         "Source Files/Player.cpp"
         "Header Files/Player.h"
         "Source Files/Computer.cpp"

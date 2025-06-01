@@ -1,4 +1,0 @@
-Missing Features & Known Bugs
-- Handicap feature
-- Computer unable to find the winning move (by uncovering)
-- The die randomly chooses the human or computer but not with rolling the die.
