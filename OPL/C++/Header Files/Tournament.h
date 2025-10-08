@@ -25,6 +25,8 @@ private:
     static bool advantageApplied; ///< Static variable to track if the advantage has been applied.
     static int advantageSquare; ///< Static variable for the advantage square.
 
+    int promptBoardSize();
+
 public:
     /**
      * @brief Constructs a Tournament object.
@@ -59,7 +61,7 @@ public:
     /**
      * @brief Starts the tournament.
      */
-    static void start();
+     void start();
 
     /**
      * @brief Updates the scores based on the outcome of the round.

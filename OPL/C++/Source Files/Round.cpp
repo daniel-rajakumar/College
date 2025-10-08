@@ -63,9 +63,14 @@ void Round::play() const {
     else
         currentPlayer = &player1;
 
+    // Track who actually started (for NEW games)
+    const Player* firstPlayer = nullptr;
+
     if (isANewGame) {
         cout << "~~~~~~~~[Who Goes First?]~~~~~~~~~" << endl;
-        currentPlayer = &determineFirstPlayer();
+        Player& fp = determineFirstPlayer();
+        firstPlayer = &fp;
+        currentPlayer = &fp;
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
     }
 
@@ -75,7 +80,8 @@ void Round::play() const {
 
         // Check if the round is over after the current player's turn
         if (isRoundOver() && isFirst) {
-            declareWinner(currentPlayer);
+            const bool winnerWasFirst = (firstPlayer != nullptr) && (currentPlayer == firstPlayer);
+            declareWinner(currentPlayer, winnerWasFirst);
             break;
         }
 
@@ -124,9 +130,7 @@ bool Round::isRoundOver() const {
  * 
  * @param currentPlayer Pointer to the current player.
  */
-void Round::declareWinner(const Player* currentPlayer) const {
-    const bool winnerWasFirstPlayer = (currentPlayer == &determineFirstPlayer());
-
+void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirstPlayer) const {
     if (player1.getBoard().allCovered()) {
         cout << "Human wins by covering all their squares!" << endl;
         tournament.updateScores(true, false, false, false,

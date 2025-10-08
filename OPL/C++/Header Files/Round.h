@@ -55,7 +55,7 @@ public:
      * 
      * @param currentPlayer Pointer to the current player.
      */
-    void declareWinner(const Player *currentPlayer) const;
+    void declareWinner(const Player* currentPlayer, bool winnerWasFirstPlayer) const;
 
     /**
      * @brief Determines the first player for the round.

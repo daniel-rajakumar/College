@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ctime>
 #include "Header Files/Tournament.h"
+#include "Header Files/Board.h"
 
 using namespace std;
 
@@ -13,6 +14,9 @@ using namespace std;
  */
 int main() {
     srand(static_cast<unsigned int>(time(nullptr))); // Seed the random number generator
-    Tournament::start(); // Start the tournament
+    Board human(11);        // initial size will be replaced by prompt
+    Board computer(11);
+    Tournament tour(human, computer);
+    tour.start();           // call the *member* start()
     return 0;
 }

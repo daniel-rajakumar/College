@@ -7,6 +7,7 @@
 #include "../Header Files/Computer.h"
 #include "../Header Files/Human.h"
 #include "../Header Files/Round.h"
+#include <limits>
 
 #include <iostream>
 #include <ostream>
@@ -79,16 +80,14 @@ bool Tournament::getIsHumanTurn() const {
 /**
  * @brief Starts the tournament.
  */
-void Tournament::start() {
-    Board humanBoard(11);
-    Board computerBoard(11);
 
+void Tournament::start() {
+    // Reuse the member boards of *this* Tournament
+    // Create players that reference those member boards
     Human human(humanBoard, computerBoard);
     Computer computer(computerBoard, humanBoard);
 
-    Tournament tournament(humanBoard, computerBoard);
-
-    // Ask the user if they want to load a saved game
+    // LOAD?
     char loadChoice;
     cout << "~~~~~~~~~~~~[LOAD?]~~~~~~~~~~~~" << endl;
     do {
@@ -101,46 +100,55 @@ void Tournament::start() {
         cout << "Enter the filename to load: ";
         cin >> filename;
 
-        if (!tournament.loadGame(filename)) {
+        if (!loadGame(filename)) {
             cout << "Starting a new game..." << endl;
+            // choose size for a brand-new game
+            const int boardSize = promptBoardSize();
+            humanBoard    = Board(boardSize);
+            computerBoard = Board(boardSize);
+            isANewGame = true;
+        } else {
+            // successfully loaded a mid-round save
+            isANewGame = false;
         }
     } else {
-        int boardSize;
-        do {
-            cout << "Enter the size of the board (9, 10, or 11): ";
-            cin >> boardSize;
-        } while (boardSize != 9 && boardSize != 10 && boardSize != 11);
-
-        humanBoard = Board(boardSize);
+        const int boardSize = promptBoardSize();  // ask size for new game
+        humanBoard    = Board(boardSize);
         computerBoard = Board(boardSize);
+        isANewGame = true;
     }
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 
-    // Start the game loop
+    // ===== Game loop (ask size again for each *new* round) =====
     char playAgain;
     do {
-        Round round(human, computer, tournament, tournament.getIsANewGame());
+        Round round(human, computer, *this, isANewGame);  // <- pass *this*, not a second Tournament
         round.play();
 
-        // Update scores based on the round result
+        // Update scores (keeping your current approach)
         if (human.getBoard().allCovered()) {
-            tournament.updateScores(true, false, false, false, human.getBoard().getCoveredSum(), computer.getBoard().getUncoveredSum());
+            updateScores(true, false, false, false,
+                         human.getBoard().getCoveredSum(),
+                         computer.getBoard().getUncoveredSum());
         } else if (computer.getBoard().allUncovered()) {
-            tournament.updateScores(false, true, false, false, human.getBoard().getCoveredSum(), computer.getBoard().getUncoveredSum());
+            updateScores(false, true, false, false,
+                         human.getBoard().getCoveredSum(),
+                         computer.getBoard().getUncoveredSum());
         } else if (computer.getBoard().allCovered()) {
-            tournament.updateScores(false, false, true, false, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
+            updateScores(false, false, true, false,
+                         human.getBoard().getUncoveredSum(),
+                         computer.getBoard().getCoveredSum());
         } else if (human.getBoard().allUncovered()) {
-            tournament.updateScores(false, false, false, true, human.getBoard().getUncoveredSum(), computer.getBoard().getCoveredSum());
+            updateScores(false, false, false, true,
+                         human.getBoard().getUncoveredSum(),
+                         computer.getBoard().getCoveredSum());
         }
 
-        cout << endl;
-        cout << "~~~~~~~~~[SCORE BOARD]~~~~~~~~~~" << endl;
-        cout << "Your Score: " << tournament.tournamentScoreHuman << endl;
-        cout << "Computer's Score: " << tournament.tournamentScoreComputer << endl;
-        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-        cout << endl;
+        cout << "\n~~~~~~~~~[SCORE BOARD]~~~~~~~~~~\n";
+        cout << "Your Score: " << tournamentScoreHuman << "\n";
+        cout << "Computer's Score: " << tournamentScoreComputer << "\n";
+        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n";
 
-        // Ask the human player if they want to play another round
         do {
             cout << "Do you want to play another round? (y/n): ";
             cin >> playAgain;
@@ -148,12 +156,21 @@ void Tournament::start() {
 
         if (playAgain == 'y' || playAgain == 'Y') {
             clearScreen();
-            tournament.resetGame();
+
+            // Ask for size at the start of EVERY new round
+            const int boardSize = promptBoardSize();
+            humanBoard    = Board(boardSize);
+            computerBoard = Board(boardSize);
+
+            // Reset per-round flags
+            isHumanTurn = true;
+            isANewGame  = true;
+
+            cout << "New round starting on board size " << boardSize << "...\n";
         }
     } while (playAgain == 'y' || playAgain == 'Y');
 
-    // Declare the tournament winner
-    tournament.declareTournamentWinner();
+    declareTournamentWinner();
 }
 
 /**
@@ -361,4 +378,18 @@ void Tournament::applyHandicap(const bool winnerWasFirstPlayer, const int winnin
     }
 
     advantageApplied = true;
+}
+
+
+// Tournament.cpp
+int Tournament::promptBoardSize() {
+    int n;
+    while (true) {
+        cout << "Enter the size of the board (9, 10, or 11): ";
+        if (cin >> n && (n == 9 || n == 10 || n == 11)) return n;
+
+        cout << "Invalid size. Please enter 9, 10, or 11.\n";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
 }
