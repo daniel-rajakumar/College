@@ -272,50 +272,56 @@ bool Tournament::loadGame(const string& filename) {
 
         while (getline(file, line)) {
             if (line.find("Computer:") != string::npos) {
+                // ----- read "   Squares: ..." -----
                 getline(file, line);
-                stringstream ss(line.substr(11));
-                int square;
-                boardSize = 0;
-                while (ss >> square) {
-                    boardSize++;
+                string squares = line.substr(12);          // FIX: was 11; "   Squares: " is 12 chars
+
+                // Pass 1: count entries to infer board size
+                {
+                    stringstream ss(squares);              // fresh stream bound to text
+                    int v;
+                    boardSize = 0;
+                    while (ss >> v) ++boardSize;
                 }
 
-                humanBoard = Board(boardSize);
+                // Rebuild boards to that size
+                humanBoard    = Board(boardSize);
                 computerBoard = Board(boardSize);
 
-                ss.clear();
-                ss.seekg(0);
-                for (int i = 1; i <= boardSize; ++i) {
-                    ss >> square;
-                    if (square == 0) {
-                        computerBoard.coverSquare(i);
-                    } else {
-                        computerBoard.uncoverSquare(i);
+                // Pass 2: set covered/uncovered state
+                {
+                    stringstream ss(squares);              // rebuild with the same text
+                    for (int i = 1; i <= boardSize; ++i) {
+                        int v; ss >> v;
+                        if (v == 0) computerBoard.coverSquare(i);
+                        else        computerBoard.uncoverSquare(i);
                     }
                 }
 
+                // ----- read "   Score: ..." -----
                 getline(file, line);
-                tournamentScoreComputer = stoi(line.substr(10));
-            } else if (line.find("Human:") != string::npos) {
+                tournamentScoreComputer = stoi(line.substr(10)); // "   Score: " is 10 chars
+            }
 
+            else if (line.find("Human:") != string::npos) {
                 getline(file, line);
-                stringstream ss(line.substr(11));
-                for (int i = 1; i <= boardSize; ++i) {
-                    int square;
-                    ss >> square;
-                    if (square == 0) {
-                        humanBoard.coverSquare(i);
-                    } else {
-                        humanBoard.uncoverSquare(i);
+                string squares = line.substr(12);          // FIX: was 11
+
+                {
+                    stringstream ss(squares);
+                    for (int i = 1; i <= boardSize; ++i) {
+                        int v; ss >> v;
+                        if (v == 0) humanBoard.coverSquare(i);
+                        else        humanBoard.uncoverSquare(i);
                     }
                 }
 
                 getline(file, line);
                 tournamentScoreHuman = stoi(line.substr(10));
-            } else if (line.find("First Turn:") != string::npos) {
+            } else if (line.rfind("First Turn:", 0) == 0) {
+                // ignore on load; only "Next Turn" matters to resume play
+            } else if (line.rfind("Next Turn:", 0) == 0) {
                 isHumanTurn = (line.find("Human") != string::npos);
-            } else if (line.find("Next Turn:") != string::npos) {
-                isHumanTurn = !(line.find("Human") != string::npos);
             }
         }
         file.close();
