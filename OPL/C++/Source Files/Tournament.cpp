@@ -125,21 +125,13 @@ void Tournament::start() {
         Round round(human, computer, *this, isANewGame);  // <- pass *this*, not a second Tournament
         round.play();
 
-        // Update scores (keeping your current approach)
+        // Tournament::start(), after round.play()
         if (human.getBoard().allCovered()) {
             updateScores(true, false, false, false,
                          human.getBoard().getCoveredSum(),
                          computer.getBoard().getUncoveredSum());
-        } else if (computer.getBoard().allUncovered()) {
-            updateScores(false, true, false, false,
-                         human.getBoard().getCoveredSum(),
-                         computer.getBoard().getUncoveredSum());
         } else if (computer.getBoard().allCovered()) {
             updateScores(false, false, true, false,
-                         human.getBoard().getUncoveredSum(),
-                         computer.getBoard().getCoveredSum());
-        } else if (human.getBoard().allUncovered()) {
-            updateScores(false, false, false, true,
                          human.getBoard().getUncoveredSum(),
                          computer.getBoard().getCoveredSum());
         }
@@ -305,6 +297,7 @@ bool Tournament::loadGame(const string& filename) {
                 getline(file, line);
                 tournamentScoreComputer = stoi(line.substr(10));
             } else if (line.find("Human:") != string::npos) {
+
                 getline(file, line);
                 stringstream ss(line.substr(11));
                 for (int i = 1; i <= boardSize; ++i) {
