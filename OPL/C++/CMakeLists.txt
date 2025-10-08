@@ -17,4 +17,8 @@ add_executable(c__ "main.cpp"
         "Source Files/BoardView.cpp"
         "Header Files/BoardView.h"
         "Source Files/Round.cpp"
-        "Header Files/Round.h")
+        "Header Files/Round.h"
+        "Header Files/Tournament.h"
+        "Source Files/Tournament.cpp"
+        "Header Files/Human.h"
+        "Source Files/Human.cpp")
