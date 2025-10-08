@@ -22,12 +22,34 @@ Computer::Computer(Board& b, Board& humanBoard)
  * 
  * @return True if the turn was successful, false otherwise.
  */
-bool Computer::takeTurn() {
-    // Roll dice
-    const int sum = rollDie();
-    cout << "Computer rolled: " << sum << endl;
+#include "../Header Files/Computer.h"
+#include <iostream>
+#include <cstdlib>            // <-- add this for std::rand
+#include "../Header Files/Tournament.h"
 
-    const bool canCover = !board.findValidCombinations(sum, true).empty();
+using namespace std;
+
+bool Computer::takeTurn() {
+    // Decide dice count
+    const bool oneDieAllowed = board.canThrowOneDie();
+    const int diceCount = oneDieAllowed ? 1 : 2;
+
+    // Roll
+    const int d1  = (std::rand() % 6) + 1;
+    const int d2  = (diceCount == 2) ? ((std::rand() % 6) + 1) : 0;
+    const int sum = d1 + d2;
+
+    cout << "Computer chooses to roll " << diceCount << " die"
+         << (diceCount == 1 ? "" : "s") << ".\n";
+    if (diceCount == 2) {
+        cout << "Computer rolled: " << d1 << " + " << d2 << " = " << sum << endl;
+    } else {
+        cout << "Computer rolled: " << d1 << " = " << sum << endl;
+        cout << "(1-die option available because 7.." << board.getSize()
+             << " are covered.)" << endl;
+    }
+
+    const bool canCover   = !board.findValidCombinations(sum, true ).empty();
     const bool canUncover = !humanBoard.findValidCombinations(sum, false).empty();
 
     if (!canCover && !canUncover) {
@@ -47,8 +69,11 @@ bool Computer::takeTurn() {
     boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
     humanBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
+
     return false;
 }
+
+
 
 /**
  * @brief Determines if the computer should cover squares based on the sum.

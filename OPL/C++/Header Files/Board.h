@@ -102,6 +102,8 @@ public:
      * @return True if the combination is valid, false otherwise.
      */
     bool isValidCombination(const set<int> &combination, bool forCovering) const;
+
+    bool canThrowOneDie() const;
 };
 
 #endif //BOARD_H

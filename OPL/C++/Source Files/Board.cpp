@@ -145,3 +145,11 @@ bool Board::isValidCombination(const set<int>& combination, bool forCovering) co
     }
     return true;
 }
+
+bool Board::canThrowOneDie() const {
+    // You may roll 1 die only if 7..size are already covered
+    for (int i = 7; i <= size; ++i) {
+        if (!isSquareCovered(i)) return false;
+    }
+    return true;
+}
