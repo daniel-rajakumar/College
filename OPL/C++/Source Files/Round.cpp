@@ -79,6 +79,15 @@ void Round::play() const {
         bool endedTurn = currentPlayer->takeTurn();  // true = no move available (forced pass), false = normal turn
         (void)endedTurn; // we don't use this to end the round
 
+        // NEW: if the advantaged side just played, clear their one-turn protection
+        if (Tournament::getAdvantageApplied()) {
+            if (Tournament::getAdvantageOwner() == Tournament::Side::Human && currentPlayer->getIsHuman()) {
+                Tournament::clearAdvantageProtectionForHuman();
+            } else if (Tournament::getAdvantageOwner() == Tournament::Side::Computer && !currentPlayer->getIsHuman()) {
+                Tournament::clearAdvantageProtectionForComputer();
+            }
+        }
+
         // check only the TRUE round end condition
         if (player1.getBoard().allCovered() || player2.getBoard().allCovered()) {
             bool winnerWasFirst = (firstPlayer != nullptr) && (currentPlayer == firstPlayer);
@@ -111,15 +120,7 @@ void Round::play() const {
  * @return True if the round is over, false otherwise.
  */
 bool Round::isRoundOver() const {
-    if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
-        return true;
-    }
-
-    if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
-        return true;
-    }
-
-    return false;
+    return player1.getBoard().allCovered() || player2.getBoard().allCovered();
 }
 
 /**

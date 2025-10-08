@@ -134,6 +134,14 @@ void Human::uncoverSquares(const int sum) const {
         return;
     }
 
+    if (Tournament::getAdvantageApplied() && Tournament::isComputerAdvantageProtected()) {
+        for (auto it = validCombinations.begin(); it != validCombinations.end(); ) {
+            if (it->contains(Tournament::getAdvantageSquare())) it = validCombinations.erase(it);
+            else ++it;
+        }
+    }
+
+
     // Display valid combinations
     cout << "Valid combinations to uncover:" << endl;
     int index = 1;

@@ -135,13 +135,10 @@ void Computer::uncoverSquares(const int sum) const {
     }
 
     // Remove combinations that include the advantage square if the advantage has been applied
-    if (Tournament::getAdvantageApplied()) {
+    if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
         for (auto it = validCombinations.begin(); it != validCombinations.end(); ) {
-            if (it->contains(Tournament::getAdvantageSquare())) {
-                it = validCombinations.erase(it); // Remove the combination
-            } else {
-                ++it;
-            }
+            if (it->contains(Tournament::getAdvantageSquare())) it = validCombinations.erase(it);
+            else ++it;
         }
     }
 

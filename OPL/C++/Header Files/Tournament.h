@@ -27,6 +27,8 @@ private:
 
     int promptBoardSize();
 
+
+
 public:
     /**
      * @brief Constructs a Tournament object.
@@ -121,6 +123,26 @@ public:
      * @param winningScore The winning score.
      */
     void applyHandicap(bool winnerWasFirstPlayer, int winningScore) const;
+
+    // Who should get the advantage NEXT round (queued at round end)
+    enum class Side { None, Human, Computer };
+    void applyAdvantageToNewRound();                    // call right after rebuilding boards for a new round
+    static bool isHumanAdvantageProtected();            // for Human/Computer filtering
+    static bool isComputerAdvantageProtected();
+    static Side getAdvantageOwner();
+    static void clearAdvantageProtectionForHuman();     // called after advantaged Human's first turn
+    static void clearAdvantageProtectionForComputer();  // called after advantaged Computer's first turn
+
+
+
+    int  pendingAdvantageSquare = 0;
+    Side pendingAdvantageFor    = Side::None;
+
+    // Current-round protection flags (block opponent from uncovering for ONE turn)
+    static bool protectHumanAdvantage;     // protects Human's advantage square
+    static bool protectComputerAdvantage;  // protects Computer's advantage square
+    static Side advantageOwner;            // who currently owns the advantage (this round)
+
 };
 
 #endif //TOURNAMENT_H

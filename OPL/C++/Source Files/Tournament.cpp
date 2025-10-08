@@ -16,6 +16,10 @@
 
 using namespace std;
 
+bool Tournament::protectHumanAdvantage   = false;
+bool Tournament::protectComputerAdvantage= false;
+Tournament::Side Tournament::advantageOwner = Tournament::Side::None;
+
 /**
  * @brief Constructs a Tournament object.
  * 
@@ -106,6 +110,9 @@ void Tournament::start() {
             const int boardSize = promptBoardSize();
             humanBoard    = Board(boardSize);
             computerBoard = Board(boardSize);
+
+            applyAdvantageToNewRound();
+
             isANewGame = true;
         } else {
             // successfully loaded a mid-round save
@@ -115,6 +122,9 @@ void Tournament::start() {
         const int boardSize = promptBoardSize();  // ask size for new game
         humanBoard    = Board(boardSize);
         computerBoard = Board(boardSize);
+
+        applyAdvantageToNewRound();
+
         isANewGame = true;
     }
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
@@ -153,6 +163,8 @@ void Tournament::start() {
             const int boardSize = promptBoardSize();
             humanBoard    = Board(boardSize);
             computerBoard = Board(boardSize);
+
+            applyAdvantageToNewRound();
 
             // Reset per-round flags
             isHumanTurn = true;
@@ -356,29 +368,29 @@ int Tournament::calculateAdvantageSquare(int winningScore) {
  * @param winningScore The winning score.
  */
 void Tournament::applyHandicap(const bool winnerWasFirstPlayer, const int winningScore) const {
+    // compute the square to award next round
     advantageSquare = calculateAdvantageSquare(winningScore);
 
+    // decide who gets it NEXT round (keeps your current logic basis)
+    Side forWhom;
     if (winnerWasFirstPlayer) {
-        if (isHumanTurn) {
-            cout << "Computer gets the advantage. Square " << advantageSquare << " on the computer's board will be covered." << endl;
-            computerBoard.coverSquare(advantageSquare); // Cover the square on the computer's board
-        } else {
-            cout << "Human gets the advantage. Square " << advantageSquare << " on the human's board will be covered." << endl;
-            humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
-        }
+        // winner started first -> the other side gets advantage
+        forWhom = isHumanTurn ? Side::Computer : Side::Human;
     } else {
-        if (isHumanTurn) {
-            cout << "Human keeps the advantage. Square " << advantageSquare << " on the human's board will be covered." << endl;
-            humanBoard.coverSquare(advantageSquare); // Cover the square on the human's board
-        } else {
-            cout << "Computer keeps the advantage. Square " << advantageSquare << " on the computer's board will be covered." << endl;
-            computerBoard.coverSquare(advantageSquare); // Cover the square on the computer's board
-        }
+        // winner did not start first -> winner keeps it
+        forWhom = isHumanTurn ? Side::Human : Side::Computer;
     }
 
-    advantageApplied = true;
-}
+    // queue for next round
+    auto* self = const_cast<Tournament*>(this);
+    self->pendingAdvantageSquare = advantageSquare;
+    self->pendingAdvantageFor    = forWhom;
 
+    // do NOT cover now; do NOT set advantageApplied now
+    cout << "[Advantage queued for next round] Square "
+         << advantageSquare << " -> "
+         << (forWhom == Side::Human ? "Human" : "Computer") << endl;
+}
 
 // Tournament.cpp
 int Tournament::promptBoardSize() {
@@ -390,5 +402,52 @@ int Tournament::promptBoardSize() {
         cout << "Invalid size. Please enter 9, 10, or 11.\n";
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+}
+
+// Apply any queued advantage to the freshly rebuilt boards and enable one-turn protection
+void Tournament::applyAdvantageToNewRound() {
+    // reset current-round flags
+    advantageApplied          = false;
+    advantageOwner            = Side::None;
+    protectHumanAdvantage     = false;
+    protectComputerAdvantage  = false;
+
+    if (pendingAdvantageFor == Side::None || pendingAdvantageSquare <= 0) return;
+
+    if (pendingAdvantageFor == Side::Human) {
+        humanBoard.coverSquare(pendingAdvantageSquare);
+        protectHumanAdvantage = true;     // opponent (Computer) cannot uncover this square until Human takes one turn
+        advantageOwner = Side::Human;
+    } else { // Computer
+        computerBoard.coverSquare(pendingAdvantageSquare);
+        protectComputerAdvantage = true;  // opponent (Human) cannot uncover this square until Computer takes one turn
+        advantageOwner = Side::Computer;
+    }
+
+    advantageApplied = true;              // for your existing UI display
+    // clear "pending" now that it's applied
+    pendingAdvantageSquare = 0;
+    pendingAdvantageFor    = Side::None;
+}
+
+// Static helpers used by Human/Computer during uncover filtering
+bool Tournament::isHumanAdvantageProtected()    { return protectHumanAdvantage; }
+bool Tournament::isComputerAdvantageProtected() { return protectComputerAdvantage; }
+Tournament::Side Tournament::getAdvantageOwner(){ return advantageOwner; }
+
+// Clear protection after the advantaged side completes their FIRST turn this round
+void Tournament::clearAdvantageProtectionForHuman() {
+    protectHumanAdvantage = false;
+    if (!protectComputerAdvantage) {
+        advantageApplied = false;
+        advantageOwner   = Side::None;
+    }
+}
+void Tournament::clearAdvantageProtectionForComputer() {
+    protectComputerAdvantage = false;
+    if (!protectHumanAdvantage) {
+        advantageApplied = false;
+        advantageOwner   = Side::None;
     }
 }
