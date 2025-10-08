@@ -6,8 +6,11 @@
 #include <iostream>
 #include "../Header Files/Computer.h"
 #include "../Header Files/Tournament.h"
+#include "../Header Files/TextUI.h"
+
 
 using namespace std;
+using namespace ui;
 
 /**
  * @brief Constructs a Human object.
@@ -25,20 +28,25 @@ Human::Human(Board& b, Board& computerBoard)
  */
 bool Human::takeTurn() {
     // Roll dice
-    const int die = rollDie();
-    cout << "You rolled " << die << endl;
+    section("Human Turn");
 
-    const bool canCover = !board.findValidCombinations(die, true).empty();
+    // Roll dice (your rollDie() returns the total)
+    const int sum = rollDie();
+    std::cout << "You rolled: " << sum << "\n";
 
-    if (bool canUncover = !computerBoard.findValidCombinations(die, false).empty(); !canCover && !canUncover) {
+
+    const bool canCover = !board.findValidCombinations(sum, true).empty();
+
+    if (bool canUncover = !computerBoard.findValidCombinations(sum, false).empty(); !canCover && !canUncover) {
         cout << "You cannot cover any of your squares or uncover any of the opponent's squares. Your turn ends." << endl;
         return true;
     }
 
     // Display boards with the advantage square highlighted
-    cout << "\n\nCurrent Board State:" << endl;
+    banner("Current Board State");
     boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
     computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+
 
     // Ask if the player wants help from the computer
     char helpChoice;
@@ -50,25 +58,30 @@ bool Human::takeTurn() {
     if (helpChoice == 'y' || helpChoice == 'Y') {
         // Call the computer's provideHelp method
         const Computer computer(computerBoard, board);
-        computer.provideHelp(die, board, computerBoard);
+        computer.provideHelp(sum, board, computerBoard);
         cout << endl;
     }
 
     // Choose to cover or uncover squares
-    cout << "Do you want to cover your squares or uncover the opponent's squares? (c/u): ";
+    // Choose to cover or uncover squares
     char choice;
-    cin >> choice;
+    do {
+        std::cout << "Cover your squares or uncover the opponent's squares? (c/u): ";
+        std::cin >> choice;
+        choice = std::tolower(choice);
+    } while (choice != 'c' && choice != 'u');
 
     if (choice == 'c') {
-        coverSquares(die);
-    } else if (choice == 'u') {
-        uncoverSquares(die);
+        coverSquares(sum);
+    } else {
+        uncoverSquares(sum);
     }
 
-    cout << "~~~~~~~~~~~[BOARD]~~~~~~~~~" << endl;
+    banner("Board After Your Move");
     boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
     computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
+    std::cout << "\n";
+
     return false;
 }
 
@@ -78,47 +91,49 @@ bool Human::takeTurn() {
  * @param sum The sum of the dice.
  */
 void Human::coverSquares(const int sum) const {
-    set<set<int>> validCombinations = board.findValidCombinations(sum, true);
+    using namespace ui;
+
+    std::set<std::set<int>> validCombinations = board.findValidCombinations(sum, true);
+    section("Valid cover options");
 
     if (validCombinations.empty()) {
-        cout << "No valid moves to cover squares. Turn ends." << endl;
+        std::cout << "  none\n";
+        std::cout << "No valid moves to cover squares. Turn ends.\n";
         return;
     }
 
-    // Display valid combinations
-    cout << "Valid combinations to cover:" << endl;
-    int index = 1;
-    for (const set<int>& combination : validCombinations) {
-        cout << index << ": ";
-        for (const int square : combination) {
-            cout << square << " ";
+    // print options
+    auto printCombos = [](const std::set<std::set<int>>& combos) {
+        int idx = 1;
+        for (const auto& c : combos) {
+            std::cout << "  [" << idx++ << "] ";
+            for (int v : c) std::cout << v << " ";
+            std::cout << "\n";
         }
-        cout << endl;
-        index++;
+    };
+    printCombos(validCombinations);
+
+    // choose a valid index (re-prompt until valid)
+    int choice = 0;
+    const int maxIdx = static_cast<int>(validCombinations.size());
+    while (true) {
+        std::cout << "Enter the number of the combination you want to use (1-" << maxIdx << "): ";
+        if (std::cin >> choice && choice >= 1 && choice <= maxIdx) break;
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid choice. Try again.\n";
     }
 
-    int choice;
-    cout << "Enter the number of the combination you want to use: ";
-    cin >> choice;
-
-    // Validate the choice
-    if (choice < 1 || choice > validCombinations.size()) {
-        cout << "Invalid choice. Turn ends." << endl;
-        return;
-    }
-
+    // apply selection
     auto it = validCombinations.begin();
-    advance(it, choice - 1);
-    const set<int> selectedCombination = *it;
+    std::advance(it, choice - 1);
+    const std::set<int> selected = *it;
 
-    for (const int square : selectedCombination) {
-        board.coverSquare(square);
-    }
-    cout << "Covered squares: ";
-    for (const int square : selectedCombination) {
-        cout << square << " ";
-    }
-    cout << endl;
+    for (int v : selected) board.coverSquare(v);
+
+    std::cout << c(GREEN) << "Covered: " << c(RESET);
+    for (int v : selected) std::cout << v << " ";
+    std::cout << "\n";
 }
 
 /**

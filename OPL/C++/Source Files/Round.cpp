@@ -7,8 +7,12 @@
 #include <stdlib.h>
 #include "../Header Files/Player.h"
 #include "../Header Files/Tournament.h"
+#include "../Header Files/BoardView.h"
+#include "../Header Files/TextUI.h"
+
 
 using namespace std;
+using namespace ui;
 
 /**
  * @brief Constructs a Round object.
@@ -73,6 +77,15 @@ void Round::play() const {
         currentPlayer = &fp;
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n";
     }
+
+    section("Starting Board State");
+
+    BoardView humanView(player1.getBoard(), "Human");
+    BoardView compView (player2.getBoard(), "Computer");
+
+    humanView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+    compView.display (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+    std::cout << "\n";
 
     while (true) {
         // one player takes a turn

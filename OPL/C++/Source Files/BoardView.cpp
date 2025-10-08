@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 #include "../Header Files/BoardView.h"
+#include "../Header Files/TextUI.h"
+
 using namespace std;
 
 /**
@@ -37,19 +39,20 @@ void BoardView::display() const {
  * @param highlightAdvantageSquare Whether to highlight the advantage square.
  * @param advantageSquare The square to highlight if highlighting is enabled.
  */
-void BoardView::display(bool highlightAdvantageSquare, int advantageSquare) const {
-    cout << playerName << "'s Board:" << endl;
+void BoardView::display(const bool advantageApplied, const int advantageSquare) const {
+    std::cout << playerName << ": [ ";
+
     for (int i = 1; i <= board.getSize(); ++i) {
-        if (board.isSquareCovered(i)) {
-            if (highlightAdvantageSquare && i == advantageSquare) {
-                cout << "[" << i << "]";
-            } else {
-                cout << "_";
-            }
-        } else {
-            cout << i;
-        }
-        cout << " ";
+        const bool covered = board.isSquareCovered(i);
+
+        // value to print
+        if (covered) std::cout << "_";
+        else         std::cout << i;
+
+        // (optional) mark advantage square; remove this block if you don't want a mark
+        if (advantageApplied && i == advantageSquare) std::cout << "*";
+
+        if (i < board.getSize()) std::cout << ", ";
+        else                     std::cout << " ]\n";
     }
-    cout << endl;
 }

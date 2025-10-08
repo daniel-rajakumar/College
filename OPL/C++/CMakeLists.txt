@@ -21,4 +21,5 @@ add_executable(c__ "main.cpp"
         "Header Files/Tournament.h"
         "Source Files/Tournament.cpp"
         "Header Files/Human.h"
-        "Source Files/Human.cpp")
+        "Source Files/Human.cpp"
+        "Header Files/TextUI.h")
