@@ -1,3 +1,0 @@
-/Users/danielrajakumar/code/College/OPL/C++/cmake-build-debug/CMakeFiles/c__.dir
-/Users/danielrajakumar/code/College/OPL/C++/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/danielrajakumar/code/College/OPL/C++/cmake-build-debug/CMakeFiles/rebuild_cache.dir
