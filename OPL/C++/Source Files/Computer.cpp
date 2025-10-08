@@ -30,9 +30,30 @@ Computer::Computer(Board& b, Board& humanBoard)
 using namespace std;
 
 bool Computer::takeTurn() {
-    // Decide dice count
+    // Decide dice count (smarter)
     const bool oneDieAllowed = board.canThrowOneDie();
-    const int diceCount = oneDieAllowed ? 1 : 2;
+
+    // heuristic helpers
+    auto highestUncovered = [&](const Board& b) {
+        for (int v = b.getSize(); v >= 1; --v)
+            if (!b.isSquareCovered(v)) return v;
+        return 0;
+    };
+    auto remainingCount = [&](const Board& b) {
+        int c = 0;
+        for (int v = 1; v <= b.getSize(); ++v)
+            if (!b.isSquareCovered(v)) ++c;
+        return c;
+    };
+
+    // policy:
+    // - if 1-die allowed AND (highest target ≤ 6 OR only a few remain), prefer 1 die; else 2 dice
+    int diceCount = 2;
+    if (oneDieAllowed) {
+        if (highestUncovered(board) <= 6 || remainingCount(board) <= 3)
+            diceCount = 1;
+    }
+
 
     // Roll
     const int d1  = (std::rand() % 6) + 1;
@@ -172,55 +193,75 @@ void Computer::uncoverSquares(const int sum) const {
  * @param computerBoard Reference to the computer's board.
  */
 void Computer::provideHelp(const int diceSum, const Board& humanBoard, const Board& computerBoard) const {
-    cout << "Computer's suggestion:" << endl;
-
-    // Decide whether to cover or uncover
-    if (shouldCover(diceSum)) {
-        cout << "You should cover your squares." << endl;
-
-        // Find valid combinations to cover
-
-        if (const set<set<int>> coverCombinations = humanBoard.findValidCombinations(diceSum, true); coverCombinations.empty()) {
-            cout << "No valid moves to cover squares." << endl;
-        } else {
-            // Suggest the combination with the most squares
-            set<int> bestCombination;
-            int maxSquares = 0;
-            for (const set<int>& combination : coverCombinations) {
-                if (combination.size() > maxSquares) {
-                    bestCombination = combination;
-                    maxSquares = combination.size();
-                }
-            }
-
-            cout << "You can cover the following squares: ";
-            for (const int square : bestCombination) {
-                cout << square << " ";
-            }
-            cout << endl;
+    auto printCombos = [](const std::set<std::set<int>>& combos) {
+        int idx = 1;
+        for (const auto& c : combos) {
+            std::cout << "  [" << idx++ << "] ";
+            for (int v : c) std::cout << v << " ";
+            std::cout << "\n";
         }
-    } else {
-        cout << "You should uncover the opponent's squares." << endl;
+    };
 
-        // Find valid combinations to uncover
-        if (const set<set<int>> uncoverCombinations = computerBoard.findValidCombinations(diceSum, false); uncoverCombinations.empty()) {
-            cout << "No valid moves to uncover squares." << endl;
-        } else {
-            // Suggest the combination with the most squares
-            set<int> bestCombination;
-            int maxSquares = 0;
-            for (const set<int>& combination : uncoverCombinations) {
-                if (combination.size() > maxSquares) {
-                    bestCombination = combination;
-                    maxSquares = combination.size();
-                }
-            }
+    // compute all options
+    const auto coverCombos   = humanBoard.findValidCombinations(diceSum, /*cover=*/true);
+    const auto uncoverCombos = computerBoard.findValidCombinations(diceSum, /*cover=*/false);
 
-            cout << "You can uncover the following squares: ";
-            for (const int square : bestCombination) {
-                cout << square << " ";
-            }
-            cout << endl;
-        }
+    std::cout << "=== Help === (sum = " << diceSum << ")\n";
+
+    if (coverCombos.empty() && uncoverCombos.empty()) {
+        std::cout << "No legal moves. You must pass.\n";
+        return;
     }
+
+    // show all options
+    if (!coverCombos.empty()) {
+        std::cout << "Cover options (your board):\n";
+        printCombos(coverCombos);
+    } else {
+        std::cout << "Cover options (your board): none\n";
+    }
+
+    if (!uncoverCombos.empty()) {
+        std::cout << "Uncover options (opponent board):\n";
+        printCombos(uncoverCombos);
+    } else {
+        std::cout << "Uncover options (opponent board): none\n";
+    }
+
+    // choose recommendation:
+    auto best = [](const std::set<std::set<int>>& combos) {
+        // primary: most squares; secondary: highest total
+        std::set<int> bestC;
+        int bestCount = -1, bestSum = -1;
+        for (const auto& c : combos) {
+            int cnt = (int)c.size();
+            int sum = 0; for (int v : c) sum += v;
+            if (cnt > bestCount || (cnt == bestCount && sum > bestSum)) {
+                bestC = c; bestCount = cnt; bestSum = sum;
+            }
+        }
+        return bestC;
+    };
+
+    // strategy: prefer covering if possible; if not, uncover; explain why
+    if (!coverCombos.empty()) {
+        const auto rec = best(coverCombos);
+        std::cout << "\nRecommended: COVER -> ";
+        int sum = 0; for (int v : rec) { std::cout << v << " "; sum += v; }
+        std::cout << "\nReason: maximizes number of squares covered (tie-break by higher values) "
+                     "to reduce your uncovered total and pressure opponent.\n";
+    } else {
+        const auto rec = best(uncoverCombos);
+        std::cout << "\nRecommended: UNCOVER -> ";
+        int sum = 0; for (int v : rec) { std::cout << v << " "; sum += v; }
+        std::cout << "\nReason: maximizes number of squares removed from opponent (tie-break by higher values) "
+                     "to raise their uncovered total.\n";
+    }
+
+    // mention advantage protection when applicable
+    if (Tournament::getAdvantageApplied()) {
+        std::cout << "\nNote: Advantage square " << Tournament::getAdvantageSquare()
+                  << " is temporarily protected for one turn for the advantaged player.\n";
+    }
+    std::cout << "=============\n";
 }
