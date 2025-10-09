@@ -79,20 +79,19 @@ void Round::play() const {
     }
 
     section("Starting Board State");
-
     BoardView humanView(player1.getBoard(), "Human");
     BoardView compView (player2.getBoard(), "Computer");
 
-    humanView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-    compView.display (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+    compView.display (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare()); // Computer on top
+    humanView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare()); // Human below
     std::cout << "\n";
 
-    while (true) {
-        // one player takes a turn
-        bool endedTurn = currentPlayer->takeTurn();  // true = no move available (forced pass), false = normal turn
-        (void)endedTurn; // we don't use this to end the round
 
-        // NEW: if the advantaged side just played, clear their one-turn protection
+    while (true) {
+        // Current player plays their whole turn (keeps rolling until stuck)
+        currentPlayer->takeTurn();      // returns only when the player CANNOT move anymore
+
+        // Clear one-turn advantage protection after that side’s turn completes
         if (Tournament::getAdvantageApplied()) {
             if (Tournament::getAdvantageOwner() == Tournament::Side::Human && currentPlayer->getIsHuman()) {
                 Tournament::clearAdvantageProtectionForHuman();
@@ -101,17 +100,17 @@ void Round::play() const {
             }
         }
 
-        // check only the TRUE round end condition
+        // Round ends if someone covered all
         if (player1.getBoard().allCovered() || player2.getBoard().allCovered()) {
             bool winnerWasFirst = (firstPlayer != nullptr) && (currentPlayer == firstPlayer);
             declareWinner(currentPlayer, winnerWasFirst);
             break;
         }
 
-        // pass play to the other side regardless of whether they moved or were forced to pass
+        // Now and only now pass play to the other side
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
 
-        // optional: only offer save when it's the human's turn
+        // Offer save only when play actually passes to the human
         if (currentPlayer->getIsHuman()) {
             char saveChoice;
             cout << "Do you want to save the game? (y/n): ";
@@ -125,6 +124,8 @@ void Round::play() const {
             }
         }
     }
+
+
 }
 
 /**

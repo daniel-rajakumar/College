@@ -26,64 +26,119 @@ Human::Human(Board& b, Board& computerBoard)
  * 
  * @return True if the turn was successful, false otherwise.
  */
+
 bool Human::takeTurn() {
-    // Roll dice
-    section("Human Turn");
+    using namespace ui;
+    using std::cout; using std::cin;
 
-    // Roll dice (your rollDie() returns the total)
-    const int sum = rollDie();
-    std::cout << "You rolled: " << sum << "\n";
+    // small input helpers
+    auto readYN = [&]()->char{
+        char c;
+        while (true) {
+            if (cin >> c) {
+                c = std::tolower(c);
+                if (c=='y' || c=='n') return c;
+            }
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "Please enter y or n: ";
+        }
+    };
+    auto readDie = [&](const char* prompt)->int{
+        int v;
+        while (true) {
+            cout << prompt;
+            if (cin >> v && v>=1 && v<=6) return v;
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "Please enter a number 1..6.\n";
+        }
+    };
 
+    // ======= FULL HUMAN TURN (loop rolls until stuck) =======
+    while (true) {
+        section("Human Turn");
 
-    const bool canCover = !board.findValidCombinations(sum, true).empty();
+        // --- per-roll: manual or random, and 1/2 dice choice if allowed
+        cout << "Do you want to enter the die manually? (y/n): ";
+        const char manual = readYN();
 
-    if (bool canUncover = !computerBoard.findValidCombinations(sum, false).empty(); !canCover && !canUncover) {
-        cout << "You cannot cover any of your squares or uncover any of the opponent's squares. Your turn ends." << endl;
-        return true;
-    }
+        const bool oneDieAllowed = board.canThrowOneDie();
+        int diceCount = 2;
 
-    // Display boards with the advantage square highlighted
-    banner("Current Board State");
-    boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-    computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+        if (oneDieAllowed) {
+            cout << "You may use 1 die (7.." << board.getSize() << " are covered). Use 1 die? (y/n): ";
+            diceCount = (readYN()=='y') ? 1 : 2;
+        } else {
+            cout << "1-die is NOT allowed (must use 2 dice).\n";
+            diceCount = 2;
+        }
 
+        int d1 = 0, d2 = 0, sum = 0;
+        if (manual == 'y') {
+            d1 = readDie("Enter die 1 (1-6): ");
+            d2 = (diceCount==2) ? readDie("Enter die 2 (1-6): ") : 0;
+        } else {
+            d1 = (std::rand() % 6) + 1;
+            d2 = (diceCount==2) ? ((std::rand() % 6) + 1) : 0;
+        }
+        sum = d1 + d2;
 
-    // Ask if the player wants help from the computer
-    char helpChoice;
-    do {
+        cout << "You rolled: " << d1;
+        if (diceCount==2) cout << " + " << d2 << " = " << sum << "\n";
+        else              cout << " = " << sum << " " << c(DIM) << "(1-die)" << c(RESET) << "\n";
+
+        // --- check legal moves for this roll
+        bool canCover   = !board.findValidCombinations(sum, true ).empty();
+        bool canUncover = !computerBoard.findValidCombinations(sum, false).empty();
+
+        if (!canCover && !canUncover) {
+            cout << "No legal moves for this roll. Your turn ends.\n";
+            return true; // end of the entire human turn
+        }
+
+        // --- show boards (Computer on top)
+        banner("Current Board State");
+        computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+        boardView.display       (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+
+        // --- optional help
         cout << "Do you want help from the computer? (y/n): ";
-        cin >> helpChoice;
-    } while (helpChoice != 'y' && helpChoice != 'n');
+        if (readYN()=='y') {
+            const Computer helper(computerBoard, board);
+            helper.provideHelp(sum, board, computerBoard);
+            cout << "\n";
+        }
 
-    if (helpChoice == 'y' || helpChoice == 'Y') {
-        // Call the computer's provideHelp method
-        const Computer computer(computerBoard, board);
-        computer.provideHelp(sum, board, computerBoard);
-        cout << endl;
+        // --- choose cover/uncover; re-prompt if choice isn’t available for this roll
+        char choice = 0;
+        while (true) {
+            cout << "Cover your squares or uncover the opponent's squares? (c/u): ";
+            if (cin >> choice) {
+                choice = std::tolower(choice);
+                if ((choice=='c' && canCover) || (choice=='u' && canUncover)) break;
+            }
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "That action isn't available with this roll.\n";
+        }
+
+        // --- execute one move
+        if (choice=='c') coverSquares(sum);
+        else             uncoverSquares(sum);
+
+        // --- show boards after this move, then loop to roll again
+        banner("Board After Your Move");
+        computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+        boardView.display       (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+        cout << "\n";
+
+        // Early-out if you just finished the board (Round will detect anyway)
+        if (board.allCovered()) return true;
     }
-
-    // Choose to cover or uncover squares
-    // Choose to cover or uncover squares
-    char choice;
-    do {
-        std::cout << "Cover your squares or uncover the opponent's squares? (c/u): ";
-        std::cin >> choice;
-        choice = std::tolower(choice);
-    } while (choice != 'c' && choice != 'u');
-
-    if (choice == 'c') {
-        coverSquares(sum);
-    } else {
-        uncoverSquares(sum);
-    }
-
-    banner("Board After Your Move");
-    boardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-    computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-    std::cout << "\n";
-
-    return false;
 }
+
+
 
 /**
  * @brief Covers squares on the board based on the sum.
