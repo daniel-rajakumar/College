@@ -99,8 +99,16 @@ bool Human::takeTurn() {
 
         // --- show boards (Computer on top)
         banner("Current Board State");
-        computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-        boardView.display       (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+        computerBoardView.display(
+    Tournament::getAdvantageApplied() &&
+    Tournament::getAdvantageOwner() == Tournament::Side::Computer,
+    Tournament::getAdvantageSquare());
+
+        boardView.display(
+            Tournament::getAdvantageApplied() &&
+            Tournament::getAdvantageOwner() == Tournament::Side::Human,
+            Tournament::getAdvantageSquare());
+
 
         // --- optional help
         cout << "Do you want help from the computer? (y/n): ";
@@ -129,8 +137,13 @@ bool Human::takeTurn() {
 
         // --- show boards after this move, then loop to roll again
         banner("Board After Your Move");
-        computerBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-        boardView.display       (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+        computerBoardView.display( Tournament::getAdvantageApplied() &&
+                                    Tournament::getAdvantageOwner() == Tournament::Side::Computer,
+                                    Tournament::getAdvantageSquare());
+
+        boardView.display( Tournament::getAdvantageApplied() &&
+                            Tournament::getAdvantageOwner() == Tournament::Side::Human,
+                            Tournament::getAdvantageSquare());
         cout << "\n";
 
         // Early-out if you just finished the board (Round will detect anyway)

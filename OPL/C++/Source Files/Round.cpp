@@ -82,8 +82,16 @@ void Round::play() const {
     BoardView humanView(player1.getBoard(), "Human");
     BoardView compView (player2.getBoard(), "Computer");
 
-    compView.display (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare()); // Computer on top
-    humanView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare()); // Human below
+    compView.display (
+    Tournament::getAdvantageApplied() &&
+    Tournament::getAdvantageOwner() == Tournament::Side::Computer,
+    Tournament::getAdvantageSquare());
+
+    humanView.display(
+        Tournament::getAdvantageApplied() &&
+        Tournament::getAdvantageOwner() == Tournament::Side::Human,
+        Tournament::getAdvantageSquare());
+
     std::cout << "\n";
 
 

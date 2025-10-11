@@ -190,8 +190,16 @@ bool Computer::takeTurn() {
         }
 
         // After one move, show boards then loop to roll again.
-        boardView.display     (Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
-        humanBoardView.display(Tournament::getAdvantageApplied(), Tournament::getAdvantageSquare());
+        boardView.display(
+    Tournament::getAdvantageApplied() &&
+    Tournament::getAdvantageOwner() == Tournament::Side::Computer,
+    Tournament::getAdvantageSquare());
+
+        humanBoardView.display(
+            Tournament::getAdvantageApplied() &&
+            Tournament::getAdvantageOwner() == Tournament::Side::Human,
+            Tournament::getAdvantageSquare());
+
         std::cout << "\n";
 
         // If computer already finished its board, we'll exit now; Round will detect win.
