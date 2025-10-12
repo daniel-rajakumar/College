@@ -120,9 +120,13 @@ public:
      * @brief Applies a handicap based on the winner and winning score.
      * 
      * @param winnerWasFirstPlayer True if the winner was the first player.
+     * @param winnerIsHuman
      * @param winningScore The winning score.
      */
-    void applyHandicap(bool winnerWasFirstPlayer, int winningScore) const;
+    void applyHandicap(bool winnerWasFirstPlayer, bool winnerIsHuman, int winningScore) const;
+
+    void applyHandicap(const bool winnerWasFirstPlayer, const bool winnerIsHuman, const int winningScore);
+
 
     // Who should get the advantage NEXT round (queued at round end)
     enum class Side { None, Human, Computer };
@@ -142,6 +146,17 @@ public:
     static bool protectHumanAdvantage;     // protects Human's advantage square
     static bool protectComputerAdvantage;  // protects Computer's advantage square
     static Side advantageOwner;            // who currently owns the advantage (this round)
+
+
+    // Remember who started the current round (for handicap on load)
+    bool firstPlayerIsHuman = true;
+
+
+    // --- Turn-tracking and first-player metadata ---
+    void setIsHumanTurn(bool humanTurn);
+    bool getFirstPlayerIsHuman() const;
+    void setFirstPlayerIsHuman(bool isHuman);
+
 
 };
 

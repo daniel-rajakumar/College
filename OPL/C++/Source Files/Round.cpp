@@ -64,9 +64,9 @@ void Round::play() const {
     // decide whose turn it is
     Player* currentPlayer;
     if (tournament.getIsHumanTurn())
-        currentPlayer = &player2;    // if "human to play next", computer must have been starter last time
-    else
         currentPlayer = &player1;
+    else
+        currentPlayer = &player2;
 
     // remember who actually started (for handicap logic on NEW rounds)
     const Player* firstPlayer = nullptr;
@@ -75,6 +75,8 @@ void Round::play() const {
         Player& fp = determineFirstPlayer();        // roll once
         firstPlayer = &fp;
         currentPlayer = &fp;
+        tournament.setFirstPlayerIsHuman(fp.getIsHuman());
+        tournament.setIsHumanTurn(currentPlayer->getIsHuman());
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n";
     }
 
@@ -94,6 +96,16 @@ void Round::play() const {
 
     std::cout << "\n";
 
+    // Ensure tournament knows whose turn is next (for save files)
+    tournament.setIsHumanTurn(currentPlayer->getIsHuman());
+
+    // If a loaded game is already won, declare immediately before any move
+    if (isRoundOver()) {
+        bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == currentPlayer->getIsHuman());
+        declareWinner(currentPlayer, winnerWasFirst);
+        return;
+    }
+
 
     while (true) {
         // Current player plays their whole turn (keeps rolling until stuck)
@@ -111,7 +123,7 @@ void Round::play() const {
         // Round ends if someone covered all
         if (player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
             player1.getBoard().allUncovered() || player2.getBoard().allUncovered()) {
-            bool winnerWasFirst = (firstPlayer != nullptr) && (currentPlayer == firstPlayer);
+            bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == currentPlayer->getIsHuman());
             declareWinner(currentPlayer, winnerWasFirst);
             break;
         }
@@ -119,18 +131,17 @@ void Round::play() const {
         // Now and only now pass play to the other side
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
 
-        // Offer save only when play actually passes to the human
-        if (currentPlayer->getIsHuman()) {
-            char saveChoice;
-            cout << "Do you want to save the game? (y/n): ";
-            cin >> saveChoice;
-            if (saveChoice == 'y' || saveChoice == 'Y') {
-                string filename;
-                cout << "Enter the filename to save: ";
-                cin >> filename;
-                tournament.saveGame(filename);
-                exit(0);
-            }
+        // Update tournament next-turn flag and offer save after EVERY turn
+        tournament.setIsHumanTurn(currentPlayer->getIsHuman());
+        char saveChoice;
+        cout << "Do you want to save the game? (y/n): ";
+        cin >> saveChoice;
+        if (saveChoice == 'y' || saveChoice == 'Y') {
+            string filename;
+            cout << "Enter the filename to save: ";
+            cin >> filename;
+            tournament.saveGame(filename);
+            exit(0);
         }
     }
 
@@ -159,25 +170,25 @@ void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirst
         tournament.updateScores(true, false, false, false,
                                 player1.getBoard().getCoveredSum(),
                                 player2.getBoard().getUncoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, player2.getBoard().getUncoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/true, player2.getBoard().getUncoveredSum());
     } else if (player2.getBoard().allCovered()) {
         cout << "Computer wins by covering all their squares!" << endl;
         tournament.updateScores(false, false, true, false,
                                 player1.getBoard().getUncoveredSum(),
                                 player2.getBoard().getCoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, player1.getBoard().getUncoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/false, player1.getBoard().getUncoveredSum());
     } else if (player2.getBoard().allUncovered()) {
         cout << "Human wins by uncovering all the computer's squares!" << endl;
         tournament.updateScores(false, true, false, false,
                                 player1.getBoard().getUncoveredSum(),
                                 player2.getBoard().getCoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, player1.getBoard().getUncoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/false, player1.getBoard().getUncoveredSum());
     } else if (player1.getBoard().allUncovered()) {
         cout << "Computer wins by uncovering all the human's squares!" << endl;
         tournament.updateScores(false, false, false, true,
                                 player1.getBoard().getCoveredSum(),
                                 player2.getBoard().getUncoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, player2.getBoard().getUncoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/true, player2.getBoard().getUncoveredSum());
     }
 }
 

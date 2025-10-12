@@ -27,7 +27,7 @@ Tournament::Side Tournament::advantageOwner = Tournament::Side::None;
  * @param computerBoard Reference to the computer's board.
  */
 Tournament::Tournament(Board& humanBoard, Board& computerBoard)
-    : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(true) {
+    : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(true), firstPlayerIsHuman(true) {
 }
 
 // Static member initialization
@@ -79,6 +79,18 @@ bool Tournament::getIsANewGame() const {
  */
 bool Tournament::getIsHumanTurn() const {
     return isHumanTurn;
+}
+
+void Tournament::setIsHumanTurn(bool humanTurn) {
+    isHumanTurn = humanTurn;
+}
+
+bool Tournament::getFirstPlayerIsHuman() const {
+    return firstPlayerIsHuman;
+}
+
+void Tournament::setFirstPlayerIsHuman(bool isHuman) {
+    firstPlayerIsHuman = isHuman;
 }
 
 /**
@@ -260,7 +272,7 @@ void Tournament::saveGame(const string& filename) const {
         file << endl;
         file << "   Score: " << tournamentScoreHuman << endl;
 
-        file << "First Turn: " << (isHumanTurn ? "Human" : "Computer") << endl;
+        file << "First Turn: " << (firstPlayerIsHuman ? "Human" : "Computer") << endl;
         file << "Next Turn: " << (!isHumanTurn ? "Human" : "Computer") << endl;
 
         file.close();
@@ -332,6 +344,8 @@ bool Tournament::loadGame(const string& filename) {
                 tournamentScoreHuman = stoi(line.substr(10));
             } else if (line.rfind("First Turn:", 0) == 0) {
                 // ignore on load; only "Next Turn" matters to resume play
+            } else if (line.rfind("First Turn:", 0) == 0) {
+                firstPlayerIsHuman = (line.find("Human") != string::npos);
             } else if (line.rfind("Next Turn:", 0) == 0) {
                 isHumanTurn = (line.find("Human") != string::npos);
             }
@@ -367,18 +381,18 @@ int Tournament::calculateAdvantageSquare(int winningScore) {
  * @param winnerWasFirstPlayer True if the winner was the first player.
  * @param winningScore The winning score.
  */
-void Tournament::applyHandicap(const bool winnerWasFirstPlayer, const int winningScore) const {
+void Tournament::applyHandicap(const bool winnerWasFirstPlayer, const bool winnerIsHuman, const int winningScore) const {
     // compute the square to award next round
     advantageSquare = calculateAdvantageSquare(winningScore);
 
-    // decide who gets it NEXT round (keeps your current logic basis)
+    // decide who gets it NEXT round based on winner and starter
     Side forWhom;
     if (winnerWasFirstPlayer) {
-        // winner started first -> the other side gets advantage
-        forWhom = isHumanTurn ? Side::Computer : Side::Human;
+        // winner started first -> the OTHER side gets advantage
+        forWhom = winnerIsHuman ? Side::Computer : Side::Human;
     } else {
-        // winner did not start first -> winner keeps it
-        forWhom = isHumanTurn ? Side::Human : Side::Computer;
+        // winner did NOT start first -> the WINNER gets advantage
+        forWhom = winnerIsHuman ? Side::Human : Side::Computer;
     }
 
     // queue for next round
