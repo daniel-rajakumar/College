@@ -16,6 +16,9 @@ using namespace std;
  * including covering and uncovering squares, and checking the state of the squares.
  */
 class Board {
+public:
+    static constexpr int ONE_DIE_RULE_START = 7; // 1-die allowed when this..size are covered
+
 private:
     vector<bool> squares; ///< Vector representing the state of each square (true = covered, false = uncovered).
     int size; ///< The size of the board.

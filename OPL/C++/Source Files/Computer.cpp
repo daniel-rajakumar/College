@@ -94,7 +94,7 @@ bool Computer::takeTurn() {
             int diceCount = 2;
 
             if (oneDieAllowed) {
-                cout << "1-die is allowed (7.." << board.getSize() << " are covered). Use 1 die? (y/n): ";
+                cout << "1-die is allowed (" << Board::ONE_DIE_RULE_START << ".." << board.getSize() << " are covered). Use 1 die? (y/n): ";
                 diceCount = (readYN()=='y') ? 1 : 2;
             } else {
                 cout << "1-die is NOT allowed (must use 2 dice).\n";
