@@ -64,9 +64,9 @@ void Round::play() const {
     // decide whose turn it is
     Player* currentPlayer;
     if (tournament.getIsHumanTurn())
-        currentPlayer = &player1;
-    else
         currentPlayer = &player2;
+    else
+        currentPlayer = &player1;
 
     // remember who actually started (for handicap logic on NEW rounds)
     const Player* firstPlayer = nullptr;

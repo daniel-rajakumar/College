@@ -13,10 +13,10 @@ using namespace std;
  * @return 0 on successful execution.
  */
 int main() {
-    srand(static_cast<unsigned int>(time(nullptr))); // Seed the random number generator
-    Board human(11);        // initial size will be replaced by prompt
+    srand(static_cast<unsigned int>(time(nullptr)));
+    Board human(11);
     Board computer(11);
     Tournament tour(human, computer);
-    tour.start();           // call the *member* start()
+    tour.start();
     return 0;
 }
