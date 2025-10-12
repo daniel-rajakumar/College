@@ -137,19 +137,92 @@ public class GameController {
     private void findCombinations(List<Integer> availableSquares, int target, int start,
                                   List<Integer> current, List<List<Integer>> result) {
         if (target == 0) {
-            result.add(new ArrayList<>(current));
+            if (!current.isEmpty() && current.size() <= 4) result.add(new ArrayList<>(current));
             return;
         }
+        if (current.size() == 4) return; // prune: max 4 tiles
         for (int i = start; i < availableSquares.size(); i++) {
             int val = availableSquares.get(i);
-            if (val > target) {
-                break; // As the list is sorted, no further value will satisfy the condition.
-            }
+            if (val > target) break; // list is sorted
             current.add(val);
             findCombinations(availableSquares, target - val, i + 1, current, result);
             current.remove(current.size() - 1);
         }
     }
+
+    // --- simulation helpers (no board copies; we revert via API) ---
+    private static class SimTouch { // +X = computer covered X, -X = human uncovered X
+        int tag;
+        SimTouch(int tag) { this.tag = tag; }
+    }
+    private void simApply(boolean isCovering, List<Integer> move, List<SimTouch> touched) {
+        if (isCovering) {
+            for (int sq : move) {
+                gameRound.getBoard().coverComputerSquare(sq);
+                touched.add(new SimTouch(+sq));
+            }
+        } else {
+            for (int sq : move) {
+                gameRound.getBoard().uncoverHumanSquare(sq);
+                touched.add(new SimTouch(-sq));
+            }
+        }
+    }
+    private void simRevert(List<SimTouch> touched) {
+        // revert in reverse order just to be neat
+        for (int i = touched.size() - 1; i >= 0; i--) {
+            int tag = touched.get(i).tag;
+            int sq = Math.abs(tag);
+            if (tag > 0) {
+                gameRound.getBoard().uncoverComputerSquare(sq); // undo cover
+            } else {
+                gameRound.getBoard().coverHumanSquare(sq);      // undo uncover
+            }
+        }
+        // if your Board tracks counts/flags, nothing else needed because we used the public APIs
+    }
+
+    private boolean winsForComputerNow() {
+        Board b = gameRound.getBoard();
+        // use your guarded complete checks via Board “complete” methods
+        return b.isComputerComplete();
+    }
+
+    private int coveredCount(boolean[] row) { int c=0; for (boolean v: row) if (v) c++; return c; }
+
+    private boolean sevenToNAllCovered(boolean[] row) {
+        // if size==9, check 7..9; size==10 → 7..10; size==11 → 7..11
+        for (int i = 6; i < row.length; i++) if (!row[i]) return false;
+        return true;
+    }
+
+    // score from the Computer's point of view (higher = better for Computer)
+    private int evaluateBoardAfterMove(List<Integer> move, boolean isCovering) {
+        Board b = gameRound.getBoard();
+        // immediate terminal checks (should be handled earlier, but safe):
+        if (b.isComputerComplete()) return 1_000_000;
+        if (b.isHumanComplete())    return -1_000_000;
+
+        int score = 0;
+
+        // 1-die territory: good if computer has it, bad if human has it
+        if (sevenToNAllCovered(b.getComputerSquares())) score += 5000;
+        if (sevenToNAllCovered(b.getHumanSquares()))    score -= 5000;
+
+        // material: more computer covers, fewer human covers
+        score += 10 * coveredCount(b.getComputerSquares());
+        score -= 10 * coveredCount(b.getHumanSquares());
+
+        // prefer higher single tile in the chosen move
+        score += Collections.max(move);
+
+        // tiny nudge: covering is usually safer than exposing (break ties)
+        if (isCovering) score += 5;
+
+        return score;
+    }
+
+
 
     /**
      * Checks whether the current round is over.
@@ -250,28 +323,47 @@ public class GameController {
      */
     public String getBestMove(List<String> validMoves, boolean isCovering) {
         if (validMoves == null || validMoves.isEmpty() ||
-                (validMoves.size() == 1 && validMoves.get(0).equals("No valid moves"))) {
+                (validMoves.size() == 1 && "No valid moves".equals(validMoves.get(0)))) {
             return "No valid moves";
         }
-        String bestMove = validMoves.get(0);
-        double bestMetric = evaluateMove(parseMove(bestMove), isCovering);
-        for (String moveStr : validMoves) {
-            List<Integer> moveList = parseMove(moveStr);
-            double metric = evaluateMove(moveList, isCovering);
-            if (isCovering) {
-                if (metric > bestMetric) {
-                    bestMetric = metric;
-                    bestMove = moveStr;
-                }
-            } else {
-                if (metric < bestMetric) {
-                    bestMetric = metric;
-                    bestMove = moveStr;
+
+        String bestStr = validMoves.get(0);
+        int bestScore = Integer.MIN_VALUE;
+
+        // 1) First pass: pick an immediate winning move if it exists
+        for (String mvStr : validMoves) {
+            if ("No valid moves".equals(mvStr)) continue;
+            List<Integer> mv = parseMove(mvStr);
+            List<SimTouch> touched = new ArrayList<>();
+            simApply(isCovering, mv, touched);
+            boolean winNow = winsForComputerNow();
+            simRevert(touched);
+            if (winNow) return mvStr; // always take mate-in-1
+        }
+
+        // 2) No forced win → evaluate positions
+        for (String mvStr : validMoves) {
+            if ("No valid moves".equals(mvStr)) continue;
+            List<Integer> mv = parseMove(mvStr);
+            List<SimTouch> touched = new ArrayList<>();
+            simApply(isCovering, mv, touched);
+            int score = evaluateBoardAfterMove(mv, isCovering);
+            simRevert(touched);
+
+            // choose max score; tie-break: higher single tile, then fewer tiles
+            if (score > bestScore) {
+                bestScore = score; bestStr = mvStr;
+            } else if (score == bestScore) {
+                int curMax = Collections.max(parseMove(mvStr));
+                int bestMax = Collections.max(parseMove(bestStr));
+                if (curMax > bestMax || (curMax == bestMax && parseMove(mvStr).size() < parseMove(bestStr).size())) {
+                    bestStr = mvStr;
                 }
             }
         }
-        return bestMove;
+        return bestStr;
     }
+
 
     /**
      * Calculates the sum of square values specified in the move string.

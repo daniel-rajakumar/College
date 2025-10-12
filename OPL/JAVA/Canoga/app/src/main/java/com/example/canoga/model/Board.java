@@ -137,6 +137,7 @@ public class Board {
     }
 
 
+
     // Computer wins if the Human has been fully uncovered (all false)
     public boolean isHumanUncoveredAll() {
         for (boolean covered : humanSquares) if (covered) return false;
@@ -184,6 +185,9 @@ public class Board {
         if (computerCoveredCount > 0) computerEverCovered = true;
     }
 
+    public void refreshCountsFromState() {
+        recomputeCounts();
+    }
 
 
 }

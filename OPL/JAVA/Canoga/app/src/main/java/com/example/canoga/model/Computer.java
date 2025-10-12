@@ -53,7 +53,7 @@ public class Computer extends Player {
         findCombinations(availableCovering, diceSum, 0, new ArrayList<>(), validCoverMoves);
 
         if (!validCoverMoves.isEmpty()) {
-            List<Integer> bestMove = selectBestMove(validCoverMoves);
+            List<Integer> bestMove = selectBestMove(validCoverMoves, true);
             for (Integer square : bestMove) {
                 board.coverComputerSquare(square);
             }
@@ -73,7 +73,7 @@ public class Computer extends Player {
         findCombinations(availableUncovering, diceSum, 0, new ArrayList<>(), validUncoverMoves);
 
         if (!validUncoverMoves.isEmpty()) {
-            List<Integer> bestMove = selectBestMove(validUncoverMoves);
+            List<Integer> bestMove = selectBestMove(validUncoverMoves, false);
             for (Integer square : bestMove) {
                 board.uncoverHumanSquare(square);
             }
@@ -129,4 +129,49 @@ public class Computer extends Player {
         }
         return bestMove;
     }
+
+
+    // Pick a move that wins immediately if possible; otherwise prefer highest tile.
+    public List<Integer> selectBestMove(List<List<Integer>> validMoves, boolean isCoverMove) {
+        // Snapshot board state
+        boolean[] human = board.getHumanSquares();
+        boolean[] comp  = board.getComputerSquares();
+        boolean[] humanSnap = human.clone();
+        boolean[] compSnap  = comp.clone();
+
+        // 1) First pass: does any candidate produce an immediate computer win?
+        for (List<Integer> move : validMoves) {
+            // simulate
+            if (isCoverMove) {
+                for (int sq : move) board.coverComputerSquare(sq);
+            } else {
+                for (int sq : move) board.uncoverHumanSquare(sq);
+            }
+
+            boolean winsNow = board.isComputerComplete(); // uses your guarded win logic
+
+            // revert
+            System.arraycopy(humanSnap, 0, human, 0, human.length);
+            System.arraycopy(compSnap,  0, comp,  0, comp.length);
+            board.refreshCountsFromState(); // IMPORTANT if you track counts/ever-covered
+
+            if (winsNow) {
+                return move; // take the win immediately
+            }
+        }
+
+        // 2) No forced win—fallback to your simple heuristic (highest single tile)
+        List<Integer> bestMove = validMoves.get(0);
+        int bestMax = Collections.max(bestMove);
+        for (List<Integer> move : validMoves) {
+            int currentMax = Collections.max(move);
+            if (currentMax > bestMax) {
+                bestMax = currentMax;
+                bestMove = move;
+            }
+        }
+        return bestMove;
+    }
+
+
 }
