@@ -11,10 +11,12 @@ using namespace std;
  * 
  * @param square The index of the square to cover.
  */
-void Board::coverSquare(const int square) {
-    if (square >= 1 && square <= size) {
+bool Board::coverSquare(const int square) {
+    if (square >= 1 && square <= size && !squares[square - 1]) {
         squares[square - 1] = true;
+        return true;
     }
+    return false;
 }
 
 /**
@@ -22,10 +24,12 @@ void Board::coverSquare(const int square) {
  * 
  * @param square The index of the square to uncover.
  */
-void Board::uncoverSquare(const int square) {
-    if (square >= 1 && square <= size) {
+bool Board::uncoverSquare(const int square) {
+    if (square >= 1 && square <= size && squares[square - 1]) {
         squares[square - 1] = false;
+        return true;
     }
+    return false;
 }
 
 /**

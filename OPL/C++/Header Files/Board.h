@@ -28,21 +28,23 @@ public:
      * 
      * @param n The size of the board.
      */
+    Board() : squares(), size(0) {}
     explicit Board(int n) : squares(n, false), size(n) {}
+    Board(const Board&) = default;
 
     /**
      * @brief Covers a specific square on the board.
      * 
      * @param square The index of the square to cover.
      */
-    void coverSquare(int square);
+    bool coverSquare(int square);
 
     /**
      * @brief Uncovers a specific square on the board.
      * 
      * @param square The index of the square to uncover.
      */
-    void uncoverSquare(int square);
+    bool uncoverSquare(int square);
 
     /**
      * @brief Checks if a specific square is covered.
