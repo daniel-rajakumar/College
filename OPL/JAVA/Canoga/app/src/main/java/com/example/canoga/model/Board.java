@@ -84,6 +84,49 @@ public class Board {
         return true;
     }
 
+    // ---- BEGIN REPLACEMENT: explicit completion/win predicates ----
+
+    /** Helpers */
+    private boolean allTrue(boolean[] a) {
+        for (boolean b : a) if (!b) return false;
+        return a.length > 0;
+    }
+    private boolean allFalse(boolean[] a) {
+        for (boolean b : a) if (b) return false;
+        return a.length > 0;
+    }
+
+    /**
+     * Human has covered all of their own squares (win condition A for Human).
+     */
+    public boolean hasHumanCoveredAll() {
+        return allTrue(humanSquares);
+    }
+
+    /**
+     * Human has uncovered all of the computer's squares (win condition B for Human).
+     */
+    public boolean hasHumanUncoveredAllOpponent() {
+        return allFalse(computerSquares);
+    }
+
+    /**
+     * Computer has covered all of their own squares (win condition A for Computer).
+     */
+    public boolean hasComputerCoveredAll() {
+        return allTrue(computerSquares);
+    }
+
+    /**
+     * Computer has uncovered all of the human's squares (win condition B for Computer).
+     */
+    public boolean hasComputerUncoveredAllOpponent() {
+        return allFalse(humanSquares);
+    }
+
+// ---- END REPLACEMENT ----
+
+
     /**
      * Checks if all human squares are in the same state.
      * Typically used to determine if the human row is complete.

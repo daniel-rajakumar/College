@@ -1,5 +1,7 @@
 package com.example.canoga.controller;
 
+import androidx.annotation.NonNull;
+
 import com.example.canoga.model.Board;
 import com.example.canoga.model.GameRound;
 import com.example.canoga.view.BoardView;
@@ -31,6 +33,23 @@ public class GameController {
         boardView.setBoard(gameRound.getBoard());
     }
 
+    /** Test-friendly constructor (no UI dependency) */
+    public GameController(@NonNull GameRound gameRound) {
+        this.gameRound = gameRound;
+        this.boardView = null;
+    }
+
+    /** Call this instead of boardView.invalidate() */
+    public void refreshView() {
+        if (boardView != null) {
+            boardView.postInvalidate(); // or invalidate()
+        }
+    }
+
+    public GameRound getGameRound() { return gameRound; }
+    public Board getBoard() { return gameRound.getBoard(); }
+
+
     /**
      * Executes the computer's turn using its complete move strategy.
      * <p>
@@ -56,7 +75,7 @@ public class GameController {
         }
         // Execute the move and refresh the board view.
         boolean turnResult = gameRound.playComputerTurn(dice);
-        boardView.invalidate();
+        refreshView();
         return turnResult;
     }
 
@@ -172,14 +191,16 @@ public class GameController {
      * @return a String indicating the winner.
      */
     public String getWinner() {
-        if (gameRound.getBoard().isHumanComplete()) {
+        Board b = gameRound.getBoard();
+        if (b.hasHumanCoveredAll() || b.hasHumanUncoveredAllOpponent()) {
             return "Human";
-        } else if (gameRound.getBoard().isComputerComplete()) {
-            return "Human";
-        } else {
-            return "None";
         }
+        if (b.hasComputerCoveredAll() || b.hasComputerUncoveredAllOpponent()) {
+            return "Computer";
+        }
+        return "None";
     }
+
 
     /**
      * Finishes the current game round by calculating the round score,
@@ -191,46 +212,45 @@ public class GameController {
     public int finishGame(String winner) {
         Board board = gameRound.getBoard();
         int roundScore = 0;
-        if (winner.equalsIgnoreCase("Human")) {
-            if (board.isHumanComplete()) {
-                // Human wins by covering all their own squares.
-                boolean[] compSquares = board.getComputerSquares();
-                for (int i = 0; i < compSquares.length; i++) {
-                    if (!compSquares[i]) {
-                        roundScore += (i + 1);
-                    }
+
+        if ("Human".equalsIgnoreCase(winner)) {
+            if (board.hasHumanCoveredAll()) {
+                // Human covered all own squares -> sum of Computer's UNcovered squares
+                boolean[] comp = board.getComputerSquares();
+                for (int i = 0; i < comp.length; i++) {
+                    if (!comp[i]) roundScore += (i + 1);
                 }
-            } else if (board.isComputerComplete()) {
-                // Human wins by uncovering all computer squares.
-                boolean[] humanSquares = board.getHumanSquares();
-                for (int i = 0; i < humanSquares.length; i++) {
-                    if (humanSquares[i]) {
-                        roundScore += (i + 1);
-                    }
+            } else if (board.hasHumanUncoveredAllOpponent()) {
+                // Human uncovered all opponent squares -> sum of Human's covered squares
+                boolean[] hum = board.getHumanSquares();
+                for (int i = 0; i < hum.length; i++) {
+                    if (hum[i]) roundScore += (i + 1);
                 }
             }
             gameRound.getHuman().updateScore(roundScore);
-        } else if (winner.equalsIgnoreCase("Computer")) {
-            if (board.isComputerComplete()) {
-                boolean[] humanSquares = board.getHumanSquares();
-                for (int i = 0; i < humanSquares.length; i++) {
-                    if (!humanSquares[i]) {
-                        roundScore += (i + 1);
-                    }
+        } else if ("Computer".equalsIgnoreCase(winner)) {
+            if (board.hasComputerCoveredAll()) {
+                // Computer covered all own squares -> sum of Human's UNcovered squares
+                boolean[] hum = board.getHumanSquares();
+                for (int i = 0; i < hum.length; i++) {
+                    if (!hum[i]) roundScore += (i + 1);
                 }
-            } else if (board.isHumanComplete()) {
-                boolean[] compSquares = board.getComputerSquares();
-                for (int i = 0; i < compSquares.length; i++) {
-                    if (compSquares[i]) {
-                        roundScore += (i + 1);
-                    }
+            } else if (board.hasComputerUncoveredAllOpponent()) {
+                // Computer uncovered all opponent squares -> sum of Computer's covered squares
+                boolean[] comp = board.getComputerSquares();
+                for (int i = 0; i < comp.length; i++) {
+                    if (comp[i]) roundScore += (i + 1);
                 }
             }
             gameRound.getComputer().updateScore(roundScore);
         }
+
         System.out.println("Round Score: " + roundScore);
         return roundScore;
     }
+
+
+
 
     /**
      * Restarts the game round using the same board size and carries over the players' scores.
