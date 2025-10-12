@@ -14,6 +14,13 @@ public class Board {
     private boolean humanEverCovered = false;     // has human row ever had any covered square this round?
     private boolean computerEverCovered = false;  // has computer row ever had any covered square this round?
 
+    public enum AdvantageOwner { NONE, HUMAN, COMPUTER }
+
+    private AdvantageOwner advantageOwner = AdvantageOwner.NONE;
+    private int advantageSquare = 0;          // 1..size, or 0 = none
+    private boolean advantageLockActive = false; // true until advantaged player has taken one turn
+
+
     public void recomputeCounts() {
         humanCoveredCount = 0;
         for (boolean c : humanSquares) if (c) humanCoveredCount++;
@@ -101,19 +108,27 @@ public class Board {
         return true;
     }
 
-    public boolean uncoverComputerSquare(int index) {
-        if (index < 1 || index > size) return false;
-        int i = index - 1;
-        if (!computerSquares[i]) return false;  // already uncovered
-        setComputer(i, false);                  // ★ CHANGED
+    public boolean uncoverHumanSquare(Integer square) {
+        if (square < 1 || square > size) return false;
+
+        // If HUMAN owns advantage, their square is protected from uncover by Computer until lock released
+        if (advantageLockActive && advantageOwner == AdvantageOwner.HUMAN && square == advantageSquare) {
+            return false; // locked
+        }
+        if (!humanSquares[square - 1]) return false;
+        setHuman(square - 1, false);  // (your counter-aware setter)
         return true;
     }
 
-    public boolean uncoverHumanSquare(Integer square) {
-        if (square < 1 || square > size) return false;
-        int i = square - 1;
-        if (!humanSquares[i]) return false;     // already uncovered
-        setHuman(i, false);                     // ★ CHANGED
+    public boolean uncoverComputerSquare(int index) {
+        if (index < 1 || index > size) return false;
+
+        // If COMPUTER owns advantage, their square is protected from uncover by Human until lock released
+        if (advantageLockActive && advantageOwner == AdvantageOwner.COMPUTER && index == advantageSquare) {
+            return false; // locked
+        }
+        if (!computerSquares[index - 1]) return false;
+        setComputer(index - 1, false); // (your counter-aware setter)
         return true;
     }
 
@@ -188,6 +203,27 @@ public class Board {
     public void refreshCountsFromState() {
         recomputeCounts();
     }
+
+    public void applyAdvantage(AdvantageOwner owner, int square1Indexed) {
+        advantageOwner = owner;
+        advantageSquare = (square1Indexed >= 1 && square1Indexed <= size) ? square1Indexed : 0;
+        advantageLockActive = (advantageOwner != AdvantageOwner.NONE && advantageSquare != 0);
+
+        if (advantageOwner == AdvantageOwner.HUMAN && advantageSquare != 0) {
+            coverHumanSquare(advantageSquare);
+        } else if (advantageOwner == AdvantageOwner.COMPUTER && advantageSquare != 0) {
+            coverComputerSquare(advantageSquare);
+        }
+        recomputeCounts(); // keep your counters/flags correct
+    }
+
+    public void releaseAdvantageLock() {
+        advantageLockActive = false;
+    }
+
+    public AdvantageOwner getAdvantageOwner() { return advantageOwner; }
+    public int getAdvantageSquare() { return advantageSquare; }
+    public boolean isAdvantageLockActive() { return advantageLockActive; }
 
 
 

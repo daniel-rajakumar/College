@@ -19,6 +19,8 @@ public class GameController {
     private GameRound gameRound;
     private BoardView boardView;
 
+
+
     /**
      * Constructs the GameController with the provided game round and board view.
      *
@@ -238,15 +240,8 @@ public class GameController {
      */
     public String getWinner() {
         Board b = gameRound.getBoard();
-
-        // Human wins by either covering all of their own squares
-        // or by fully uncovering the Computer’s row.
-        if (b.isHumanComplete() || b.isComputerComplete()) return "Human";
-
-        // Computer wins by either covering all of its own squares
-        // or by fully uncovering the Human’s row.
-        if (b.isComputerCoveredAll() || b.isHumanUncoveredAll()) return "Computer";
-
+        if (b.isHumanComplete()) return "Human";
+        if (b.isComputerComplete()) return "Computer";
         return "None";
     }
 
@@ -285,8 +280,34 @@ public class GameController {
             gameRound.getComputer().updateScore(roundScore);
         }
 
+        // at the very end, before return roundScore;
+        int advSquareNext = digitRoot(roundScore); // 0..9
+        Board.AdvantageOwner nextOwner = (advSquareNext == 0) ? Board.AdvantageOwner.NONE
+                : ("Human".equalsIgnoreCase(winner) ? Board.AdvantageOwner.HUMAN : Board.AdvantageOwner.COMPUTER);
+
+// stash on GameRound so the UI / restart can read it
+        gameRound.setNextRoundAdvantage(nextOwner, advSquareNext);
+
+
         return roundScore;
     }
+
+
+    public GameRound restartGame(GameRound prev) {
+        int size = prev.getBoard().getSize();
+
+        // Who has advantage next?
+        Board.AdvantageOwner owner = prev.getNextAdvantageOwner();
+        int square = prev.getNextAdvantageSquare(); // 0 means none
+
+        GameRound next = new GameRound(size, owner, square);
+
+        // carry forward tournament totals
+        next.getHuman().updateScore(prev.getHuman().getScore());
+        next.getComputer().updateScore(prev.getComputer().getScore());
+        return next;
+    }
+
 
 
 
@@ -296,16 +317,6 @@ public class GameController {
      * @param previousRound the finished GameRound.
      * @return a new GameRound with updated player scores.
      */
-    public GameRound restartGame(GameRound previousRound) {
-        int boardSize = previousRound.getBoard().getSize();
-        GameRound newRound = new GameRound(boardSize);
-        int humanPrevScore = previousRound.getHuman().getScore();
-        int computerPrevScore = previousRound.getComputer().getScore();
-        newRound.getHuman().updateScore(humanPrevScore);
-        newRound.getComputer().updateScore(computerPrevScore);
-        return newRound;
-    }
-
     // === CLONE & EVAL HELPERS (ADD THESE INSIDE GameController) ===
     private Board cloneBoard(Board src) {
         Board copy = new Board(src.getSize());
@@ -550,4 +561,13 @@ public class GameController {
             return 2;
         }
     }
+
+
+    private int digitRoot(int n) {
+        n = Math.abs(n);
+        int s = 0;
+        while (n > 0) { s += n % 10; n /= 10; }
+        return (s >= 10) ? digitRoot(s) : s; // single digit 0..9
+    }
+
 }

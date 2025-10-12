@@ -19,6 +19,15 @@ public class GameRound implements Serializable {
     private Player winner;
     private int winnerScore;
 
+    private Board.AdvantageOwner advantageOwner = Board.AdvantageOwner.NONE;
+    private int advantageSquare = 0;
+    private boolean advantagedHasPlayed = false; // becomes true after their first turn completes
+
+    // --- Advantage to pass to the NEXT round (this is what your error is about) ---
+    private Board.AdvantageOwner nextAdvantageOwner = Board.AdvantageOwner.NONE;
+    private int nextAdvantageSquare = 0;
+
+
     /**
      * Constructs a game round with a chosen board size.
      *
@@ -33,6 +42,26 @@ public class GameRound implements Serializable {
         isHumanTurn = true;
         winner = null;
         winnerScore = 0;
+    }
+
+    public GameRound(int size, Board.AdvantageOwner owner, int advSquare) {
+        this.board = new Board(size);
+        this.advantageOwner = owner;
+        this.advantageSquare = advSquare;
+        board.applyAdvantage(owner, advSquare);
+    }
+
+    private void maybeReleaseAdvantageLockAfterTurn(boolean wasHumanTurn, boolean moveApplied) {
+        if (!moveApplied) return;
+        if (advantagedHasPlayed) return;
+
+        if (advantageOwner == Board.AdvantageOwner.HUMAN && wasHumanTurn) {
+            advantagedHasPlayed = true;
+            board.releaseAdvantageLock();
+        } else if (advantageOwner == Board.AdvantageOwner.COMPUTER && !wasHumanTurn) {
+            advantagedHasPlayed = true;
+            board.releaseAdvantageLock();
+        }
     }
 
     /**
@@ -59,10 +88,16 @@ public class GameRound implements Serializable {
      * @param diceSum the total value of the dice thrown
      * @return true if the computer successfully plays its turn; false otherwise
      */
+    public boolean playHumanTurn(int diceSum) {
+        boolean ok = human.makeMove(diceSum);
+        maybeReleaseAdvantageLockAfterTurn(true, ok);
+        return ok;
+    }
+
     public boolean playComputerTurn(int diceSum) {
-        // The computer makes a move. If move is valid, the turn remains with computer.
-        isHumanTurn = !computer.makeMove(diceSum);
-        return !isHumanTurn;
+        boolean ok = computer.makeMove(diceSum);
+        maybeReleaseAdvantageLockAfterTurn(false, ok);
+        return ok;
     }
 
     /**
@@ -264,4 +299,14 @@ public class GameRound implements Serializable {
     public void setCurrentPlayer(String playerName) {
         isHumanTurn = playerName.equals("Human");
     }
+
+
+    public void setNextRoundAdvantage(Board.AdvantageOwner owner, int square) {
+        this.nextAdvantageOwner = owner;   // add two new fields nextAdvantageOwner/nextAdvantageSquare
+        this.nextAdvantageSquare = square; // in GameRound
+    }
+    public Board.AdvantageOwner getNextAdvantageOwner() { return nextAdvantageOwner; }
+    public int getNextAdvantageSquare() { return nextAdvantageSquare; }
+
+
 }
