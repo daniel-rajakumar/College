@@ -223,6 +223,14 @@ void Human::uncoverSquares(const int sum) const {
             else ++it;
         }
     }
+    // if advantage protection removed all options, gracefully exit
+    if (validCombinations.empty()) {
+        std::cout << c(YELLOW) << "No valid uncover options this roll." << c(RESET)
+                  << " Advantage square " << Tournament::getAdvantageSquare()
+                  << " is protected for one turn.\n";
+        return;
+    }
+
 
 
     // Display valid combinations

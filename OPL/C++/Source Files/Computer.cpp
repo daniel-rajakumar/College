@@ -4,6 +4,7 @@
 
 #include "../Header Files/Computer.h"
 #include <iostream>
+#include <string>
 #include "../Header Files/Tournament.h"
 #include "../Header Files/TextUI.h"
 
@@ -27,6 +28,7 @@ Computer::Computer(Board& b, Board& humanBoard)
  */
 #include "../Header Files/Computer.h"
 #include <iostream>
+#include <string>
 #include <cstdlib>            // <-- add this for std::rand
 #include "../Header Files/Tournament.h"
 
@@ -168,8 +170,23 @@ bool Computer::takeTurn() {
             const int d1 = (std::rand()%6)+1;
             const int d2 = (diceCount==2) ? ((std::rand()%6)+1) : 0;
             sum = d1 + d2;
+            // Explain WHY 1 vs 2 dice
+            std::string diceWhy;
+            if (!oneDieAllowed) {
+                diceWhy = "must use 2 dice (1-die not allowed until 7.." + std::to_string(board.getSize()) + " are covered)";
+            } else if (diceCount == 1) {
+                int hi = highestUncovered(board);
+                int rem = remainingCount(board);
+                if (hi <= 6)      diceWhy = "1 die because highest remaining square <= 6 (aiming small)";
+                else if (rem <= 3) diceWhy = "1 die because only " + std::to_string(rem) + " squares remain (lower bust risk)";
+                else               diceWhy = "1 die (heuristic)";
+            } else { // diceCount == 2 with 1-die allowed
+                diceWhy = "2 dice to reach sums > 6 (need higher targets)";
+            }
 
-            cout << "Chooses to roll " << (diceCount==1 ? "1 die" : "2 dice") << ".\n";
+
+            cout << "Chooses to roll " << (diceCount==1 ? "1 die" : "2 dice")
+                 << " " << c(DIM) << "(" << diceWhy << ")" << c(RESET) << ".\n";
             if (diceCount==2) cout << "Rolled: " << d1 << " + " << d2 << " = " << sum << "\n";
             else              cout << "Rolled: " << d1 << " = " << sum
                                    << " " << c(DIM) << "(1-die allowed)" << c(RESET) << "\n";
