@@ -46,11 +46,13 @@ public class Computer extends Player {
         Move best = pool.get(0);
 
         // Apply atomically
-//        board.applyMove(/*isHumanTurn=*/false, best.coverMode, best.squares, diceSum);
-        for (int s : best.squares) {
-            if (best.coverMode) board.coverComputerSquare(s);
-            else board.uncoverHumanSquare(s);
-        }
+        board.applyMove(/*isHumanTurn=*/false, best.coverMode, best.squares, diceSum);
+//        for (int s : best.squares) {
+//            if (best.coverMode) board.coverComputerSquare(s);
+//            else board.uncoverHumanSquare(s);
+//        }
+
+
 
 
         // Explain

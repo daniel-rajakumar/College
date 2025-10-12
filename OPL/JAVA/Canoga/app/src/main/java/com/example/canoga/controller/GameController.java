@@ -449,28 +449,17 @@ public class GameController {
      * @return 1 if a single die should be rolled; otherwise, 2.
      */
     public int determineDiceRoll() {
-        int boardSize = gameRound.getBoard().getSize();
-        boolean[] mySquares = gameRound.isHumanTurn() ? gameRound.getBoard().getHumanSquares() :
-                                                       gameRound.getBoard().getComputerSquares();
-        boolean allCoveredFrom7 = true;
-        for (int i = 6; i < boardSize; i++) {
-            if (!mySquares[i]) {
-                allCoveredFrom7 = false;
-                break;
-            }
+        int n = gameRound.getBoard().getSize();
+        boolean[] row = gameRound.isHumanTurn()
+                ? gameRound.getBoard().getHumanSquares()
+                : gameRound.getBoard().getComputerSquares();
+
+        // Rule: you MAY roll 1 die only if ALL squares 7..n on YOUR row are already covered.
+        boolean all7toNCovered = true;
+        for (int i = 7; i <= n; i++) {
+            if (!row[i - 1]) { all7toNCovered = false; break; }
         }
-        if (allCoveredFrom7) {
-            int uncoveredCount = 0;
-            for (boolean square : mySquares) {
-                if (!square) uncoveredCount++;
-            }
-            if (uncoveredCount <= boardSize / 2) {
-                return 1;
-            } else {
-                return 2;
-            }
-        } else {
-            return 2;
-        }
+        return all7toNCovered ? 1 : 2;
     }
+
 }
