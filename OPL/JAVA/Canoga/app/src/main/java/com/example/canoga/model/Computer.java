@@ -1,141 +1,132 @@
 package com.example.canoga.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * Heuristic Computer player:
- *   1) Prefer COVER moves over UNCOVER (if both exist).
- *   2) Within a mode, prefer MORE squares (size 4 > 3 > 2 > 1).
- *   3) Tie-break by HIGHER numbers first (desc lexicographic).
- *   4) Cap combinations to 1..4 squares.
- * Uses Board.applyMove(...) for atomic, validated mutation.
+ * Represents the computer player and implements its move strategy.
  */
 public class Computer extends Player {
 
-    private String lastExplanation = "";
-
+    /**
+     * Constructs a Computer player with the specified board.
+     *
+     * @param board the game board associated with this player
+     */
     public Computer(Board board) {
         super(board);
     }
 
-    /** Shown in Help mode after the last move. */
+    /**
+     * Provides a rationale for the move selected by the computer.
+     *
+     * @return a string explaining the strategy behind the move
+     */
     public String getStrategyExplanation() {
-        return lastExplanation == null ? "" : lastExplanation;
+        return "Computer recommends covering squares X and Y for optimal play.";
     }
 
     /**
-     * Decide and apply a move for the given dice sum.
-     * @param diceSum total rolled
-     * @return true if a move was applied; false if no legal move exists
+     * Implements the computer's move strategy based on the dice sum.
+     * <p>
+     * First, it attempts a covering move on the computer's row. If no valid covering move
+     * is found, it then attempts an uncovering move on the human's row.
+     * <p>
+     * The heuristic selects the move combination containing the highest numbered square.
+     *
+     * @param diceSum the total value of the dice thrown
+     * @return true if a move is successfully made; false if no valid move exists
      */
     @Override
     public boolean makeMove(int diceSum) {
-        // Generate legal candidates for both modes
-        List<Move> coverMoves   = enumerateLegalMoves(/*cover*/true,  diceSum);
-        List<Move> uncoverMoves = enumerateLegalMoves(/*cover*/false, diceSum);
+        // Attempt a covering move on the computer's row.
+        List<Integer> availableCovering = new ArrayList<>();
+        boolean[] compSquares = board.getComputerSquares();
+        for (int i = 0; i < compSquares.length; i++) {
+            if (!compSquares[i]) { // Available if not covered.
+                availableCovering.add(i + 1); // Convert 0-indexed to 1-indexed.
+            }
+        }
+        Collections.sort(availableCovering);
+        List<List<Integer>> validCoverMoves = new ArrayList<>();
+        findCombinations(availableCovering, diceSum, 0, new ArrayList<>(), validCoverMoves);
 
-        // Prefer cover if available; else uncover
-        List<Move> pool = !coverMoves.isEmpty() ? coverMoves : uncoverMoves;
-        if (pool.isEmpty()) {
-            lastExplanation = "No legal move available for " + diceSum + ".";
-            return false;
+        if (!validCoverMoves.isEmpty()) {
+            List<Integer> bestMove = selectBestMove(validCoverMoves);
+            for (Integer square : bestMove) {
+                board.coverComputerSquare(square);
+            }
+            return true;
         }
 
-        // Rank: bigger size first, then higher tiles first
-        pool.sort(this::compareMoves);
-        Move best = pool.get(0);
+        // If no covering move exists, attempt an uncovering move on the human's row.
+        List<Integer> availableUncovering = new ArrayList<>();
+        boolean[] humanSquares = board.getHumanSquares();
+        for (int i = 0; i < humanSquares.length; i++) {
+            if (humanSquares[i]) { // Available if covered.
+                availableUncovering.add(i + 1);
+            }
+        }
+        Collections.sort(availableUncovering);
+        List<List<Integer>> validUncoverMoves = new ArrayList<>();
+        findCombinations(availableUncovering, diceSum, 0, new ArrayList<>(), validUncoverMoves);
 
-        // Apply atomically
-        board.applyMove(/*isHumanTurn=*/false, best.coverMode, best.squares, diceSum);
-//        for (int s : best.squares) {
-//            if (best.coverMode) board.coverComputerSquare(s);
-//            else board.uncoverHumanSquare(s);
-//        }
-
-
-
-
-        // Explain
-        lastExplanation = buildExplanation(best, !coverMoves.isEmpty());
-        return true;
-    }
-
-    // ===== helpers =====
-
-    /** Produce all legal combinations (1..4 squares) summing to diceSum under the given mode. */
-    private List<Move> enumerateLegalMoves(boolean coverMode, int diceSum) {
-        int n = board.getHumanSquares().length;
-        List<Integer> candidates = new ArrayList<>();
-
-        if (coverMode) {
-            // Cover the computer row: choose squares that are currently NOT covered on computer row
-            boolean[] comp = board.getComputerSquares();
-            for (int i = 0; i < n; i++) if (!comp[i]) candidates.add(i + 1);
-        } else {
-            // Uncover human row: choose squares that ARE currently covered on human row
-            boolean[] hum = board.getHumanSquares();
-            for (int i = 0; i < n; i++) if (hum[i]) candidates.add(i + 1);
+        if (!validUncoverMoves.isEmpty()) {
+            List<Integer> bestMove = selectBestMove(validUncoverMoves);
+            for (Integer square : bestMove) {
+                board.uncoverHumanSquare(square);
+            }
+            return true;
         }
 
-        // sort ascending for pruning; we’ll sort chosen sets desc later for ranking
-        Collections.sort(candidates);
-
-        List<Move> out = new ArrayList<>();
-        backtrackCombos(candidates, 0, new ArrayList<>(), 0, diceSum, out, coverMode);
-        return out;
+        // No valid move found.
+        return false;
     }
 
-    /** Backtracking generator: combinations of size ≤ 4 that sum exactly to target. */
-    private void backtrackCombos(List<Integer> src, int start, List<Integer> acc, int accSum,
-                                 int target, List<Move> out, boolean coverMode) {
-        if (accSum == target && !acc.isEmpty() && acc.size() <= 4) {
-            List<Integer> copy = new ArrayList<>(acc);
-            // Sort DESC for consistent lexicographic ranking (e.g., [9,4] > [8,5])
-            copy.sort(Comparator.reverseOrder());
-            out.add(new Move(coverMode, copy));
+    /**
+     * Recursively finds all combinations of numbers from the available list that sum up to the target value.
+     *
+     * @param available a sorted list of available square numbers
+     * @param target    the remaining sum to achieve
+     * @param start     the start index in the available list
+     * @param current   the current combination being built
+     * @param result    the list to store all valid combinations
+     */
+    private void findCombinations(List<Integer> available, int target, int start,
+                                  List<Integer> current, List<List<Integer>> result) {
+        if (target == 0) {
+            result.add(new ArrayList<>(current));
             return;
         }
-        if (accSum >= target || acc.size() == 4) return;
-
-        for (int i = start; i < src.size(); i++) {
-            int v = src.get(i);
-            if (accSum + v > target) break; // ascending src => prune
-            acc.add(v);
-            backtrackCombos(src, i + 1, acc, accSum + v, target, out, coverMode);
-            acc.remove(acc.size() - 1);
+        for (int i = start; i < available.size(); i++) {
+            int val = available.get(i);
+            if (val > target) {
+                break;  // No need to continue since the list is sorted.
+            }
+            current.add(val);
+            findCombinations(available, target - val, i + 1, current, result);
+            current.remove(current.size() - 1);
         }
     }
 
-    /** Rank by: (1) more squares first, (2) lexicographic by descending values. */
-    private int compareMoves(Move a, Move b) {
-        if (a.squares.size() != b.squares.size()) {
-            return Integer.compare(b.squares.size(), a.squares.size());
+    /**
+     * Selects the "best" move from the list of valid move combinations.
+     * The heuristic is to choose the combination that contains the highest numbered square.
+     *
+     * @param validMoves a list of valid move combinations
+     * @return the selected best move combination
+     */
+    public List<Integer> selectBestMove(List<List<Integer>> validMoves) {
+        List<Integer> bestMove = validMoves.get(0);
+        int bestMax = Collections.max(bestMove);
+        for (List<Integer> move : validMoves) {
+            int currentMax = Collections.max(move);
+            if (currentMax > bestMax) {
+                bestMax = currentMax;
+                bestMove = move;
+            }
         }
-        // same size → compare element-wise (they are already desc-sorted)
-        for (int i = 0; i < a.squares.size(); i++) {
-            int cmp = Integer.compare(b.squares.get(i), a.squares.get(i));
-            if (cmp != 0) return cmp;
-        }
-        return 0;
-    }
-
-    private String buildExplanation(Move m, boolean coverWasAvailable) {
-        String mode = m.coverMode ? "cover" : "uncover";
-        String squares = m.squares.toString();
-        String why = m.coverMode
-                ? "Covering advances my own row and reduces your uncover path."
-                : (coverWasAvailable
-                ? "No safe cover existed; uncovering increases your score liability and may stall your path."
-                : "Cover unavailable; uncovering is the only legal option.");
-        return "Computer chose to " + mode + " " + squares + ". " + why;
-    }
-
-    private static class Move {
-        final boolean coverMode;
-        final List<Integer> squares; // DESC-sorted for ranking
-        Move(boolean coverMode, List<Integer> squares) {
-            this.coverMode = coverMode;
-            this.squares = squares;
-        }
+        return bestMove;
     }
 }

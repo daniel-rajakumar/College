@@ -17,8 +17,6 @@ public class GameModel {
         this.boardSize = 9;
     }
 
-
-
     /**
      * Returns the singleton instance of GameModel.
      *
@@ -53,6 +51,5 @@ public class GameModel {
     public int getBoardSize() {
         return boardSize;
     }
-
 }
 

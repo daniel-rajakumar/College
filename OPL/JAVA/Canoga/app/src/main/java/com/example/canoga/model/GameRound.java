@@ -30,13 +30,10 @@ public class GameRound implements Serializable {
         computer = new Computer(board);
         random = new Random();
         // Default turn set to human. This can be overridden by loaded game data.
-//        isHumanTurn = true;
-        isHumanTurn = decideFirstPlayer();
-
+        isHumanTurn = true;
         winner = null;
         winnerScore = 0;
     }
-
 
     /**
      * Decides the first player by simulating dice rolls for both players.
@@ -62,15 +59,10 @@ public class GameRound implements Serializable {
      * @param diceSum the total value of the dice thrown
      * @return true if the computer successfully plays its turn; false otherwise
      */
-
-    private String lastHelp;
-
-    public void setLastHelp(String help) {
-        this.lastHelp = help;
-    }
-
-    public String getLastHelp() {
-        return lastHelp;
+    public boolean playComputerTurn(int diceSum) {
+        // The computer makes a move. If move is valid, the turn remains with computer.
+        isHumanTurn = !computer.makeMove(diceSum);
+        return !isHumanTurn;
     }
 
     /**
@@ -272,23 +264,4 @@ public class GameRound implements Serializable {
     public void setCurrentPlayer(String playerName) {
         isHumanTurn = playerName.equals("Human");
     }
-
-    // ==== NEW: have the computer take a single move given a dice sum ====
-    // Have the computer take a single move given a dice sum.
-    public boolean playComputerTurn(int diceSum) {
-        com.example.canoga.model.Player computer = getComputer();
-        if (!(computer instanceof com.example.canoga.model.Computer)) {
-            throw new IllegalStateException("Computer player is not instance of Computer");
-        }
-        com.example.canoga.model.Computer ai = (com.example.canoga.model.Computer) computer;
-
-        boolean moved = ai.makeMove(diceSum);
-
-        // Optional: log the AI's rationale for Help/debug
-        System.out.println(ai.getStrategyExplanation());
-
-        return moved;
-    }
-
-
 }
