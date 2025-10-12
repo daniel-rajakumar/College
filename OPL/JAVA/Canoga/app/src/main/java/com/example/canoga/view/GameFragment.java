@@ -203,7 +203,8 @@ public class GameFragment extends Fragment {
                 boolean computerMoved = gameController.playComputerTurnWithStrategy(diceSum);
                 if (!computerMoved) {
                     Toast.makeText(getActivity(), "Computer couldn't move. Switching turn...", Toast.LENGTH_SHORT).show();
-                    gameRound.setHumanTurn(!gameRound.isHumanTurn());
+//                    gameRound.setHumanTurn(!gameRound.isHumanTurn());
+                    gameRound.setHumanTurn(true);
                 } else {
                     gameRound.getCurrentPlayer().setHasPlayed(true);
                     Toast.makeText(getActivity(), "Computer moved automatically.", Toast.LENGTH_SHORT).show();
@@ -392,7 +393,8 @@ public class GameFragment extends Fragment {
         String selectedMove = (String) spinnerOptions.getSelectedItem();
         if (selectedMove == null || selectedMove.equals("No valid moves")) {
             Toast.makeText(getActivity(), "No valid move selected", Toast.LENGTH_SHORT).show();
-            gameRound.setHumanTurn(!gameRound.isHumanTurn());
+//            gameRound.setHumanTurn(!gameRound.isHumanTurn());
+            gameRound.setHumanTurn(false);
             updateUI();
             layoutMoveOptions.setVisibility(View.GONE);
             layoutOne.setVisibility(View.VISIBLE);
