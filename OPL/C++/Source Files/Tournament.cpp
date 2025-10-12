@@ -136,15 +136,15 @@ void Tournament::start() {
         round.play();
 
         // Tournament::start(), after round.play()
-        if (human.getBoard().allCovered()) {
-            updateScores(true, false, false, false,
-                         human.getBoard().getCoveredSum(),
-                         computer.getBoard().getUncoveredSum());
-        } else if (computer.getBoard().allCovered()) {
-            updateScores(false, false, true, false,
-                         human.getBoard().getUncoveredSum(),
-                         computer.getBoard().getCoveredSum());
-        }
+        // if (human.getBoard().allCovered()) {
+        //     updateScores(true, false, false, false,
+        //                  human.getBoard().getCoveredSum(),
+        //                  computer.getBoard().getUncoveredSum());
+        // } else if (computer.getBoard().allCovered()) {
+        //     updateScores(false, false, true, false,
+        //                  human.getBoard().getUncoveredSum(),
+        //                  computer.getBoard().getCoveredSum());
+        // }
 
         cout << "\n~~~~~~~~~[SCORE BOARD]~~~~~~~~~~\n";
         cout << "Your Score: " << tournamentScoreHuman << "\n";

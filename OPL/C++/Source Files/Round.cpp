@@ -109,7 +109,8 @@ void Round::play() const {
         }
 
         // Round ends if someone covered all
-        if (player1.getBoard().allCovered() || player2.getBoard().allCovered()) {
+        if (player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
+            player1.getBoard().allUncovered() || player2.getBoard().allUncovered()) {
             bool winnerWasFirst = (firstPlayer != nullptr) && (currentPlayer == firstPlayer);
             declareWinner(currentPlayer, winnerWasFirst);
             break;
@@ -142,7 +143,8 @@ void Round::play() const {
  * @return True if the round is over, false otherwise.
  */
 bool Round::isRoundOver() const {
-    return player1.getBoard().allCovered() || player2.getBoard().allCovered();
+    return player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
+           player1.getBoard().allUncovered() || player2.getBoard().allUncovered();
 }
 
 /**
@@ -164,6 +166,18 @@ void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirst
                                 player1.getBoard().getUncoveredSum(),
                                 player2.getBoard().getCoveredSum());
         tournament.applyHandicap(winnerWasFirstPlayer, player1.getBoard().getUncoveredSum());
+    } else if (player2.getBoard().allUncovered()) {
+        cout << "Human wins by uncovering all the computer's squares!" << endl;
+        tournament.updateScores(false, true, false, false,
+                                player1.getBoard().getUncoveredSum(),
+                                player2.getBoard().getCoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, player1.getBoard().getUncoveredSum());
+    } else if (player1.getBoard().allUncovered()) {
+        cout << "Computer wins by uncovering all the human's squares!" << endl;
+        tournament.updateScores(false, false, false, true,
+                                player1.getBoard().getCoveredSum(),
+                                player2.getBoard().getUncoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, player2.getBoard().getUncoveredSum());
     }
 }
 
