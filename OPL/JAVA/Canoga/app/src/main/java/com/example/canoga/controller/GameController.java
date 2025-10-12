@@ -188,14 +188,6 @@ public class GameController {
         return b.isComputerComplete();
     }
 
-    private int coveredCount(boolean[] row) { int c=0; for (boolean v: row) if (v) c++; return c; }
-
-    private boolean sevenToNAllCovered(boolean[] row) {
-        // if size==9, check 7..9; size==10 → 7..10; size==11 → 7..11
-        for (int i = 6; i < row.length; i++) if (!row[i]) return false;
-        return true;
-    }
-
     // score from the Computer's point of view (higher = better for Computer)
     private int evaluateBoardAfterMove(List<Integer> move, boolean isCovering) {
         Board b = gameRound.getBoard();
@@ -314,55 +306,75 @@ public class GameController {
         return newRound;
     }
 
-    /**
-     * Returns the best move among valid moves based on an evaluation metric.
-     *
-     * @param validMoves a list of valid move strings.
-     * @param isCovering true if evaluating covering moves; false for uncovering moves.
-     * @return the best move as a string.
-     */
+    // === CLONE & EVAL HELPERS (ADD THESE INSIDE GameController) ===
+    private Board cloneBoard(Board src) {
+        Board copy = new Board(src.getSize());
+        boolean[] hs = src.getHumanSquares();
+        boolean[] cs = src.getComputerSquares();
+        for (int i = 0; i < hs.length; i++) {
+            if (hs[i]) copy.coverHumanSquare(i + 1);
+            if (cs[i]) copy.coverComputerSquare(i + 1);
+        }
+        return copy;
+    }
+
+    private boolean isForcedWinOnClone(List<Integer> move, boolean isCovering) {
+        Board sim = cloneBoard(gameRound.getBoard());
+        if (isCovering) for (int sq : move) sim.coverComputerSquare(sq);
+        else            for (int sq : move) sim.uncoverHumanSquare(sq);
+        return sim.isComputerComplete();
+    }
+
+    private int evalOnClone(List<Integer> move, boolean isCovering) {
+        Board sim = cloneBoard(gameRound.getBoard());
+        if (isCovering) for (int sq : move) sim.coverComputerSquare(sq);
+        else            for (int sq : move) sim.uncoverHumanSquare(sq);
+        if (sim.isComputerComplete()) return 1_000_000;
+        if (sim.isHumanComplete())    return -1_000_000;
+        int score = 0;
+        if (sevenToNAllCovered(sim.getComputerSquares())) score += 5000;
+        if (sevenToNAllCovered(sim.getHumanSquares()))    score -= 5000;
+        score += 10 * coveredCount(sim.getComputerSquares());
+        score -= 10 * coveredCount(sim.getHumanSquares());
+        score += Collections.max(move);
+        if (isCovering) score += 5;
+        return score;
+    }
+
+    private int coveredCount(boolean[] row) { int c=0; for (boolean v: row) if (v) c++; return c; }
+    private boolean sevenToNAllCovered(boolean[] row) { for (int i=6;i<row.length;i++) if(!row[i]) return false; return true; }
+
+    // === REPLACE getBestMove(...) to use the clone helpers ===
     public String getBestMove(List<String> validMoves, boolean isCovering) {
         if (validMoves == null || validMoves.isEmpty() ||
                 (validMoves.size() == 1 && "No valid moves".equals(validMoves.get(0)))) {
             return "No valid moves";
         }
-
+        // forced win?
+        for (String mvStr : validMoves) {
+            if ("No valid moves".equals(mvStr)) continue;
+            List<Integer> mv = parseMove(mvStr);
+            if (isForcedWinOnClone(mv, isCovering)) return mvStr;
+        }
+        // best eval
         String bestStr = validMoves.get(0);
         int bestScore = Integer.MIN_VALUE;
-
-        // 1) First pass: pick an immediate winning move if it exists
         for (String mvStr : validMoves) {
             if ("No valid moves".equals(mvStr)) continue;
             List<Integer> mv = parseMove(mvStr);
-            List<SimTouch> touched = new ArrayList<>();
-            simApply(isCovering, mv, touched);
-            boolean winNow = winsForComputerNow();
-            simRevert(touched);
-            if (winNow) return mvStr; // always take mate-in-1
-        }
-
-        // 2) No forced win → evaluate positions
-        for (String mvStr : validMoves) {
-            if ("No valid moves".equals(mvStr)) continue;
-            List<Integer> mv = parseMove(mvStr);
-            List<SimTouch> touched = new ArrayList<>();
-            simApply(isCovering, mv, touched);
-            int score = evaluateBoardAfterMove(mv, isCovering);
-            simRevert(touched);
-
-            // choose max score; tie-break: higher single tile, then fewer tiles
-            if (score > bestScore) {
-                bestScore = score; bestStr = mvStr;
-            } else if (score == bestScore) {
-                int curMax = Collections.max(parseMove(mvStr));
+            int score = evalOnClone(mv, isCovering);
+            if (score > bestScore) { bestScore = score; bestStr = mvStr; }
+            else if (score == bestScore) {
+                int curMax  = Collections.max(mv);
                 int bestMax = Collections.max(parseMove(bestStr));
-                if (curMax > bestMax || (curMax == bestMax && parseMove(mvStr).size() < parseMove(bestStr).size())) {
+                if (curMax > bestMax || (curMax == bestMax && mv.size() < parseMove(bestStr).size())) {
                     bestStr = mvStr;
                 }
             }
         }
         return bestStr;
     }
+
 
 
     /**
