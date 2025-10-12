@@ -31,6 +31,9 @@ public class BoardView extends View {
     private Paint textPaint;
     private Paint borderPaint;
 
+    private Paint lockRing;
+    private static final int PINK = 0xFFD41A69;
+
     // Layout settings: circle radius and spacing between circles.
     private int squareRadius = 35;
     private int squareSpacing = 20;
@@ -73,6 +76,17 @@ public class BoardView extends View {
         borderPaint.setColor(Color.DKGRAY);
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(3);
+
+        // ★ ADD: lock ring style
+        lockRing = new Paint(Paint.ANTI_ALIAS_FLAG);
+        lockRing.setStyle(Paint.Style.STROKE);
+        lockRing.setStrokeWidth(4);
+        lockRing.setColor(PINK);
+    }
+
+    // ★ ADD
+    private float dp(float v) {
+        return v * getResources().getDisplayMetrics().density;
     }
 
     /**
@@ -84,6 +98,11 @@ public class BoardView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (board == null) return;
+
+        // ★ ADD: read advantage info
+        Board.AdvantageOwner owner = board.getAdvantageOwner(); // NONE / HUMAN / COMPUTER
+        int advSq = board.getAdvantageSquare();                 // 1..size, 0 = none
+        boolean lockActive = board.isAdvantageLockActive();
 
         int boardSize = board.getSize();
 
@@ -107,6 +126,12 @@ public class BoardView extends View {
             if (!humanSquares[i]) {
                 canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize() / 3), textPaint);
             }
+
+            // ★ ADD: lock-only spotlight (Human row)
+            boolean isAdvCell = (owner == Board.AdvantageOwner.HUMAN) && (advSq == i + 1);
+            if (lockActive && isAdvCell) {
+                canvas.drawCircle(cx, cy, squareRadius - dp(2), lockRing);
+            }
         }
 
         // Prepare to draw the computer row.
@@ -125,7 +150,14 @@ public class BoardView extends View {
             if (!computerSquares[i]) {
                 canvas.drawText(String.valueOf(i + 1), cx, cy + (textPaint.getTextSize() / 3), textPaint);
             }
+
+            // ★ ADD: lock-only spotlight (Computer row)
+            boolean isAdvCell = (owner == Board.AdvantageOwner.COMPUTER) && (advSq == i + 1);
+            if (lockActive && isAdvCell) {
+                canvas.drawCircle(cx, cy, squareRadius - dp(2), lockRing);
+            }
         }
+
     }
 
     /**
@@ -180,6 +212,8 @@ public class BoardView extends View {
                 controller.setBoardSize(boardSize);
                 String gameMode = TournamentController.getInstance().getCurrentGameMode();
                 GameRound newRound = controller.getNewGameRound();
+
+//                GameRound newRound = controller.getNewGameRound( gameMode, board.getAdvantageSquare(), board.getAdvantageOwner() );
 
                 // Update scores if this is a restarted game or loaded game.
                 Bundle args = getArguments();

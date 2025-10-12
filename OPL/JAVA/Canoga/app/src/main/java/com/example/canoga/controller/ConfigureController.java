@@ -1,5 +1,6 @@
 package com.example.canoga.controller;
 
+import com.example.canoga.model.Board;
 import com.example.canoga.model.GameModel;
 import com.example.canoga.model.GameRound;
 
@@ -36,5 +37,9 @@ public class ConfigureController {
      */
     public GameRound getNewGameRound() {
         return new GameRound(model.getBoardSize());
+    }
+
+    public GameRound getNewGameRound(Board.AdvantageOwner owner, int advSquare) {
+        return new GameRound(model.getBoardSize(), owner, advSquare);
     }
 }

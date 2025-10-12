@@ -20,7 +20,6 @@ public class GameController {
     private BoardView boardView;
 
 
-
     /**
      * Constructs the GameController with the provided game round and board view.
      *
@@ -293,19 +292,16 @@ public class GameController {
     }
 
 
-    public GameRound restartGame(GameRound prev) {
-        int size = prev.getBoard().getSize();
-
-        // Who has advantage next?
-        Board.AdvantageOwner owner = prev.getNextAdvantageOwner();
-        int square = prev.getNextAdvantageSquare(); // 0 means none
-
-        GameRound next = new GameRound(size, owner, square);
-
-        // carry forward tournament totals
-        next.getHuman().updateScore(prev.getHuman().getScore());
-        next.getComputer().updateScore(prev.getComputer().getScore());
-        return next;
+    public GameRound restartGame(GameRound previousRound) {
+        int boardSize = previousRound.getBoard().getSize();
+        GameRound nextRound = new GameRound(
+                boardSize,
+                previousRound.getNextAdvantageOwner(),
+                previousRound.getNextAdvantageSquare()
+        );
+        nextRound.getHuman().updateScore(previousRound.getHuman().getScore());
+        nextRound.getComputer().updateScore(previousRound.getComputer().getScore());
+        return nextRound;
     }
 
 

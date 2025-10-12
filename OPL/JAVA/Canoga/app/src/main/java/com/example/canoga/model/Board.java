@@ -120,6 +120,15 @@ public class Board {
         return true;
     }
 
+    public boolean uncoverHumanSquare(int square) {
+        if (square < 1 || square > size) return false;
+        // Computer tries to uncover Human's square; block if it's the locked advantage square
+        if (advantageLockActive && advantageOwner == AdvantageOwner.HUMAN && square == advantageSquare) return false;
+        if (!humanSquares[square - 1]) return false;
+        humanSquares[square - 1] = false;
+        return true;
+    }
+
     public boolean uncoverComputerSquare(int index) {
         if (index < 1 || index > size) return false;
 
@@ -141,37 +150,35 @@ public class Board {
     }
 
 
+
     public boolean isHumanComplete() {
-        // Human wins if Human covered all OR Human fully UNcovered computer (after it had been covered)
-        return isHumanCoveredAll() || isComputerUncoveredAllWin();  // ★ CHANGED
+        // Human wins by covering all human squares OR fully uncovering the computer row
+        // If you have "ever-covered" guards, call them here; otherwise, keep only covered-all:
+        return isHumanCoveredAll(); // + (guarded) isComputerUncoveredAll
     }
-
     public boolean isComputerComplete() {
-        // Computer wins if Computer covered all OR Computer fully UNcovered human (after it had been covered)
-        return isComputerCoveredAll() || isHumanUncoveredAllWin();  // ★ CHANGED
+        // Computer wins by covering all computer squares OR fully uncovering the human row
+        return isComputerCoveredAll(); // + (guarded) isHumanUncoveredAll
     }
 
-
-
-    // Computer wins if the Human has been fully uncovered (all false)
-    public boolean isHumanUncoveredAll() {
-        for (boolean covered : humanSquares) if (covered) return false;
-        return true;
-    }
-
-
-    public boolean isComputerUncoveredAll() {
-        for (boolean covered : computerSquares) if (covered) return false;
-        return true;
-    }
 
     public boolean isHumanCoveredAll() {
-        return humanCoveredCount == humanSquares.length;            // ★ CHANGED
+        for (boolean c : humanSquares) if (!c) return false;
+        return true;
+    }
+    public boolean isComputerCoveredAll() {
+        for (boolean c : computerSquares) if (!c) return false;
+        return true;
+    }
+    public boolean isHumanUncoveredAll() {
+        for (boolean c : humanSquares) if (c) return false;
+        return true;
+    }
+    public boolean isComputerUncoveredAll() {
+        for (boolean c : computerSquares) if (c) return false;
+        return true;
     }
 
-    public boolean isComputerCoveredAll() {
-        return computerCoveredCount == computerSquares.length;      // ★ CHANGED
-    }
 
     // ★ ADD: Only count UNcovered-all as a win if that row had been covered at some point
     public boolean isComputerUncoveredAllWin() {

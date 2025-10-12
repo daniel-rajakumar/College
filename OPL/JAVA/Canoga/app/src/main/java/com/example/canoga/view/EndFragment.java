@@ -109,6 +109,8 @@ public class EndFragment extends Fragment {
                 Bundle args = new Bundle();
                 args.putInt("prevHumanScore", finishedRound.getHuman().getScore());
                 args.putInt("prevComputerScore", finishedRound.getComputer().getScore());
+                args.putString("nextAdvOwner", finishedRound.getNextAdvantageOwner().name());
+                args.putInt("nextAdvSquare", finishedRound.getNextAdvantageSquare());
                 configFragment.setArguments(args);
 
                 // Replace current fragment with configuration fragment.
