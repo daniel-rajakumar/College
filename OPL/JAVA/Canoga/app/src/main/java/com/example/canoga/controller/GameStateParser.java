@@ -114,6 +114,8 @@ public class GameStateParser {
         round.setComputer(computer);
         round.setHumanTurn(isHumanTurn);
 
+        board.recomputeCounts(); // <— LAST line of the ctor
+
         return round;
     }
 }

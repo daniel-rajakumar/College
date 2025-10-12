@@ -172,13 +172,17 @@ public class GameController {
      * @return a String indicating the winner.
      */
     public String getWinner() {
-        if (gameRound.getBoard().isHumanComplete()) {
-            return "Human";
-        } else if (gameRound.getBoard().isComputerComplete()) {
-            return "Human";
-        } else {
-            return "None";
-        }
+        Board b = gameRound.getBoard();
+
+        // Human wins by either covering all of their own squares
+        // or by fully uncovering the Computer’s row.
+        if (b.isHumanComplete() || b.isComputerComplete()) return "Human";
+
+        // Computer wins by either covering all of its own squares
+        // or by fully uncovering the Human’s row.
+        if (b.isComputerCoveredAll() || b.isHumanUncoveredAll()) return "Computer";
+
+        return "None";
     }
 
     /**
@@ -191,46 +195,35 @@ public class GameController {
     public int finishGame(String winner) {
         Board board = gameRound.getBoard();
         int roundScore = 0;
+
         if (winner.equalsIgnoreCase("Human")) {
             if (board.isHumanComplete()) {
-                // Human wins by covering all their own squares.
-                boolean[] compSquares = board.getComputerSquares();
-                for (int i = 0; i < compSquares.length; i++) {
-                    if (!compSquares[i]) {
-                        roundScore += (i + 1);
-                    }
-                }
+                // Human won by COVERING own row → score = sum of Computer’s UNcovered squares.
+                boolean[] comp = board.getComputerSquares();
+                for (int i = 0; i < comp.length; i++) if (!comp[i]) roundScore += (i + 1);
             } else if (board.isComputerComplete()) {
-                // Human wins by uncovering all computer squares.
-                boolean[] humanSquares = board.getHumanSquares();
-                for (int i = 0; i < humanSquares.length; i++) {
-                    if (humanSquares[i]) {
-                        roundScore += (i + 1);
-                    }
-                }
+                // Human won by UNcovering Computer’s row → score = sum of Human’s COVERED squares.
+                boolean[] hum = board.getHumanSquares();
+                for (int i = 0; i < hum.length; i++) if (hum[i]) roundScore += (i + 1);
             }
             gameRound.getHuman().updateScore(roundScore);
         } else if (winner.equalsIgnoreCase("Computer")) {
-            if (board.isComputerComplete()) {
-                boolean[] humanSquares = board.getHumanSquares();
-                for (int i = 0; i < humanSquares.length; i++) {
-                    if (!humanSquares[i]) {
-                        roundScore += (i + 1);
-                    }
-                }
-            } else if (board.isHumanComplete()) {
-                boolean[] compSquares = board.getComputerSquares();
-                for (int i = 0; i < compSquares.length; i++) {
-                    if (compSquares[i]) {
-                        roundScore += (i + 1);
-                    }
-                }
+            if (board.isComputerCoveredAll()) {
+                // Computer won by COVERING own row → score = sum of Human’s UNcovered squares.
+                boolean[] hum = board.getHumanSquares();
+                for (int i = 0; i < hum.length; i++) if (!hum[i]) roundScore += (i + 1);
+            } else if (board.isHumanUncoveredAll()) {
+                // Computer won by UNcovering Human’s row → score = sum of Computer’s COVERED squares.
+                boolean[] comp = board.getComputerSquares();
+                for (int i = 0; i < comp.length; i++) if (comp[i]) roundScore += (i + 1);
             }
             gameRound.getComputer().updateScore(roundScore);
         }
-        System.out.println("Round Score: " + roundScore);
+
         return roundScore;
     }
+
+
 
     /**
      * Restarts the game round using the same board size and carries over the players' scores.

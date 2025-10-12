@@ -8,6 +8,23 @@ public class Board {
     private final int size;
     private final boolean[] humanSquares;    // true = covered, false = uncovered
     private final boolean[] computerSquares; // true = covered, false = uncovered
+    // fields
+    private int humanCoveredCount = 0;
+    private int computerCoveredCount = 0;
+    private boolean humanEverCovered = false;     // has human row ever had any covered square this round?
+    private boolean computerEverCovered = false;  // has computer row ever had any covered square this round?
+
+    public void recomputeCounts() {
+        humanCoveredCount = 0;
+        for (boolean c : humanSquares) if (c) humanCoveredCount++;
+        computerCoveredCount = 0;
+        for (boolean c : computerSquares) if (c) computerCoveredCount++;
+
+        // "ever" flags reflect whether there has been anything to uncover
+        humanEverCovered = humanCoveredCount > 0;
+        computerEverCovered = computerCoveredCount > 0;
+    }
+
 
     /**
      * Constructs a Board with the specified size.
@@ -26,9 +43,11 @@ public class Board {
 
         // Initialize computer squares as covered (true) and human squares as uncovered (false)
         for (int i = 0; i < size; i++) {
-            computerSquares[i] = true;
+            computerSquares[i] = false;
             humanSquares[i] = false;
         }
+
+        recomputeCounts(); // <— LAST line of the ctor
     }
 
     /**
@@ -64,91 +83,107 @@ public class Board {
      * @param index Square number (1-indexed)
      * @return true if the square was successfully covered; false if the index is invalid or already covered
      */
-    public boolean coverHumanSquare(int index) {
-        if (index < 1 || index > size) return false;
-        if (humanSquares[index - 1]) return false; // square already covered
-        humanSquares[index - 1] = true;
-        return true;
-    }
-
     /**
      * Uncovers a computer square.
      *
      * @param index Square number (1-indexed)
      * @return true if the square was successfully uncovered; false if the index is invalid or already uncovered
      */
+
+
+
+
+    public boolean coverHumanSquare(int index) {
+        if (index < 1 || index > size) return false;
+        int i = index - 1;
+        if (humanSquares[i]) return false;      // already covered
+        setHuman(i, true);                      // ★ CHANGED
+        return true;
+    }
+
     public boolean uncoverComputerSquare(int index) {
         if (index < 1 || index > size) return false;
-        if (!computerSquares[index - 1]) return false; // square already uncovered
-        computerSquares[index - 1] = false;
+        int i = index - 1;
+        if (!computerSquares[i]) return false;  // already uncovered
+        setComputer(i, false);                  // ★ CHANGED
         return true;
     }
 
-    /**
-     * Checks if all human squares are in the same state.
-     * Typically used to determine if the human row is complete.
-     *
-     * @return true if all human squares are either all covered or all uncovered; false otherwise
-     */
-    public boolean isHumanComplete() {
-        if (humanSquares.length == 0) return true;
-        boolean first = humanSquares[0];
-        for (boolean covered : humanSquares) {
-            if (covered != first) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Checks if all computer squares are in the same state.
-     * For this game, the round ends when the computer's row is fully uncovered.
-     *
-     * @return true if all computer squares are in the same state; false otherwise
-     */
-    public boolean isComputerComplete() {
-        if (computerSquares.length == 0) return true;
-        boolean first = computerSquares[0];
-        for (boolean covered : computerSquares) {
-            if (covered != first) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Uncovers a human square.
-     *
-     * @param square Square number (1-indexed)
-     * @return true if the square was uncovered successfully; false if the square is invalid or already uncovered
-     */
     public boolean uncoverHumanSquare(Integer square) {
-        if (square < 1 || square > size) {
-            return false;
-        }
-        if (!humanSquares[square - 1]) {
-            return false; // square already uncovered
-        }
-        humanSquares[square - 1] = false;
+        if (square < 1 || square > size) return false;
+        int i = square - 1;
+        if (!humanSquares[i]) return false;     // already uncovered
+        setHuman(i, false);                     // ★ CHANGED
         return true;
     }
 
-    /**
-     * Covers a computer square.
-     *
-     * @param square Square number (1-indexed)
-     * @return true if the square was covered successfully; false if the square is invalid or already covered
-     */
     public boolean coverComputerSquare(Integer square) {
-        if (square < 1 || square > size) {
-            return false;
-        }
-        if (computerSquares[square - 1]) {
-            return false; // square already covered
-        }
-        computerSquares[square - 1] = true;
+        if (square < 1 || square > size) return false;
+        int i = square - 1;
+        if (computerSquares[i]) return false;   // already covered
+        setComputer(i, true);                   // ★ CHANGED
         return true;
     }
+
+
+    public boolean isHumanComplete() {
+        // Human wins if Human covered all OR Human fully UNcovered computer (after it had been covered)
+        return isHumanCoveredAll() || isComputerUncoveredAllWin();  // ★ CHANGED
+    }
+
+    public boolean isComputerComplete() {
+        // Computer wins if Computer covered all OR Computer fully UNcovered human (after it had been covered)
+        return isComputerCoveredAll() || isHumanUncoveredAllWin();  // ★ CHANGED
+    }
+
+
+    // Computer wins if the Human has been fully uncovered (all false)
+    public boolean isHumanUncoveredAll() {
+        for (boolean covered : humanSquares) if (covered) return false;
+        return true;
+    }
+
+
+    public boolean isComputerUncoveredAll() {
+        for (boolean covered : computerSquares) if (covered) return false;
+        return true;
+    }
+
+    public boolean isHumanCoveredAll() {
+        return humanCoveredCount == humanSquares.length;            // ★ CHANGED
+    }
+
+    public boolean isComputerCoveredAll() {
+        return computerCoveredCount == computerSquares.length;      // ★ CHANGED
+    }
+
+    // ★ ADD: Only count UNcovered-all as a win if that row had been covered at some point
+    public boolean isComputerUncoveredAllWin() {
+        return computerCoveredCount == 0 && computerEverCovered;
+    }
+
+    public boolean isHumanUncoveredAllWin() {
+        return humanCoveredCount == 0 && humanEverCovered;
+    }
+
+
+    // ★ ADD: keep counts/flags in sync from one place
+    private void setHuman(int zeroBasedIdx, boolean covered) {
+        boolean prev = humanSquares[zeroBasedIdx];
+        if (prev == covered) return;
+        humanSquares[zeroBasedIdx] = covered;
+        humanCoveredCount += covered ? 1 : -1;
+        if (humanCoveredCount > 0) humanEverCovered = true;
+    }
+
+    private void setComputer(int zeroBasedIdx, boolean covered) {
+        boolean prev = computerSquares[zeroBasedIdx];
+        if (prev == covered) return;
+        computerSquares[zeroBasedIdx] = covered;
+        computerCoveredCount += covered ? 1 : -1;
+        if (computerCoveredCount > 0) computerEverCovered = true;
+    }
+
+
+
 }

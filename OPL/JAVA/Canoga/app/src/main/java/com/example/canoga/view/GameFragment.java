@@ -22,6 +22,7 @@ import android.widget.ToggleButton;
 
 import com.example.canoga.controller.GameController;
 import com.example.canoga.controller.TournamentController;
+import com.example.canoga.model.Board;
 import com.example.canoga.model.Computer;
 import com.example.canoga.model.GameRound;
 import com.example.canoga.model.Human;
@@ -453,22 +454,34 @@ public class GameFragment extends Fragment {
      * @return true if the game is won; false otherwise.
      */
     private boolean checkWin() {
-        if (gameRound.getHuman().hasPlayed() && gameRound.getComputer().hasPlayed()) {
-            if (gameRound.getBoard().isHumanComplete() || gameRound.getBoard().isComputerComplete()) {
-                String winner = gameRound.isHumanTurn() ? "Human" : "Computer";
-                int winnerScore = gameController.finishGame(winner);
-                Toast.makeText(getActivity(), winner + " wins!", Toast.LENGTH_LONG).show();
-                gameRound.setWinnerScore(winnerScore);
-                gameRound.setWinner(gameRound.isHumanTurn() ? gameRound.getHuman() : gameRound.getComputer());
-                EndFragment endFragment = EndFragment.newInstance(gameRound);
-                requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragmentContainerView, endFragment)
-                        .commit();
-                return true;
-            }
+        Board b = gameRound.getBoard();
+
+        String winner = null;
+        if (b.isHumanComplete()) {
+            winner = "Human";
+        } else if (b.isComputerComplete()) {
+            winner = "Computer";
         }
-        return false;
+
+        if (winner == null) return false;
+
+        int winnerScore = gameController.finishGame(winner);
+
+        Toast.makeText(requireContext(), winner + " wins! +" + winnerScore + " pts", Toast.LENGTH_LONG).show();
+        gameRound.setWinnerScore(winnerScore);
+        gameRound.setWinner("Human".equals(winner) ? gameRound.getHuman() : gameRound.getComputer());
+
+        if (isAdded()) {
+            EndFragment endFragment = EndFragment.newInstance(gameRound);
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainerView, endFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+        return true;
     }
+
 
     /**
      * Optionally refreshes the game log display.
@@ -479,4 +492,21 @@ public class GameFragment extends Fragment {
             tvGameLog.setText(GameLogger.getInstance().getLogContent());
         }
     }
+
+
+    private void maybeEndRound() {
+        String winner = gameController.getWinner();
+        if (!"None".equals(winner)) {
+            int roundScore = gameController.finishGame(winner);
+
+            // (Optional) stash winner/score in GameRound or a Bundle for EndFragment
+            // gameRound.setWinnerName(winner); gameRound.setWinnerScore(roundScore);
+
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView, new EndFragment())
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
 }
