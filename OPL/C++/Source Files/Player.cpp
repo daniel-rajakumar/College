@@ -82,7 +82,7 @@ int Player::rollDie() const {
  * 
  * @return Reference to the player's board.
  */
-Board& Player::getBoard() const {
+const Board& Player::getBoard() const {
     return board;
 }
 

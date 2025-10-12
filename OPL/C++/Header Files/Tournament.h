@@ -7,7 +7,6 @@
 
 #include <string>
 class Board;
-using namespace std;
 
 /**
  * @class Tournament
@@ -87,7 +86,7 @@ public:
      * 
      * @param filename The name of the file to save the game state to.
      */
-    void saveGame(const string& filename) const;
+    void saveGame(const std::string& filename) const;
 
     /**
      * @brief Loads the game state from a file.
@@ -95,7 +94,7 @@ public:
      * @param filename The name of the file to load the game state from.
      * @return True if the game state was successfully loaded, false otherwise.
      */
-    bool loadGame(const string& filename);
+    bool loadGame(const std::string& filename);
 
     /**
      * @brief Resets the game state.

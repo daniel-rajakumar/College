@@ -6,7 +6,6 @@
 #define BOARD_H
 #include <set>
 #include <vector>
-using namespace std;
 
 /**
  * @class Board
@@ -20,7 +19,7 @@ public:
     static constexpr int ONE_DIE_RULE_START = 7; // 1-die allowed when this..size are covered
 
 private:
-    vector<bool> squares; ///< Vector representing the state of each square (true = covered, false = uncovered).
+    std::vector<bool> squares; ///< Vector representing the state of each square (true = covered, false = uncovered).
     int size; ///< The size of the board.
 
 public:
@@ -95,7 +94,7 @@ public:
      * @param forCovering Whether the combinations are for covering squares.
      * @return A set of valid combinations of squares that sum to the given value.
      */
-    set<set<int>> findValidCombinations(int sum, bool forCovering) const;
+    std::set<std::set<int>> findValidCombinations(int sum, bool forCovering) const;
 
     /**
      * @brief Checks if a given combination of squares is valid.
@@ -104,7 +103,7 @@ public:
      * @param forCovering Whether the combination is for covering squares.
      * @return True if the combination is valid, false otherwise.
      */
-    bool isValidCombination(const set<int> &combination, bool forCovering) const;
+    bool isValidCombination(const std::set<int> &combination, bool forCovering) const;
 
     bool canThrowOneDie() const;
 };

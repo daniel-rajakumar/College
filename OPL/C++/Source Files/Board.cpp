@@ -4,6 +4,7 @@
 
 #include "../Header Files/Board.h"
 #include <set>
+using namespace std;
 
 /**
  * @brief Covers a specific square on the board.

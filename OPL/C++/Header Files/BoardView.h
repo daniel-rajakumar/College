@@ -5,7 +5,7 @@
 #ifndef BOARDVIEW_H
 #define BOARDVIEW_H
 #include "Board.h"
-using namespace std;
+#include <string>
 
 /**
  * @class BoardView
@@ -17,7 +17,7 @@ using namespace std;
 class BoardView {
 private:
     const Board& board; ///< Reference to the board being viewed.
-    string playerName; ///< Name of the player who owns the board.
+    std::string playerName; ///< Name of the player who owns the board.
 
 public:
     /**
@@ -26,7 +26,7 @@ public:
      * @param b Reference to the board.
      * @param name Name of the player who owns the board.
      */
-    BoardView(const Board &b, string name);
+    BoardView(const Board &b, std::string name);
 
     /**
      * @brief Displays the board.

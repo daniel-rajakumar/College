@@ -4,7 +4,6 @@
 
 #ifndef PLAYER_H
 #define PLAYER_H
-using namespace std;
 #include "Board.h"
 
 /**
@@ -43,7 +42,7 @@ public:
      * 
      * @return Reference to the player's board.
      */
-    Board &getBoard() const;
+    const Board& getBoard() const;
 
     /**
      * @brief Determines if the player can throw one die.
