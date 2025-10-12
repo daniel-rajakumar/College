@@ -101,8 +101,18 @@ void Round::play() const {
 
     // If a loaded game is already won, declare immediately before any move
     if (isRoundOver()) {
-        bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == currentPlayer->getIsHuman());
-        declareWinner(currentPlayer, winnerWasFirst);
+        // Determine actual winner from board state
+        bool winnerIsHuman = false;
+        if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
+            winnerIsHuman = true;
+        } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
+            winnerIsHuman = false;
+        }
+        bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
+        // Pass a pointer to the actual winner (not strictly used, but clearer)
+        const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
+                                                : static_cast<const Player*>(&player2);
+        declareWinner(winnerPtr, winnerWasFirst);
         return;
     }
 
@@ -182,13 +192,13 @@ void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirst
         tournament.updateScores(false, true, false, false,
                                 player1.getBoard().getUncoveredSum(),
                                 player2.getBoard().getCoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/false, player1.getBoard().getUncoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/true, player1.getBoard().getUncoveredSum());
     } else if (player1.getBoard().allUncovered()) {
         cout << "Computer wins by uncovering all the human's squares!" << endl;
         tournament.updateScores(false, false, false, true,
                                 player1.getBoard().getCoveredSum(),
                                 player2.getBoard().getUncoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/true, player2.getBoard().getUncoveredSum());
+        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/false, player2.getBoard().getUncoveredSum());
     }
 }
 

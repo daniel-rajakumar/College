@@ -273,7 +273,7 @@ void Tournament::saveGame(const string& filename) const {
         file << "   Score: " << tournamentScoreHuman << endl;
 
         file << "First Turn: " << (firstPlayerIsHuman ? "Human" : "Computer") << endl;
-        file << "Next Turn: " << (!isHumanTurn ? "Human" : "Computer") << endl;
+        file << "Next Turn: " << (isHumanTurn ? "Human" : "Computer") << endl;
 
         file.close();
         cout << "Game saved successfully to " << filename << endl;
@@ -342,8 +342,6 @@ bool Tournament::loadGame(const string& filename) {
 
                 getline(file, line);
                 tournamentScoreHuman = stoi(line.substr(10));
-            } else if (line.rfind("First Turn:", 0) == 0) {
-                // ignore on load; only "Next Turn" matters to resume play
             } else if (line.rfind("First Turn:", 0) == 0) {
                 firstPlayerIsHuman = (line.find("Human") != string::npos);
             } else if (line.rfind("Next Turn:", 0) == 0) {
