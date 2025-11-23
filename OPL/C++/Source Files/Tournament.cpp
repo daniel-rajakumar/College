@@ -343,13 +343,15 @@ bool Tournament::loadGame(const string& filename) {
                 getline(file, line);
                 tournamentScoreHuman = stoi(line.substr(10));
             } else if (line.rfind("First Turn:", 0) == 0) {
-                firstPlayerIsHuman = (line.find("Human") != string::npos);
+                firstPlayerIsHuman = (line.find("Human") == string::npos);
             } else if (line.rfind("Next Turn:", 0) == 0) {
                 isHumanTurn = (line.find("Human") == string::npos);
             }
         }
         file.close();
-        cout << "Game loaded successfully from " << filename << endl;
+        cout << "!! Game loaded successfully from " << filename << endl;
+
+        cout << "turn: " << (isHumanTurn ? "Human" : "Computer") << ", first: " << (firstPlayerIsHuman ? "Human" : "Computer") << endl;
         isANewGame = false;
         return true;
     } else {
