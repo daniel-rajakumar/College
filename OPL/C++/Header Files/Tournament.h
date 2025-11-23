@@ -124,7 +124,7 @@ public:
      */
     void applyHandicap(bool winnerWasFirstPlayer, bool winnerIsHuman, int winningScore) const;
 
-    void applyHandicap(const bool winnerWasFirstPlayer, const bool winnerIsHuman, const int winningScore);
+    // void applyHandicap(const bool winnerWasFirstPlayer, const bool winnerIsHuman, const int winningScore);
 
 
     // Who should get the advantage NEXT round (queued at round end)
