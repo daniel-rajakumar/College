@@ -345,7 +345,7 @@ bool Tournament::loadGame(const string& filename) {
             } else if (line.rfind("First Turn:", 0) == 0) {
                 firstPlayerIsHuman = (line.find("Human") != string::npos);
             } else if (line.rfind("Next Turn:", 0) == 0) {
-                isHumanTurn = (line.find("Human") != string::npos);
+                isHumanTurn = (line.find("Human") == string::npos);
             }
         }
         file.close();
