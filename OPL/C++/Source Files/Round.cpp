@@ -187,18 +187,26 @@ void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirst
                                 player1.getBoard().getUncoveredSum(),
                                 player2.getBoard().getCoveredSum());
         tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/false, player1.getBoard().getUncoveredSum());
+
     } else if (player2.getBoard().allUncovered()) {
         cout << "Human wins by uncovering all the computer's squares!" << endl;
+        // humanScore = HUMAN COVERED sum
         tournament.updateScores(false, true, false, false,
-                                player1.getBoard().getUncoveredSum(),
-                                player2.getBoard().getCoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/true, player1.getBoard().getUncoveredSum());
+                                player1.getBoard().getCoveredSum(), // <-- change here
+                                0);
+        tournament.applyHandicap(winnerWasFirstPlayer,
+                                 /*winnerIsHuman=*/true,
+                                 player1.getBoard().getCoveredSum()); // also better here
+
     } else if (player1.getBoard().allUncovered()) {
         cout << "Computer wins by uncovering all the human's squares!" << endl;
+        // computerScore = COMPUTER COVERED sum
         tournament.updateScores(false, false, false, true,
-                                player1.getBoard().getCoveredSum(),
-                                player2.getBoard().getUncoveredSum());
-        tournament.applyHandicap(winnerWasFirstPlayer, /*winnerIsHuman=*/false, player2.getBoard().getUncoveredSum());
+                                0,
+                                player2.getBoard().getCoveredSum()); // <-- change here
+        tournament.applyHandicap(winnerWasFirstPlayer,
+                                 /*winnerIsHuman=*/false,
+                                 player2.getBoard().getCoveredSum()); // and here
     }
 }
 
