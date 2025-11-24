@@ -245,14 +245,17 @@ void Human::uncoverSquares(const int sum) const {
         index++;
     }
 
-    int choice;
-    cout << "Enter the number of the combination you want to use: ";
-    cin >> choice;
+    int choice = 0;
+    const int maxIdx = static_cast<int>(validCombinations.size());
+    while (true) {
+        cout << "Enter the number of the combination you want to use (1-" << maxIdx << "): ";
+        if (cin >> choice && choice >= 1 && choice <= maxIdx) break;
 
-    if (choice < 1 || choice > validCombinations.size()) {
-        cout << "Invalid choice. Turn ends." << endl;
-        return;
+        cin.clear();
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cout << "Invalid choice. Try again.\n";
     }
+
 
     auto it = validCombinations.begin();
     advance(it, choice - 1);
