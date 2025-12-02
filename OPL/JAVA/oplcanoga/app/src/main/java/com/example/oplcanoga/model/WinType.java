@@ -4,3 +4,5 @@ public enum WinType {
     COVER,
     UNCOVER
 }
+
+
