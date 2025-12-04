@@ -31,7 +31,7 @@ public class GameRound {
     private final AdvantageInfo advantageInfo;
     private boolean advantageLockActive;  // until advantaged player completes first turn
 
-    // NEW: track whether each player has completed at least one turn this round
+    // Track whether each player has completed at least one turn this round
     private boolean humanHasMoved = false;
     private boolean computerHasMoved = false;
 
@@ -76,7 +76,7 @@ public class GameRound {
         human.resetBoard(humanAdvSquare);
         computer.resetBoard(compAdvSquare);
 
-        // reset first-turn flags
+        // first-turn flags
         humanHasMoved = false;
         computerHasMoved = false;
     }
@@ -130,6 +130,15 @@ public class GameRound {
     }
 
     /**
+     * Explicit turn switch. Controller calls this when a player has no legal moves.
+     */
+    public void switchTurn() {
+        currentPlayer = (currentPlayer == PlayerId.HUMAN)
+                ? PlayerId.COMPUTER
+                : PlayerId.HUMAN;
+    }
+
+    /**
      * Roll dice for current player.
      *
      * @param diceCount 1 or 2
@@ -143,8 +152,6 @@ public class GameRound {
      */
     public boolean canRollOneDie(PlayerId playerId) {
         Player p = getPlayer(playerId);
-        // If boardSize <= 6, there is no 7..n, treat as always false or always true?
-        // We'll treat it as "can always roll one die" if boardSize < 7.
         if (boardSize < 7) return true;
 
         for (int i = 7; i <= boardSize; i++) {
@@ -164,7 +171,6 @@ public class GameRound {
         Player actor = getPlayer(actorId);
         Player opp = getOpponent(actorId);
 
-        // We'll generate combinations of squares 1..boardSize up to length 4
         List<Integer> current = new ArrayList<>();
         backtrackSquares(1, diceTotal, current, result, actor, opp, type);
 
@@ -179,7 +185,6 @@ public class GameRound {
                                   Player opp,
                                   MoveType type) {
         if (remaining == 0 && !current.isEmpty()) {
-            // Validate: squares exist and satisfy covered/uncovered constraints
             if (isCombinationValid(current, actor, opp, type)) {
                 int sum = 0;
                 for (int s : current) sum += s;
@@ -209,13 +214,10 @@ public class GameRound {
             if (s < 1 || s > boardSize) return false;
 
             if (type == MoveType.COVER) {
-                // Must be currently uncovered on actor's row
                 if (target.isCovered(s)) return false;
             } else {
-                // UNCOVER: must be currently covered on opponent's row
                 if (!target.isCovered(s)) return false;
 
-                // If advantage lock is active, cannot uncover the advantage square yet
                 if (advantageLockActive &&
                         advantageInfo != null &&
                         advantageInfo.advantagedPlayer == target.getId() &&
@@ -229,6 +231,7 @@ public class GameRound {
 
     /**
      * Apply a move to the board.
+     * NOTE: does NOT switch turns. Controller decides when to switch.
      */
     public void applyMove(Move move) {
         if (isOver) return;
@@ -246,7 +249,7 @@ public class GameRound {
             }
         }
 
-        // Mark that this actor has taken at least one turn
+        // Mark that this actor has taken at least one turn (made at least one move)
         if (move.getActor() == PlayerId.HUMAN) {
             humanHasMoved = true;
         } else if (move.getActor() == PlayerId.COMPUTER) {
@@ -262,17 +265,10 @@ public class GameRound {
 
         // Check if round should end (only after both players have moved at least once)
         checkForRoundEnd(move.getActor());
-
-        if (!isOver) {
-            // switch turns
-            currentPlayer = (currentPlayer == PlayerId.HUMAN)
-                    ? PlayerId.COMPUTER
-                    : PlayerId.HUMAN;
-        }
     }
 
     private void checkForRoundEnd(PlayerId actorId) {
-        // NEW: don't allow the round to end until both players have taken at least one turn
+        // Don't allow the round to end until both players have taken at least one turn
         if (!(humanHasMoved && computerHasMoved)) {
             return;
         }

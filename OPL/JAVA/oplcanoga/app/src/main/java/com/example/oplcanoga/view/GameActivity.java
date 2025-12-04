@@ -101,7 +101,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
         // --- Button listeners ---
 
         // "Roll Die" => let controller roll 2 dice randomly for human
-        btnRollDie.setOnClickListener(v -> controller.onHumanRollDice(2));
+        btnRollDie.setOnClickListener(v -> controller.onRollDiceButtonPressed(2));
+
 
         // "Input Die" => show dialog, then pass chosen dice to controller
         btnInputDie.setOnClickListener(v -> showInputDiceDialog());
@@ -170,7 +171,16 @@ public class GameActivity extends AppCompatActivity implements GameView {
         tvGameStatus.setText(message);
         appendLog(message);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+        // If the human rolled and had no legal moves, we want the dice buttons back.
+        // Also safe if it's the computer's "no legal moves" message – buttons are already visible.
+        if (message.startsWith("No legal moves")) {
+            // hide any move UI just in case and show dice buttons for the next player
+            setMoveSelectionEnabled(false);
+            setDiceButtonsVisible(true);
+        }
     }
+
 
     @Override
     public void promptHumanForMove(int diceTotal,
@@ -263,7 +273,7 @@ public class GameActivity extends AppCompatActivity implements GameView {
                 return;
             }
             // Use controller to process a manual roll
-            controller.onHumanManualRoll(selectedDie1[0], selectedDie2[0]);
+            controller.onManualDiceButtonPressed(selectedDie1[0], selectedDie2[0]);
             dialog.dismiss();
         });
 

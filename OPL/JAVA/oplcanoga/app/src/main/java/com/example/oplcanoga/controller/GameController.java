@@ -164,6 +164,120 @@ public class GameController {
         updateBoardInView();
     }
 
+    /**
+     * Called by UI when the Roll button is pressed (1 or 2 dice),
+     * for whichever player currently has the turn.
+     */
+    public void onRollDiceButtonPressed(int diceCount) {
+        if (currentRound == null || currentRound.isOver()) {
+            view.showMessage("Round is not active.");
+            return;
+        }
+
+        PlayerId current = currentRound.getCurrentPlayerId();
+
+        if (diceCount == 1 && !currentRound.canRollOneDie(current)) {
+            view.showMessage("You are not allowed to roll one die yet.");
+            return;
+        }
+
+        int[] dice = currentRound.rollForCurrentPlayer(diceCount);
+        handleDiceForCurrentPlayer(dice);
+    }
+
+    /**
+     * Called by UI when the Input Die dialog is confirmed.
+     * Works for whichever player currently has the turn.
+     */
+    public void onManualDiceButtonPressed(int die1, int die2) {
+        if (currentRound == null || currentRound.isOver()) {
+            view.showMessage("Round is not active.");
+            return;
+        }
+
+        int[] dice = new int[]{die1, die2};
+        handleDiceForCurrentPlayer(dice);
+    }
+
+    /**
+     * Dispatch dice result based on whose turn it is.
+     */
+    private void handleDiceForCurrentPlayer(int[] dice) {
+        PlayerId current = currentRound.getCurrentPlayerId();
+
+        view.showDiceRoll(current, dice);
+        lastDiceTotal = dice[0] + (dice.length > 1 ? dice[1] : 0);
+
+        if (current == PlayerId.HUMAN) {
+            handleHumanDiceOutcome();
+        } else {
+            handleComputerDiceOutcome();
+        }
+    }
+
+    /**
+     * After a human roll: either prompt for a move or end the turn.
+     */
+    private void handleHumanDiceOutcome() {
+        lastHumanCoverMoves =
+                currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.COVER, lastDiceTotal);
+        lastHumanUncoverMoves =
+                currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.UNCOVER, lastDiceTotal);
+
+        if (lastHumanCoverMoves.isEmpty() && lastHumanUncoverMoves.isEmpty()) {
+            waitingForHumanMove = false;
+            view.showMessage("No legal moves. Your turn is over.");
+            // End of human turn: switch to computer
+            currentRound.switchTurn();
+            updateBoardInView();
+        } else {
+            waitingForHumanMove = true;
+            view.promptHumanForMove(lastDiceTotal, lastHumanCoverMoves, lastHumanUncoverMoves);
+            updateBoardInView();
+        }
+    }
+
+    /**
+     * After a computer roll: computer auto-chooses a move.
+     * User triggers the roll, but the move selection is automatic.
+     */
+    private void handleComputerDiceOutcome() {
+        List<Move> coverMoves =
+                currentRound.getLegalMoves(PlayerId.COMPUTER, MoveType.COVER, lastDiceTotal);
+        List<Move> uncoverMoves =
+                currentRound.getLegalMoves(PlayerId.COMPUTER, MoveType.UNCOVER, lastDiceTotal);
+
+        if (coverMoves.isEmpty() && uncoverMoves.isEmpty()) {
+            view.showMessage("Computer has no legal moves. Your turn.");
+            currentRound.switchTurn();
+            updateBoardInView();
+            return;
+        }
+
+        ComputerPlayer computer = tournament.getComputer();
+        Move chosen = computer.chooseMove(coverMoves, uncoverMoves);
+
+        if (chosen == null) {
+            view.showMessage("Computer skips (no good move). Your turn.");
+            currentRound.switchTurn();
+            updateBoardInView();
+            return;
+        }
+
+        view.showMessage("Computer " + chosen.getType() +
+                "s squares " + chosen.getSquares() +
+                " (total " + chosen.getDiceTotal() + ")");
+
+        currentRound.applyMove(chosen);
+        updateBoardInView();
+
+        if (currentRound.isOver()) {
+            onRoundFinished();
+        } else {
+            // Still computer's turn; user can roll again for computer.
+        }
+    }
+
 
     /**
      * Called by UI after human selects a move.
@@ -198,10 +312,11 @@ public class GameController {
         if (currentRound.isOver()) {
             onRoundFinished();
         } else {
-            // Now it's the computer's turn (GameRound.applyMove already switched player)
-            startComputerTurn();
+            // Still human's turn: user needs to roll again.
+            // Turn only switches when a roll has no legal moves.
         }
     }
+
 
     /**
      * Called by UI when human taps "Help".
@@ -282,10 +397,6 @@ public class GameController {
 
         updateBoardInView();
 
-        // If computer starts, immediately begin its turn
-        if (currentRound.getCurrentPlayerId() == PlayerId.COMPUTER) {
-            startComputerTurn();
-        }
     }
 
     /**
