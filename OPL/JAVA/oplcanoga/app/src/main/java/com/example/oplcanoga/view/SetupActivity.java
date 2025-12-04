@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.oplcanoga.GameActivity;
+//import com.example.oplcanoga.GameActivity;
 import com.example.oplcanoga.R;
 
 public class SetupActivity extends AppCompatActivity {
@@ -19,6 +19,9 @@ public class SetupActivity extends AppCompatActivity {
     private TextView tvRollOffResult;
     private Button btnRollOff;
     private Button btnStartGame;
+
+    // For now just store first player as a string ("HUMAN" / "COMPUTER")
+    private String firstPlayerString = "HUMAN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,16 +35,17 @@ public class SetupActivity extends AppCompatActivity {
         btnRollOff = findViewById(R.id.btnRollOff);
         btnStartGame = findViewById(R.id.btnStartGame);
 
-        // TODO: later, roll dice & decide first player
+        // TODO: later make this a real roll-off with Dice
         btnRollOff.setOnClickListener(v -> {
-            // For now just pretend result:
+            // Dummy roll-off for now:
             tvHumanDice.setText("Human: 8");
             tvComputerDice.setText("Computer: 6");
             tvRollOffResult.setText("Human goes first!");
+
+            firstPlayerString = "HUMAN"; // or "COMPUTER" if computer wins
         });
 
         btnStartGame.setOnClickListener(v -> {
-            // Read board size choice (default 9 if nothing chosen)
             int boardSize = 9;
             int checkedId = rgBoardSize.getCheckedRadioButtonId();
             if (checkedId == R.id.rbSize10) {
@@ -50,10 +54,9 @@ public class SetupActivity extends AppCompatActivity {
                 boardSize = 11;
             }
 
-            // In the future, pass boardSize & first-player info to GameActivity via Intent extras
             Intent intent = new Intent(this, GameActivity.class);
-            // intent.putExtra("BOARD_SIZE", boardSize);
-            // intent.putExtra("FIRST_PLAYER", "HUMAN");
+            intent.putExtra("BOARD_SIZE", boardSize);
+            intent.putExtra("FIRST_PLAYER", firstPlayerString);
             startActivity(intent);
         });
     }
