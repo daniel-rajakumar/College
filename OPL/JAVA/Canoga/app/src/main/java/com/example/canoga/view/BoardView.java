@@ -34,6 +34,7 @@ public class BoardView extends View {
     private Paint lockRing;
     private static final int PINK = 0xFFD41A69;
 
+
     // Layout settings: circle radius and spacing between circles.
     private int squareRadius = 35;
     private int squareSpacing = 20;
