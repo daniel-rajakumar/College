@@ -1,30 +1,25 @@
 package com.example.oplcanoga.view;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.oplcanoga.R;
-import com.example.oplcanoga.controller.BoardState;
-import com.example.oplcanoga.controller.GameController;
-import com.example.oplcanoga.controller.GameView;
-import com.example.oplcanoga.model.Move;
-import com.example.oplcanoga.model.MoveType;
-import com.example.oplcanoga.model.PlayerId;
-import com.example.oplcanoga.model.WinType;
 import com.example.oplcanoga.view.BoardView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public class GameActivity extends AppCompatActivity implements GameView {
+public class GameActivity extends AppCompatActivity {
 
     private BoardView boardView;
     private TextView tvGameStatus;
@@ -32,21 +27,23 @@ public class GameActivity extends AppCompatActivity implements GameView {
     private TextView tvDice;
     private TextView tvLog;
     private ScrollView scrollLog;
-    private Button btnRollOneDie;
-    private Button btnRollTwoDice;
-    private ToggleButton toggleCoverUncover;
-    private Button btnHelp;
-    private Button btnSaveQuit;
+
+    private Button btnRollDie;
+    private Button btnInputDie;
+    private Button btnSaveGame;
     private Spinner spinnerMoves;
     private Button btnConfirmMove;
-    private Button btnClearSelection;
+    private Button btnHelp;
 
-    private GameController controller;
+    private final Random random = new Random();
 
-    // Spinner backing data
+    // Spinner data (for now: dummy options)
     private ArrayAdapter<String> movesAdapter;
     private final List<String> moveOptionLabels = new ArrayList<>();
-    private final List<Move> moveOptionObjects = new ArrayList<>(); // matches labels by index
+
+    // Track last dice roll
+    private int lastDie1 = 0;
+    private int lastDie2 = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,16 +57,14 @@ public class GameActivity extends AppCompatActivity implements GameView {
         tvLog = findViewById(R.id.tvLog);
         scrollLog = findViewById(R.id.scrollLog);
 
-        btnRollOneDie = findViewById(R.id.btnRollOneDie);
-        btnRollTwoDice = findViewById(R.id.btnRollTwoDice);
-        toggleCoverUncover = findViewById(R.id.toggleCoverUncover);
-        btnHelp = findViewById(R.id.btnHelp);
-        btnSaveQuit = findViewById(R.id.btnSaveQuit);
+        btnRollDie = findViewById(R.id.btnRollDie);
+        btnInputDie = findViewById(R.id.btnInputDie);
+        btnSaveGame = findViewById(R.id.btnSaveGame);
         spinnerMoves = findViewById(R.id.spinnerMoves);
         btnConfirmMove = findViewById(R.id.btnConfirmMove);
-        btnClearSelection = findViewById(R.id.btnClearSelection);
+        btnHelp = findViewById(R.id.btnHelp);
 
-        // Set up spinner adapter
+        // Setup spinner adapter
         movesAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
@@ -78,181 +73,147 @@ public class GameActivity extends AppCompatActivity implements GameView {
         movesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMoves.setAdapter(movesAdapter);
 
-        // Create controller (this Activity is the GameView)
-        controller = new GameController(this);
+        // Initially, disable move selection until dice are rolled
+        setMoveSelectionEnabled(false);
 
-        // Read setup data from Intent
-        int boardSize = getIntent().getIntExtra("BOARD_SIZE", 9);
-        String firstPlayerStr = getIntent().getStringExtra("FIRST_PLAYER");
-        if (firstPlayerStr == null) firstPlayerStr = "HUMAN";
-        PlayerId firstPlayer = PlayerId.valueOf(firstPlayerStr);
+        btnRollDie.setOnClickListener(v -> rollDiceRandom());
 
-        controller.startNewTournament(boardSize, firstPlayer);
+        btnInputDie.setOnClickListener(v -> showInputDiceDialog());
 
-        // Button listeners → call controller methods
-        btnRollOneDie.setOnClickListener(v -> controller.onHumanRollDice(1));
-        btnRollTwoDice.setOnClickListener(v -> controller.onHumanRollDice(2));
-
-        btnHelp.setOnClickListener(v -> controller.onHelpRequested());
-
-        btnSaveQuit.setOnClickListener(v -> {
-            appendLog("Clicked: Save & Quit (logic not implemented yet)");
-            Toast.makeText(this, "Save & Quit not implemented yet", Toast.LENGTH_SHORT).show();
+        btnSaveGame.setOnClickListener(v -> {
+            appendLog("Clicked: Save Game (not implemented yet)");
+            Toast.makeText(this, "Save Game not implemented yet", Toast.LENGTH_SHORT).show();
         });
 
-        btnConfirmMove.setOnClickListener(v -> onConfirmMoveClicked());
-        btnClearSelection.setOnClickListener(v -> onClearSelectionClicked());
+        btnConfirmMove.setOnClickListener(v -> {
+            String selected = (String) spinnerMoves.getSelectedItem();
+            appendLog("Confirm move: " + selected);
+            Toast.makeText(this, "Confirm: " + selected, Toast.LENGTH_SHORT).show();
+            // Later: send this to GameController.onHumanMoveChosen(...)
+            setMoveSelectionEnabled(false); // wait for next dice roll
+        });
 
-        // Initially, no moves to choose
-        setMoveSelectionEnabled(false);
+        btnHelp.setOnClickListener(v -> {
+            appendLog("Clicked: Help");
+            Toast.makeText(this, "Help (suggested move) not implemented yet", Toast.LENGTH_SHORT).show();
+        });
     }
 
-    // ---------------- GameView implementation ----------------
+    // ---------- Dice handling ----------
 
-    @Override
-    public void updateBoard(BoardState state) {
-        // Update board
-        boardView.setBoardState(state);
+    private void rollDiceRandom() {
+        lastDie1 = random.nextInt(6) + 1; // 1..6
+        lastDie2 = random.nextInt(6) + 1;
 
-        // Update scores
-        String scoresText = "Human: " + state.humanScore + "  |  Computer: " + state.computerScore;
-        tvScores.setText(scoresText);
+        onDiceRolled(lastDie1, lastDie2, "Random roll");
+    }
 
-        // Update status / current player
-        String statusText;
-        if (state.roundOver) {
-            if (state.roundWinner != null) {
-                statusText = "Round over. Winner: " + state.roundWinner;
-            } else {
-                statusText = "Round over. Draw.";
+    private void showInputDiceDialog() {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        android.view.View dialogView = inflater.inflate(R.layout.dialog_input_dice, null, false);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        // Selected values (0 = not selected yet)
+        final int[] selectedDie1 = {0};
+        final int[] selectedDie2 = {0};
+
+        // Helper to bind a group of 6 buttons to an int[0] holder
+        bindDieRow(dialogView, R.id.btnDie1_1, R.id.btnDie1_2, R.id.btnDie1_3,
+                R.id.btnDie1_4, R.id.btnDie1_5, R.id.btnDie1_6, selectedDie1);
+
+        bindDieRow(dialogView, R.id.btnDie2_1, R.id.btnDie2_2, R.id.btnDie2_3,
+                R.id.btnDie2_4, R.id.btnDie2_5, R.id.btnDie2_6, selectedDie2);
+
+        Button btnDone = dialogView.findViewById(R.id.btnDialogDone);
+        btnDone.setOnClickListener(v -> {
+            if (selectedDie1[0] == 0 || selectedDie2[0] == 0) {
+                Toast.makeText(this, "Please select both dice.", Toast.LENGTH_SHORT).show();
+                return;
             }
-        } else {
-            statusText = "Current turn: " + state.currentPlayer;
-        }
-        tvGameStatus.setText(statusText);
+            lastDie1 = selectedDie1[0];
+            lastDie2 = selectedDie2[0];
+            onDiceRolled(lastDie1, lastDie2, "Manual input");
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
-    @Override
-    public void showDiceRoll(PlayerId player, int[] dice) {
-        String text;
-        if (dice.length == 1) {
-            text = player + " rolled: " + dice[0];
-        } else {
-            text = player + " rolled: " + dice[0] + " + " + dice[1] + " = " +
-                    (dice[0] + dice[1]);
+    private void bindDieRow(android.view.View root,
+                            int b1Id, int b2Id, int b3Id,
+                            int b4Id, int b5Id, int b6Id,
+                            int[] selectedHolder) {
+
+        Button b1 = root.findViewById(b1Id);
+        Button b2 = root.findViewById(b2Id);
+        Button b3 = root.findViewById(b3Id);
+        Button b4 = root.findViewById(b4Id);
+        Button b5 = root.findViewById(b5Id);
+        Button b6 = root.findViewById(b6Id);
+
+        Button[] buttons = {b1, b2, b3, b4, b5, b6};
+
+        for (int i = 0; i < buttons.length; i++) {
+            final int value = i + 1; // die value 1..6
+            Button btn = buttons[i];
+            btn.setOnClickListener(v -> {
+                selectedHolder[0] = value;
+                // simple feedback: highlight selected button by changing alpha
+                for (Button other : buttons) {
+                    other.setAlpha(other == btn ? 1.0f : 0.5f);
+                }
+            });
         }
+    }
+
+    private void onDiceRolled(int die1, int die2, String source) {
+        String roman1 = toRoman(die1);
+        String roman2 = toRoman(die2);
+        String text = "Dice: " + die1 + " (" + roman1 + "), " + die2 + " (" + roman2 + ")";
         tvDice.setText(text);
-        appendLog(text);
+        appendLog(source + " → " + text);
+
+        // After any roll, populate spinner with some (fake for now) move options
+        populateMovesForDice(die1 + die2);
+        setMoveSelectionEnabled(true);
     }
 
-    @Override
-    public void showMessage(String message) {
-        tvGameStatus.setText(message);
-        appendLog(message);
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    private String toRoman(int n) {
+        switch (n) {
+            case 1: return "I";
+            case 2: return "II";
+            case 3: return "III";
+            case 4: return "IV";
+            case 5: return "V";
+            case 6: return "VI";
+            default: return "?";
+        }
     }
 
-    @Override
-    public void promptHumanForMove(int diceTotal,
-                                   List<Move> coverMoves,
-                                   List<Move> uncoverMoves) {
-        // Build spinner options from legal moves
+    private void populateMovesForDice(int total) {
         moveOptionLabels.clear();
-        moveOptionObjects.clear();
-
-        for (Move m : coverMoves) {
-            moveOptionLabels.add(formatMoveLabel(m));
-            moveOptionObjects.add(m);
+        // For now, just make some dummy labels so the UI looks alive
+        moveOptionLabels.add("COVER: [" + total + "]");
+        if (total > 1 && total < 7) {
+            moveOptionLabels.add("COVER: [1, " + (total - 1) + "]");
         }
-        for (Move m : uncoverMoves) {
-            moveOptionLabels.add(formatMoveLabel(m));
-            moveOptionObjects.add(m);
-        }
-
+        moveOptionLabels.add("UNCOVER: [example]");
         movesAdapter.notifyDataSetChanged();
-
-        if (moveOptionObjects.isEmpty()) {
-            showMessage("No legal moves available.");
-            setMoveSelectionEnabled(false);
-        } else {
-            showMessage("Choose a move for total " + diceTotal + ".");
-            spinnerMoves.setSelection(0);
-            setMoveSelectionEnabled(true);
-        }
-    }
-
-    @Override
-    public void onRoundEnded(PlayerId winner,
-                             WinType winType,
-                             int winningScore,
-                             int humanTotalScore,
-                             int computerTotalScore) {
-        String winnerText;
-        if (winner == null) {
-            winnerText = "Round ended in a draw.";
-        } else {
-            winnerText = "Round winner: " + winner +
-                    " by " + winType +
-                    " (+" + winningScore + " points)";
-        }
-        String totals = "Total scores — Human: " + humanTotalScore +
-                " | Computer: " + computerTotalScore;
-
-        appendLog(winnerText);
-        appendLog(totals);
-        tvGameStatus.setText(winnerText + "\n" + totals);
-
-        // TODO later: navigate to RoundResultActivity with these values
-        // For now, we can auto-start next round:
-        controller.startNextRound(PlayerId.HUMAN);
-    }
-
-    // ----------------- helpers -----------------
-
-    private String formatMoveLabel(Move m) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(m.getType().name()).append(": [");
-        List<Integer> squares = m.getSquares();
-        for (int i = 0; i < squares.size(); i++) {
-            sb.append(squares.get(i));
-            if (i < squares.size() - 1) sb.append(", ");
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    private void onConfirmMoveClicked() {
-        if (moveOptionObjects.isEmpty()) {
-            appendLog("No move to confirm.");
-            return;
-        }
-        int pos = spinnerMoves.getSelectedItemPosition();
-        if (pos < 0 || pos >= moveOptionObjects.size()) {
-            appendLog("No move selected.");
-            return;
-        }
-
-        Move chosen = moveOptionObjects.get(pos);
-        appendLog("Confirm Move: " + formatMoveLabel(chosen));
-
-        // Ask controller to apply this move
-        controller.onHumanMoveChosen(chosen.getType(), chosen.getSquares());
-        // After confirming, disable selection until next dice roll
-        setMoveSelectionEnabled(false);
-    }
-
-    private void onClearSelectionClicked() {
-        if (!moveOptionObjects.isEmpty()) {
+        if (!moveOptionLabels.isEmpty()) {
             spinnerMoves.setSelection(0);
         }
-        appendLog("Clicked: Clear Selection");
     }
 
     private void setMoveSelectionEnabled(boolean enabled) {
         spinnerMoves.setEnabled(enabled);
         btnConfirmMove.setEnabled(enabled);
-        btnClearSelection.setEnabled(enabled);
+        btnHelp.setEnabled(enabled);
     }
+
+    // ---------- Log helper ----------
 
     private void appendLog(String message) {
         String current = tvLog.getText().toString();
