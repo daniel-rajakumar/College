@@ -31,6 +31,10 @@ public class GameRound {
     private final AdvantageInfo advantageInfo;
     private boolean advantageLockActive;  // until advantaged player completes first turn
 
+    // NEW: track whether each player has completed at least one turn this round
+    private boolean humanHasMoved = false;
+    private boolean computerHasMoved = false;
+
     public GameRound(HumanPlayer human,
                      ComputerPlayer computer,
                      int boardSize,
@@ -71,6 +75,10 @@ public class GameRound {
 
         human.resetBoard(humanAdvSquare);
         computer.resetBoard(compAdvSquare);
+
+        // reset first-turn flags
+        humanHasMoved = false;
+        computerHasMoved = false;
     }
 
     public HumanPlayer getHuman() {
@@ -163,8 +171,6 @@ public class GameRound {
         return result;
     }
 
-
-
     private void backtrackSquares(int start,
                                   int remaining,
                                   List<Integer> current,
@@ -240,6 +246,13 @@ public class GameRound {
             }
         }
 
+        // Mark that this actor has taken at least one turn
+        if (move.getActor() == PlayerId.HUMAN) {
+            humanHasMoved = true;
+        } else if (move.getActor() == PlayerId.COMPUTER) {
+            computerHasMoved = true;
+        }
+
         // If this was the advantaged player's first completed turn, unlock advantage
         if (advantageLockActive &&
                 advantageInfo != null &&
@@ -247,14 +260,23 @@ public class GameRound {
             advantageLockActive = false;
         }
 
+        // Check if round should end (only after both players have moved at least once)
         checkForRoundEnd(move.getActor());
+
         if (!isOver) {
             // switch turns
-            currentPlayer = (currentPlayer == PlayerId.HUMAN) ? PlayerId.COMPUTER : PlayerId.HUMAN;
+            currentPlayer = (currentPlayer == PlayerId.HUMAN)
+                    ? PlayerId.COMPUTER
+                    : PlayerId.HUMAN;
         }
     }
 
     private void checkForRoundEnd(PlayerId actorId) {
+        // NEW: don't allow the round to end until both players have taken at least one turn
+        if (!(humanHasMoved && computerHasMoved)) {
+            return;
+        }
+
         Player actor = getPlayer(actorId);
         Player opp = getOpponent(actorId);
 
