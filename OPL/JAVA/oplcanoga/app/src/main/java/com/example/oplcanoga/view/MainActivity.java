@@ -1,4 +1,4 @@
-package com.example.oplcanoga;
+package com.example.oplcanoga.view;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.oplcanoga.R;
 
 public class MainActivity extends AppCompatActivity {
 

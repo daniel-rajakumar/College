@@ -7,6 +7,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.oplcanoga.FinalResultActivity;
+import com.example.oplcanoga.GameActivity;
 import com.example.oplcanoga.R;
 
 public class RoundResultActivity extends AppCompatActivity {

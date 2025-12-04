@@ -1,4 +1,4 @@
-package com.example.oplcanoga.view;
+package com.example.oplcanoga;
 
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -10,8 +10,6 @@ import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-//import com.example.oplcanoga.R;
-import com.example.oplcanoga.R;
 import com.example.oplcanoga.view.BoardView;
 
 import java.util.ArrayList;
