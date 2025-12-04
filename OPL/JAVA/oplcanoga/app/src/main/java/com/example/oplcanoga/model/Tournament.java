@@ -114,4 +114,8 @@ public class Tournament {
         }
         return sum;
     }
+
+    public int getBoardSize() {
+        return boardSize;
+    }
 }

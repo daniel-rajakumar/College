@@ -10,7 +10,7 @@
         android:id="@+id/tvRoundResultTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Round Results"
+        android:text="Round Result"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textAlignment="center"
@@ -22,10 +22,20 @@
         android:id="@+id/tvRoundWinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Winner: Human (by COVER)"
-        android:textSize="18sp"
+        android:text="Winner: -"
+        android:textSize="20sp"
         android:paddingTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/tvRoundResultTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvRoundWinType"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Win Type: -"
+        android:paddingTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tvRoundWinner"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -33,42 +43,47 @@
         android:id="@+id/tvRoundPoints"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Points this round: +15"
-        android:textSize="16sp"
+        android:text="Points this round: 0"
         android:paddingTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvRoundWinner"
+        app:layout_constraintTop_toBottomOf="@id/tvRoundWinType"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
-        android:id="@+id/tvRoundTotals"
+        android:id="@+id/tvTotalScores"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Total scores — Human: 25 | Computer: 10"
-        android:textSize="16sp"
-        android:paddingTop="8dp"
+        android:text="Total — Human: 0 | Computer: 0"
+        android:paddingTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/tvRoundPoints"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/btnPlayAgain"
+    <!-- Buttons row -->
+    <LinearLayout
+        android:id="@+id/layoutButtons"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Play Next Round"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/tvRoundTotals"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTotalScores"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btnQuitTournament"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Quit Tournament"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/btnPlayAgain"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <Button
+            android:id="@+id/btnPlayAgain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Play Again" />
+
+        <Button
+            android:id="@+id/btnQuitTournament"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Quit" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

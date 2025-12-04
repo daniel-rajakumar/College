@@ -123,6 +123,48 @@ public class GameController {
         updateBoardInView();
     }
 
+    // Add this inside GameController (next to onHumanRollDice)
+
+    /**
+     * Human manually selects dice values (e.g., from UI "Input Die").
+     * We bypass the model's random rolling and just treat these as the dice rolled.
+     */
+    public void onHumanManualRoll(int die1, int die2) {
+        if (currentRound == null || currentRound.isOver()) {
+            view.showMessage("Round is not active.");
+            return;
+        }
+        if (currentRound.getCurrentPlayerId() != PlayerId.HUMAN) {
+            view.showMessage("It's not your turn.");
+            return;
+        }
+
+        int[] dice = new int[]{die1, die2};
+        lastDiceTotal = die1 + die2;
+
+        // Show dice on UI
+        view.showDiceRoll(PlayerId.HUMAN, dice);
+
+        // Generate legal moves for this dice total
+        lastHumanCoverMoves =
+                currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.COVER, lastDiceTotal);
+        lastHumanUncoverMoves =
+                currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.UNCOVER, lastDiceTotal);
+
+        if (lastHumanCoverMoves.isEmpty() && lastHumanUncoverMoves.isEmpty()) {
+            view.showMessage("No legal moves. Your turn is over.");
+            waitingForHumanMove = false;
+            // No move; give turn to computer
+            startComputerTurn();
+        } else {
+            waitingForHumanMove = true;
+            view.promptHumanForMove(lastDiceTotal, lastHumanCoverMoves, lastHumanUncoverMoves);
+        }
+
+        updateBoardInView();
+    }
+
+
     /**
      * Called by UI after human selects a move.
      * The UI should pass the selected MoveType and a list of squares.
@@ -352,5 +394,9 @@ public class GameController {
             }
         }
         return null;
+    }
+
+    public int getBoardSize() {
+        return tournament != null ? tournament.getBoardSize() : 9;
     }
 }
