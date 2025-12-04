@@ -12,7 +12,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Oplcanoga">
         <activity
-            android:name=".MainActivity"
+            android:name=".view.FinalResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.RoundResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.SetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.GameActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
