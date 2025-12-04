@@ -7,7 +7,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-//import com.example.oplcanoga.view.MainActivity;
 import com.example.oplcanoga.R;
 
 public class RoundResultActivity extends AppCompatActivity {
@@ -31,7 +30,6 @@ public class RoundResultActivity extends AppCompatActivity {
         btnPlayAgain = findViewById(R.id.btnPlayAgain);
         btnQuitTournament = findViewById(R.id.btnQuitTournament);
 
-        // Read data passed from GameActivity
         Intent intent = getIntent();
         String winner = intent.getStringExtra("ROUND_WINNER");
         String winType = intent.getStringExtra("ROUND_WIN_TYPE");
@@ -48,20 +46,19 @@ public class RoundResultActivity extends AppCompatActivity {
         tvRoundPoints.setText("Points this round: " + roundPoints);
         tvTotalScores.setText("Total — Human: " + humanTotal + " | Computer: " + computerTotal);
 
-        // Play Again: start a fresh GameActivity (new game for now)
         btnPlayAgain.setOnClickListener(v -> {
             Intent gameIntent = new Intent(this, GameActivity.class);
             gameIntent.putExtra("BOARD_SIZE", boardSize);
-            gameIntent.putExtra("FIRST_PLAYER", "HUMAN"); // or change if you add advantage logic
+            gameIntent.putExtra("FIRST_PLAYER", "HUMAN"); // adjust later if you add advantage rules
             startActivity(gameIntent);
-            finish(); // close result screen
+            finish();
         });
 
-        // Quit: go back to home screen
         btnQuitTournament.setOnClickListener(v -> {
-            Intent homeIntent = new Intent(this, MainActivity.class);
-            homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(homeIntent);
+            Intent finalIntent = new Intent(this, FinalResultActivity.class);
+            finalIntent.putExtra("HUMAN_TOTAL", humanTotal);
+            finalIntent.putExtra("COMPUTER_TOTAL", computerTotal);
+            startActivity(finalIntent);
             finish();
         });
     }
