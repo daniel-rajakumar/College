@@ -1,9 +1,11 @@
 package com.example.oplcanoga.view;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -14,6 +16,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.oplcanoga.R;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,13 +50,30 @@ public class MainActivity extends AppCompatActivity {
         importFileLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Uri uri = result.getData().getData();
-                        // TODO: pass this Uri to your Serializer.load(uri, contentResolver)
-                        // For now, you can just log or toast it.
-                        // Toast.makeText(this, "Selected: " + uri, Toast.LENGTH_SHORT).show();
+                        if (uri != null) {
+                            try (InputStream in = getContentResolver().openInputStream(uri)) {
+                                if (in != null) {
+                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    byte[] buffer = new byte[4096];
+                                    int n;
+                                    while ((n = in.read(buffer)) != -1) {
+                                        baos.write(buffer, 0, n);
+                                    }
+                                    String data = baos.toString(StandardCharsets.UTF_8.name());
 
-                        // Later you’d pass this into GameActivity / controller to restore state.
+                                    // Launch GameActivity with imported state
+                                    Intent gameIntent = new Intent(this, GameActivity.class);
+                                    gameIntent.putExtra("IMPORTED_STATE", data);
+                                    startActivity(gameIntent);
+                                }
+                            } catch (IOException e) {
+                                Toast.makeText(this,
+                                        "Failed to import game: " + e.getMessage(),
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
                     }
                 }
         );
@@ -65,9 +89,8 @@ public class MainActivity extends AppCompatActivity {
         // Use ACTION_OPEN_DOCUMENT to show the system file picker
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        // If your save files are plain text, you can use "text/*".
-        // Otherwise "*/*" to allow any file type.
-        intent.setType("*/*");
+        // your saves are text
+        intent.setType("text/*");
 
         importFileLauncher.launch(intent);
     }

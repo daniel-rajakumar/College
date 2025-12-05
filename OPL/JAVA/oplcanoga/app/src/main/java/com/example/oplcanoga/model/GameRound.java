@@ -290,4 +290,10 @@ public class GameRound {
             actor.addToTournamentScore(winningScore);
         }
     }
+
+    // Allow Tournament.deserialize to restore whose turn it is.
+    public void forceSetCurrentPlayer(PlayerId id) {
+        this.currentPlayer = id;
+    }
+
 }

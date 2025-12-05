@@ -1,7 +1,9 @@
 package com.example.oplcanoga.view;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.ArrayAdapter;
@@ -13,6 +15,8 @@ import android.widget.Toast;
 import android.view.View;  // add this at the top with other imports
 
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.oplcanoga.controller.BoardState;
@@ -23,6 +27,11 @@ import com.example.oplcanoga.model.PlayerId;
 import com.example.oplcanoga.model.WinType;
 import com.example.oplcanoga.R;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +60,11 @@ public class GameActivity extends AppCompatActivity implements GameView {
     private final List<String> moveOptionLabels = new ArrayList<>();
     private final List<Move> moveOptionObjects = new ArrayList<>();
 
+    private ActivityResultLauncher<Intent> saveGameLauncher;
+    private ActivityResultLauncher<Intent> importGameLauncher;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +86,63 @@ public class GameActivity extends AppCompatActivity implements GameView {
         tvMoveLabel = findViewById(R.id.tvMoveLabel);
 
 
+        saveGameLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        if (uri != null) {
+                            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                                if (out != null) {
+                                    String data = controller.exportState();
+                                    out.write(data.getBytes(StandardCharsets.UTF_8));
+                                    out.flush();
+                                    Toast.makeText(this, "Game saved.", Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (IOException e) {
+                                Toast.makeText(this, "Failed to save game: " + e.getMessage(),
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                }
+        );
+
+//        importGameLauncher = registerForActivityResult(
+//                new ActivityResultContracts.StartActivityForResult(),
+//                result -> {
+//                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+//                        Uri uri = result.getData().getData();
+//                        if (uri != null) {
+//                            try (InputStream in = getContentResolver().openInputStream(uri)) {
+//                                if (in != null) {
+//                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//                                    byte[] buffer = new byte[4096];
+//                                    int n;
+//                                    while ((n = in.read(buffer)) != -1) {
+//                                        baos.write(buffer, 0, n);
+//                                    }
+//                                    String data = baos.toString(StandardCharsets.UTF_8.name());
+//
+//                                    // Launch GameActivity with imported state
+//                                    Intent gameIntent = new Intent(this, GameActivity.class);
+//                                    gameIntent.putExtra("IMPORTED_STATE", data);
+//                                    startActivity(gameIntent);
+//                                }
+//                            } catch (IOException e) {
+//                                Toast.makeText(this, "Failed to import game: " + e.getMessage(),
+//                                        Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//                    }
+//                }
+//        );
+
+
+
+
+
+
         // Setup spinner adapter
         movesAdapter = new ArrayAdapter<>(
                 this,
@@ -87,18 +158,21 @@ public class GameActivity extends AppCompatActivity implements GameView {
 
 
 
-        // --- Controller setup ---
         controller = new GameController(this);
 
-        // You can later pass BOARD_SIZE and FIRST_PLAYER via Intent extras.
-        // For now: default 9, HUMAN goes first.
-        int boardSize = getIntent().getIntExtra("BOARD_SIZE", 9);
-        String firstPlayerStr = getIntent().getStringExtra("FIRST_PLAYER");
-        if (firstPlayerStr == null) firstPlayerStr = "HUMAN";
-        PlayerId firstPlayer = PlayerId.valueOf(firstPlayerStr);
-        controller.startNewTournament(boardSize, firstPlayer);
+        String importedState = getIntent().getStringExtra("IMPORTED_STATE");
+        if (importedState != null) {
+            // Start from a saved game
+            controller.importState(importedState);
+        } else {
+            // Start a fresh game
+            int boardSize = getIntent().getIntExtra("BOARD_SIZE", 9);
+            String firstPlayerStr = getIntent().getStringExtra("FIRST_PLAYER");
+            if (firstPlayerStr == null) firstPlayerStr = "HUMAN";
+            PlayerId firstPlayer = PlayerId.valueOf(firstPlayerStr);
+            controller.startNewTournament(boardSize, firstPlayer);
+        }
 
-        // --- Button listeners ---
 
         // "Roll Die" => let controller roll 2 dice randomly for human
         btnRollDie.setOnClickListener(v -> controller.onRollDiceButtonPressed(2));
@@ -107,11 +181,15 @@ public class GameActivity extends AppCompatActivity implements GameView {
         // "Input Die" => show dialog, then pass chosen dice to controller
         btnInputDie.setOnClickListener(v -> showInputDiceDialog());
 
-        // "Save Game" placeholder (wire to serializer later)
         btnSaveGame.setOnClickListener(v -> {
-            appendLog("Clicked: Save Game (not implemented yet)");
-            Toast.makeText(this, "Save Game not implemented yet", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TITLE, "canoga-save.txt");
+            saveGameLauncher.launch(intent);
         });
+
+
 
         // Confirm selected move from spinner
         btnConfirmMove.setOnClickListener(v -> onConfirmMove());

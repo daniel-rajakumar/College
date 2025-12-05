@@ -1,0 +1,45 @@
+# Problem #4
+
+R.<z> = GF(3)[]
+f = z ^ 3 + 2 * z + 1
+K.<a> = GF(3).extension(f)   
+
+print("Field F 3 ^ 3 with modulus z ^ 3 + 2z + 1")
+print("So 'a' satisfies: a ^ 3 + 2a + 1 = 0", "\n")
+
+
+E4 = EllipticCurve(K, [0,0,0,2,2])
+print("Curve: y ^ 2 = x ^ 3 + 2x + 2", "\n")
+
+# 4a)
+
+points = [E4(0)]   
+
+for X in K:
+    rhs = X^3 + 2*X + 2
+    for Y in K:
+        if Y^2 == rhs:
+            points.append(E4(X, Y))
+
+print("4a) Number of points =", len(points))
+print("All the points:")
+
+for P in points:
+    print(P)
+
+# 4b)
+P = E4(2 * a + 1, 0)
+Q = E4(2 * a^2, a^2 + 1)
+
+print();
+print("4b) P =", P)
+print("    Q =", Q)
+
+m  = (Q[1] - P[1]) / (Q[0] - P[0])
+x3 = m ^ 2 - P[0] - Q[0]
+y3 = m * (P[0] - x3) - P[1]
+R = E4(x3, y3)
+
+print();
+print("P + Q (using formulas)  = ", R)
+print("Check with built-in     = ", P + Q)

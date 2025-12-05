@@ -510,4 +510,35 @@ public class GameController {
     public int getBoardSize() {
         return tournament != null ? tournament.getBoardSize() : 9;
     }
+
+    // In GameController.java
+
+    /**
+     * Turn the current tournament into a serialized String that can be written to a file.
+     */
+    public String exportState() {
+        if (tournament == null) {
+            throw new IllegalStateException("No tournament to save.");
+        }
+
+        return tournament.serialize();   // <--- CHANGE THIS NAME to match your code
+    }
+
+    /**
+     * Restore the tournament & current round from a serialized String.
+     */
+    public void importState(String serialized) {
+        this.tournament = Tournament.deserialize(serialized);   // <--- CHANGE THIS NAME
+
+        this.currentRound = tournament.getCurrentRound();
+        this.roundNumber = 1;  // or use a method from Tournament if you track round count
+
+        lastDiceTotal = 0;
+        waitingForHumanMove = false;
+        lastHumanCoverMoves.clear();
+        lastHumanUncoverMoves.clear();
+
+        updateBoardInView();
+    }
+
 }

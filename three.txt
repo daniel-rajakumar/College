@@ -1,0 +1,51 @@
+# QUESTION 3
+
+p = 3623
+F = GF(p)
+
+E3 = EllipticCurve(F, [14, 19])
+
+P = E3(1315, 457)
+Q = E3(76, 2624)
+
+print("Problem: 3")
+print("Curve E3: y^2 = x^3 + 14x + 19 over F 3623")
+print("P =", P)
+print("Q =", Q)
+
+# (a)
+print("\n3a) (F 3623)| =", E3.order())
+
+# (b)
+print("3b) order(P) =", P.order())
+print("    order(Q) =", Q.order())
+print("    P + Q    =", P + Q)
+print("    P - Q    =", P - Q)
+
+
+def double_and_add(n, P):
+    R = E3(0) 
+    Q_temp = P
+    while n > 0:
+        if n & 1:
+            R = R + Q_temp
+        Q_temp = Q_temp + Q_temp
+        n >>= 1
+    return R
+
+# (c)
+nA = 19
+A_sent = double_and_add(nA, P)
+print("\n(3c) Alice sends A = 19P =", A_sent)
+
+# (d) 
+nB = 14
+B_sent = double_and_add(nB, P)
+print("(3d) Bob sends B = 14P   =", B_sent)
+
+# (e) 
+shared1 = double_and_add(nA, B_sent)  
+shared2 = double_and_add(nB, A_sent)  
+print("(3e) shared key n_A * B  =", shared1)
+print("     shared key n_B * A  =", shared2)
+print("     keys equal ?        =", shared1 == shared2)
