@@ -69,6 +69,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
 
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,7 +121,10 @@ public class GameActivity extends AppCompatActivity implements GameView {
                         String action = result.getData().getStringExtra("ROUND_ACTION");
                         if ("PLAY_AGAIN".equals(action)) {
                             // Same Tournament, next round with advantage + alternating first player
-                            controller.startNextRoundAuto();
+//                            controller.startNextRoundAuto();
+                            Intent setupIntent = new Intent(this, SetupActivity.class);
+                            setupIntent.putExtra("MODE", "NEXT_ROUND");
+                            setupNextRoundLauncher.launch(setupIntent);
                         } else if ("QUIT_TOURNAMENT".equals(action)) {
                             int humanTotal = controller.getHumanTotalScore();
                             int computerTotal = controller.getComputerTotalScore();
@@ -135,6 +140,22 @@ public class GameActivity extends AppCompatActivity implements GameView {
                             startActivity(finalIntent);
                             finish();
                         }
+                    }
+                }
+        );
+
+        setupNextRoundLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        int boardSize = result.getData().getIntExtra("BOARD_SIZE", controller.getBoardSize());
+                        String firstPlayerStr = result.getData().getStringExtra("FIRST_PLAYER");
+                        if (firstPlayerStr == null) firstPlayerStr = "HUMAN";
+
+                        controller.startNextRoundFromSetup(
+                                boardSize,
+                                PlayerId.valueOf(firstPlayerStr)
+                        );
                     }
                 }
         );
@@ -543,4 +564,41 @@ public class GameActivity extends AppCompatActivity implements GameView {
             scrollLog.post(() -> scrollLog.fullScroll(ScrollView.FOCUS_DOWN));
         }
     }
+
+    /**
+     * Ask the user what board size they want for the next round,
+     * then tell the controller to start that round with the chosen size.
+     */
+    private void showNewRoundSetupDialog() {
+        final String[] labels = {"9 squares", "10 squares", "11 squares"};
+        final int[] sizes = {9, 10, 11};
+
+        // Preselect current board size if possible
+        int currentSize = controller.getBoardSize(); // you already have this in GameController
+        int checkedIndex = 0;
+        for (int i = 0; i < sizes.length; i++) {
+            if (sizes[i] == currentSize) {
+                checkedIndex = i;
+                break;
+            }
+        }
+
+        final int[] selectedIndex = {checkedIndex};
+
+        new AlertDialog.Builder(this)
+                .setTitle("Board size for next round")
+                .setSingleChoiceItems(labels, checkedIndex, (dialog, which) -> {
+                    selectedIndex[0] = which;
+                })
+                .setPositiveButton("OK", (dialog, which) -> {
+                    int chosenSize = sizes[selectedIndex[0]];
+                    controller.startNextRoundWithBoardSize(chosenSize);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+
+
+
 }

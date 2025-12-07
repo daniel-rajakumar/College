@@ -555,4 +555,136 @@ public class GameController {
         updateBoardInView();
     }
 
+
+    /**
+     * Roll dice for both players to decide who goes first in a new round.
+     * Re-rolls on ties. Also logs the rolls to the view.
+     *
+     * @return PlayerId of the first player, or null if there is no tournament.
+     */
+    public PlayerId rollForFirstPlayer() {
+        if (tournament == null) {
+            view.showMessage("No tournament in progress.");
+            return null;
+        }
+
+        int[] humanRoll;
+        int[] computerRoll;
+        int humanTotal;
+        int computerTotal;
+
+        do {
+            humanRoll = tournament.getDice().roll(2);
+            computerRoll = tournament.getDice().roll(2);
+            humanTotal = humanRoll[0] + humanRoll[1];
+            computerTotal = computerRoll[0] + computerRoll[1];
+
+            // Show both rolls in the UI
+            view.showDiceRoll(PlayerId.HUMAN, humanRoll);
+            view.showDiceRoll(PlayerId.COMPUTER, computerRoll);
+            view.showMessage("Roll for first player: Human = " + humanTotal +
+                    ", Computer = " + computerTotal);
+        } while (humanTotal == computerTotal);
+
+        PlayerId first = (humanTotal > computerTotal) ? PlayerId.HUMAN : PlayerId.COMPUTER;
+        view.showMessage("First player (by dice): " + first);
+        return first;
+    }
+
+    /**
+     * Start the next round in the same tournament, using a new board size.
+     * - Finishes the current round in the Tournament.
+     * - Computes advantage for the next round.
+     * - Rolls dice to decide who goes first.
+     * - Starts a new GameRound with the chosen board size.
+     */
+    public void startNextRoundWithBoardSize(int newBoardSize) {
+        if (tournament == null) {
+            view.showMessage("No tournament in progress.");
+            return;
+        }
+        if (currentRound == null || !currentRound.isOver()) {
+            view.showMessage("Current round has not finished yet.");
+            return;
+        }
+
+        // Tell the tournament we're done with this round (for advantage calc)
+        tournament.finishCurrentRound();
+
+        // Compute advantage according to your project rules
+        AdvantageInfo advantage = tournament.computeNextRoundAdvantage();
+
+        // Decide first player by dice
+        PlayerId nextFirst = rollForFirstPlayer();
+        if (nextFirst == null) {
+            // Something went wrong (no tournament)
+            return;
+        }
+
+        // Start the new round with the given board size
+        roundNumber++;
+        tournament.startNextRoundWithBoardSize(newBoardSize, nextFirst, advantage);
+        currentRound = tournament.getCurrentRound();
+
+        lastDiceTotal = 0;
+        waitingForHumanMove = false;
+        lastHumanCoverMoves.clear();
+        lastHumanUncoverMoves.clear();
+
+        view.showMessage("Starting round " + roundNumber +
+                " with board size " + newBoardSize +
+                ". First player: " + nextFirst +
+                (advantage != null && advantage.advantagedPlayer != null
+                        ? " | Advantage: " + advantage.advantagedPlayer +
+                        " on square " + advantage.advantageSquare
+                        : ""));
+
+        updateBoardInView();
+    }
+
+
+    /**
+     * Start the next round based on settings chosen in SetupActivity.
+     * Uses the same Tournament (scores persist), applies advantage,
+     * and uses the first player provided by SetupActivity.
+     */
+    public void startNextRoundFromSetup(int newBoardSize, PlayerId firstPlayer) {
+        if (tournament == null) {
+            view.showMessage("No tournament in progress.");
+            return;
+        }
+        if (currentRound == null || !currentRound.isOver()) {
+            view.showMessage("Current round has not finished yet.");
+            return;
+        }
+
+        // Finish the old round in the tournament (for advantage calculation)
+        tournament.finishCurrentRound();
+
+        // Compute advantage for the next round
+        AdvantageInfo advantage = tournament.computeNextRoundAdvantage();
+
+        // Start new round with chosen board size and first player
+        roundNumber++;
+        tournament.startNextRoundWithBoardSize(newBoardSize, firstPlayer, advantage);
+        currentRound = tournament.getCurrentRound();
+
+        lastDiceTotal = 0;
+        waitingForHumanMove = false;
+        lastHumanCoverMoves.clear();
+        lastHumanUncoverMoves.clear();
+
+        view.showMessage("Starting round " + roundNumber +
+                " with board size " + newBoardSize +
+                ". First player: " + firstPlayer +
+                (advantage != null && advantage.advantagedPlayer != null
+                        ? " | Advantage: " + advantage.advantagedPlayer +
+                        " on square " + advantage.advantageSquare
+                        : ""));
+
+        updateBoardInView();
+    }
+
+
+
 }

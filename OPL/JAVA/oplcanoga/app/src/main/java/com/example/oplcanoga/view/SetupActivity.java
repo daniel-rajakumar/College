@@ -22,6 +22,7 @@ public class SetupActivity extends AppCompatActivity {
 
     // For now just store first player as a string ("HUMAN" / "COMPUTER")
     private String firstPlayerString = "HUMAN";
+    private boolean isNextRoundMode = false;   // <--- add this
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +36,14 @@ public class SetupActivity extends AppCompatActivity {
         btnRollOff = findViewById(R.id.btnRollOff);
         btnStartGame = findViewById(R.id.btnStartGame);
 
+        // Check if we are setting up a NEW GAME or a NEXT ROUND
+        String mode = getIntent().getStringExtra("MODE");
+        isNextRoundMode = "NEXT_ROUND".equals(mode);
+
+        if (isNextRoundMode) {
+            btnStartGame.setText("Start Next Round");
+        }
+
         // TODO: later make this a real roll-off with Dice
         btnRollOff.setOnClickListener(v -> {
             // Dummy roll-off for now:
@@ -45,6 +54,7 @@ public class SetupActivity extends AppCompatActivity {
             firstPlayerString = "HUMAN"; // or "COMPUTER" if computer wins
         });
 
+
         btnStartGame.setOnClickListener(v -> {
             int boardSize = 9;
             int checkedId = rgBoardSize.getCheckedRadioButtonId();
@@ -54,10 +64,21 @@ public class SetupActivity extends AppCompatActivity {
                 boardSize = 11;
             }
 
-            Intent intent = new Intent(this, GameActivity.class);
-            intent.putExtra("BOARD_SIZE", boardSize);
-            intent.putExtra("FIRST_PLAYER", firstPlayerString);
-            startActivity(intent);
+            if (isNextRoundMode) {
+                // 🔹 We are in "next round" mode: send result BACK to GameActivity
+                Intent result = new Intent();
+                result.putExtra("BOARD_SIZE", boardSize);
+                result.putExtra("FIRST_PLAYER", firstPlayerString);
+                setResult(RESULT_OK, result);
+                finish();
+            } else {
+                // 🔹 Normal behavior: starting a brand new game
+                Intent intent = new Intent(this, GameActivity.class);
+                intent.putExtra("BOARD_SIZE", boardSize);
+                intent.putExtra("FIRST_PLAYER", firstPlayerString);
+                startActivity(intent);
+            }
         });
+
     }
 }
