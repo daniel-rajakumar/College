@@ -18,6 +18,14 @@ public abstract class Player {
         resetBoard(null); // no advantage by default
     }
 
+    public void setBoardSize(int newBoardSize) {
+        this.boardSize = newBoardSize;
+        this.squares = new int[newBoardSize + 1]; // index 1..boardSize
+        // We do NOT fill squares here; GameRound.initBoardsForRound()
+        // will call resetBoard(...) to set them all uncovered + advantage.
+    }
+
+
     public PlayerId getId() {
         return id;
     }

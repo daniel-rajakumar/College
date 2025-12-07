@@ -5,14 +5,16 @@ package com.example.oplcanoga.model;
  */
 public class Tournament {
 
+
     private final HumanPlayer human;
     private final ComputerPlayer computer;
     private final Dice dice;
-    private final int boardSize;
+
+    // board size is NOT final anymore; it can change each round
+    private int boardSize;
 
     private GameRound currentRound;
 
-    // Info from last completed round
     private PlayerId lastRoundWinner;
     private PlayerId lastRoundFirstPlayer;
     private int lastRoundWinningScore;
@@ -26,6 +28,32 @@ public class Tournament {
         this.computer = new ComputerPlayer(boardSize);
         this.dice = new Dice();
     }
+
+
+
+
+
+    public void startNextRoundWithBoardSize(int newBoardSize,
+                                            PlayerId firstPlayer,
+                                            AdvantageInfo advantageInfo) {
+        if (newBoardSize < 9 || newBoardSize > 11) {
+            throw new IllegalArgumentException("Board size must be 9, 10, or 11");
+        }
+
+        this.boardSize = newBoardSize;
+
+        // Update players to use the new board size.
+        human.setBoardSize(newBoardSize);
+        computer.setBoardSize(newBoardSize);
+
+        // GameRound will call resetBoard(...) inside its constructor.
+        currentRound = new GameRound(human, computer, newBoardSize, dice, firstPlayer, advantageInfo);
+    }
+
+
+
+
+
 
     public HumanPlayer getHuman() {
         return human;
@@ -90,8 +118,10 @@ public class Tournament {
     }
 
     public void startNextRound(PlayerId firstPlayer, AdvantageInfo advantageInfo) {
-        currentRound = new GameRound(human, computer, boardSize, dice, firstPlayer, advantageInfo);
+        // Use the current boardSize (the one in the save file or initial tournament)
+        startNextRoundWithBoardSize(this.boardSize, firstPlayer, advantageInfo);
     }
+
 
     /**
      * Determine tournament winner (by score). Returns null if tie.
