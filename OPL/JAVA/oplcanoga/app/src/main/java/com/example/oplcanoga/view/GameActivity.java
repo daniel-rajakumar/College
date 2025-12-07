@@ -62,6 +62,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
 
     private ActivityResultLauncher<Intent> saveGameLauncher;
     private ActivityResultLauncher<Intent> importGameLauncher;
+    private ActivityResultLauncher<Intent> roundResultLauncher;
+
 
 
 
@@ -107,6 +109,34 @@ public class GameActivity extends AppCompatActivity implements GameView {
                     }
                 }
         );
+
+        roundResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        String action = result.getData().getStringExtra("ROUND_ACTION");
+                        if ("PLAY_AGAIN".equals(action)) {
+                            // Same Tournament, next round with advantage + alternating first player
+                            controller.startNextRoundAuto();
+                        } else if ("QUIT_TOURNAMENT".equals(action)) {
+                            int humanTotal = controller.getHumanTotalScore();
+                            int computerTotal = controller.getComputerTotalScore();
+                            PlayerId tournamentWinner = controller.getTournamentWinner();
+
+                            Intent finalIntent = new Intent(this, FinalResultActivity.class);
+                            finalIntent.putExtra("HUMAN_TOTAL", humanTotal);
+                            finalIntent.putExtra("COMPUTER_TOTAL", computerTotal);
+                            finalIntent.putExtra(
+                                    "WINNER",
+                                    (tournamentWinner != null) ? tournamentWinner.name() : "DRAW"
+                            );
+                            startActivity(finalIntent);
+                            finish();
+                        }
+                    }
+                }
+        );
+
 
 //        importGameLauncher = registerForActivityResult(
 //                new ActivityResultContracts.StartActivityForResult(),
@@ -290,6 +320,56 @@ public class GameActivity extends AppCompatActivity implements GameView {
         }
     }
 
+
+//    @Override
+//    public void onRoundEnded(PlayerId winner,
+//                             WinType winType,
+//                             int winningScore,
+//                             int humanTotalScore,
+//                             int computerTotalScore) {
+//
+//        // Log + status text (you can keep what you already had if you like)
+//        String winnerText;
+//        if (winner == null) {
+//            winnerText = "Round ended in a draw.";
+//        } else {
+//            winnerText = "Round winner: " + winner +
+//                    " by " + winType +
+//                    " (+" + winningScore + " points)";
+//        }
+//        appendLog(winnerText);
+//        appendLog("Totals: Human " + humanTotalScore + " | Computer " + computerTotalScore);
+//        tvGameStatus.setText(winnerText);
+//
+//        // Go to RoundResultActivity, but expect a result back
+//        Intent intent = new Intent(this, RoundResultActivity.class);
+//        intent.putExtra("WINNER", winner != null ? winner.name() : "DRAW");
+//        intent.putExtra("WIN_TYPE", winType != null ? winType.name() : "NONE");
+//        intent.putExtra("ROUND_POINTS", winningScore);
+//        intent.putExtra("HUMAN_TOTAL", humanTotalScore);
+//        intent.putExtra("COMPUTER_TOTAL", computerTotalScore);
+//
+//        roundResultLauncher.launch(intent);
+//    }
+
+//    @Override
+//    public void onRoundEnded(PlayerId winner,
+//                             WinType winType,
+//                             int winningScore,
+//                             int humanTotalScore,
+//                             int computerTotalScore) {
+//
+//        Intent intent = new Intent(this, RoundResultActivity.class);
+//        intent.putExtra("WINNER", winner != null ? winner.name() : "DRAW");
+//        intent.putExtra("WIN_TYPE", winType != null ? winType.name() : "NONE");
+//        intent.putExtra("ROUND_POINTS", winningScore);
+//        intent.putExtra("HUMAN_TOTAL", humanTotalScore);
+//        intent.putExtra("COMPUTER_TOTAL", computerTotalScore);
+//
+//        roundResultLauncher.launch(intent);
+//    }
+
+
     @Override
     public void onRoundEnded(PlayerId winner,
                              WinType winType,
@@ -322,7 +402,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
         // also pass board size so "Play Again" can reuse it
         intent.putExtra("BOARD_SIZE", controller.getBoardSize()); // you may need to add getBoardSize() in GameController
 
-        startActivity(intent);
+
+        roundResultLauncher.launch(intent);
     }
 
     // ---------------- Dice dialog for "Input Die" ----------------

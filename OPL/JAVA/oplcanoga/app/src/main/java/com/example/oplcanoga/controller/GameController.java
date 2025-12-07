@@ -355,11 +355,7 @@ public class GameController {
         }
     }
 
-    /**
-     * UI calls this when the user wants to start the next round.
-     * Assumes current round has already finished.
-     */
-    public void startNextRound(PlayerId firstPlayerForNextRound) {
+    public void startNextRoundAuto() {
         if (tournament == null) {
             view.showMessage("No tournament in progress.");
             return;
@@ -369,12 +365,30 @@ public class GameController {
             return;
         }
 
-        // Finish current round and compute advantage
+        // Tell the tournament we're done with this round
         tournament.finishCurrentRound();
+
+        // Compute advantage according to the project rules
         AdvantageInfo advantage = tournament.computeNextRoundAdvantage();
 
-        startNewRoundInternal(firstPlayerForNextRound, advantage);
+        // Alternate first player: if HUMAN started last, COMPUTER starts next, and vice versa
+        PlayerId previousFirst = currentRound.getFirstPlayer();
+        PlayerId nextFirst =
+                (previousFirst == PlayerId.HUMAN) ? PlayerId.COMPUTER : PlayerId.HUMAN;
+
+        // Actually start the new round inside the same Tournament
+        startNewRoundInternal(nextFirst, advantage);
     }
+
+    /** Convenience getters for total scores — used by GameActivity when quitting the tournament. */
+    public int getHumanTotalScore() {
+        return (tournament != null) ? tournament.getHuman().getTournamentScore() : 0;
+    }
+
+    public int getComputerTotalScore() {
+        return (tournament != null) ? tournament.getComputer().getTournamentScore() : 0;
+    }
+
 
     // ---------- Internal helpers ----------
 

@@ -47,18 +47,16 @@ public class RoundResultActivity extends AppCompatActivity {
         tvTotalScores.setText("Total — Human: " + humanTotal + " | Computer: " + computerTotal);
 
         btnPlayAgain.setOnClickListener(v -> {
-            Intent gameIntent = new Intent(this, GameActivity.class);
-            gameIntent.putExtra("BOARD_SIZE", boardSize);
-            gameIntent.putExtra("FIRST_PLAYER", "HUMAN"); // adjust later if you add advantage rules
-            startActivity(gameIntent);
+            Intent result = new Intent();
+            result.putExtra("ROUND_ACTION", "PLAY_AGAIN");
+            setResult(RESULT_OK, result);
             finish();
         });
 
         btnQuitTournament.setOnClickListener(v -> {
-            Intent finalIntent = new Intent(this, FinalResultActivity.class);
-            finalIntent.putExtra("HUMAN_TOTAL", humanTotal);
-            finalIntent.putExtra("COMPUTER_TOTAL", computerTotal);
-            startActivity(finalIntent);
+            Intent result = new Intent();
+            result.putExtra("ROUND_ACTION", "QUIT_TOURNAMENT");
+            setResult(RESULT_OK, result);
             finish();
         });
     }
