@@ -63,6 +63,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
     private ActivityResultLauncher<Intent> saveGameLauncher;
     private ActivityResultLauncher<Intent> importGameLauncher;
     private ActivityResultLauncher<Intent> roundResultLauncher;
+    private ActivityResultLauncher<Intent> setupNextRoundLauncher;
+
 
 
 
@@ -136,6 +138,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
                     }
                 }
         );
+
+
 
 
 //        importGameLauncher = registerForActivityResult(
