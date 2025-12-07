@@ -44,15 +44,32 @@ public class SetupActivity extends AppCompatActivity {
             btnStartGame.setText("Start Next Round");
         }
 
-        // TODO: later make this a real roll-off with Dice
         btnRollOff.setOnClickListener(v -> {
-            // Dummy roll-off for now:
-            tvHumanDice.setText("Human: 8");
-            tvComputerDice.setText("Computer: 6");
-            tvRollOffResult.setText("Human goes first!");
+            java.util.Random rng = new java.util.Random();
 
-            firstPlayerString = "HUMAN"; // or "COMPUTER" if computer wins
+            int h1 = rng.nextInt(6) + 1;
+            int h2 = rng.nextInt(6) + 1;
+            int c1 = rng.nextInt(6) + 1;
+            int c2 = rng.nextInt(6) + 1;
+
+            int humanTotal = h1 + h2;
+            int computerTotal = c1 + c2;
+
+            tvHumanDice.setText("Human: " + h1 + " + " + h2 + " = " + humanTotal);
+            tvComputerDice.setText("Computer: " + c1 + " + " + c2 + " = " + computerTotal);
+
+            if (humanTotal > computerTotal) {
+                tvRollOffResult.setText("Human goes first!");
+                firstPlayerString = "HUMAN";
+            } else if (computerTotal > humanTotal) {
+                tvRollOffResult.setText("Computer goes first!");
+                firstPlayerString = "COMPUTER";
+            } else {
+                tvRollOffResult.setText("Tie — roll again!");
+                // keep firstPlayerString unchanged until a non-tie
+            }
         });
+
 
 
         btnStartGame.setOnClickListener(v -> {

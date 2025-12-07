@@ -296,4 +296,18 @@ public class GameRound {
         this.currentPlayer = id;
     }
 
+
+    public boolean isAdvantageLockActive() {
+        return advantageLockActive;
+    }
+
+    public PlayerId getAdvantagedPlayer() {
+        return (advantageInfo != null) ? advantageInfo.advantagedPlayer : null;
+    }
+
+    public int getAdvantageSquare() {
+        return (advantageInfo != null) ? advantageInfo.advantageSquare : -1;
+    }
+
+
 }

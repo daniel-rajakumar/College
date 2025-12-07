@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.example.oplcanoga.controller.BoardState;
+import com.example.oplcanoga.model.PlayerId;
+
 
 public class BoardView extends View {
 
@@ -18,6 +20,8 @@ public class BoardView extends View {
     private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint lockedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
 
     public BoardView(Context context) {
         super(context);
@@ -40,6 +44,10 @@ public class BoardView extends View {
 
         coveredPaint.setStyle(Paint.Style.FILL);
         coveredPaint.setColor(0xFF00796B);          // dark teal
+
+        // NEW: yellow fill for locked advantage square
+        lockedPaint.setStyle(Paint.Style.FILL);
+        lockedPaint.setColor(0xFFFFFF00);           // bright yellow
 
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(3f);
@@ -91,7 +99,18 @@ public class BoardView extends View {
         for (int i = 1; i <= boardSize; i++) {
             float cx = padding + (i - 0.5f) * cellWidth;
             boolean covered = computerSquares[i] == 0;   // 0 = covered
-            Paint fill = covered ? coveredPaint : uncoveredPaint;
+
+            boolean isLockedSquare =
+                    state.advantageLockActive &&
+                            state.advantagedPlayer == PlayerId.COMPUTER &&
+                            state.advantageSquare == i;
+
+            Paint fill;
+            if (isLockedSquare) {
+                fill = lockedPaint;
+            } else {
+                fill = covered ? coveredPaint : uncoveredPaint;
+            }
 
             RectF oval = new RectF(cx - radius, topRowY - radius,
                     cx + radius, topRowY + radius);
@@ -114,7 +133,18 @@ public class BoardView extends View {
         for (int i = 1; i <= boardSize; i++) {
             float cx = padding + (i - 0.5f) * cellWidth;
             boolean covered = humanSquares[i] == 0;
-            Paint fill = covered ? coveredPaint : uncoveredPaint;
+
+            boolean isLockedSquare =
+                    state.advantageLockActive &&
+                            state.advantagedPlayer == PlayerId.HUMAN &&
+                            state.advantageSquare == i;
+
+            Paint fill;
+            if (isLockedSquare) {
+                fill = lockedPaint;
+            } else {
+                fill = covered ? coveredPaint : uncoveredPaint;
+            }
 
             RectF oval = new RectF(cx - radius, bottomRowY - radius,
                     cx + radius, bottomRowY + radius);

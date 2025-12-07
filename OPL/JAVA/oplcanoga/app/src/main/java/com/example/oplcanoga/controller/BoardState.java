@@ -2,21 +2,20 @@ package com.example.oplcanoga.controller;
 
 import com.example.oplcanoga.model.PlayerId;
 
-/**
- * Immutable snapshot of board + scores + turn info.
- * The view uses this to render the UI.
- */
 public class BoardState {
-
-    public final int[] humanSquares;      // copy of human squares[1..boardSize]
-    public final int[] computerSquares;   // copy of computer squares[1..boardSize]
+    public final int[] humanSquares;
+    public final int[] computerSquares;
     public final int humanScore;
     public final int computerScore;
-
     public final int boardSize;
     public final PlayerId currentPlayer;
     public final boolean roundOver;
     public final PlayerId roundWinner;
+
+    // NEW:
+    public final boolean advantageLockActive;
+    public final PlayerId advantagedPlayer;
+    public final int advantageSquare;
 
     public BoardState(int[] humanSquares,
                       int[] computerSquares,
@@ -25,7 +24,10 @@ public class BoardState {
                       int boardSize,
                       PlayerId currentPlayer,
                       boolean roundOver,
-                      PlayerId roundWinner) {
+                      PlayerId roundWinner,
+                      boolean advantageLockActive,
+                      PlayerId advantagedPlayer,
+                      int advantageSquare) {
         this.humanSquares = humanSquares;
         this.computerSquares = computerSquares;
         this.humanScore = humanScore;
@@ -34,5 +36,9 @@ public class BoardState {
         this.currentPlayer = currentPlayer;
         this.roundOver = roundOver;
         this.roundWinner = roundWinner;
+
+        this.advantageLockActive = advantageLockActive;
+        this.advantagedPlayer = advantagedPlayer;
+        this.advantageSquare = advantageSquare;
     }
 }

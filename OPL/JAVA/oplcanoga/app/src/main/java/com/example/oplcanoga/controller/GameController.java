@@ -349,10 +349,26 @@ public class GameController {
         if (suggestion == null) {
             view.showMessage("No good move available.");
         } else {
+            StringBuilder reason = new StringBuilder();
+
+            if (!lastHumanCoverMoves.isEmpty() && suggestion.getType() == MoveType.COVER) {
+                reason.append("I chose a COVER move because covering more of your own squares ")
+                        .append("reduces your opponent's chances to score at the end.");
+            } else if (!lastHumanUncoverMoves.isEmpty() && suggestion.getType() == MoveType.UNCOVER) {
+                reason.append("I chose an UNCOVER move because removing your opponent's covered squares ")
+                        .append("makes it harder for them to win by covering all of theirs.");
+            }
+
+            reason.append(" This move uses ").append(suggestion.getSquares().size())
+                    .append(" square(s), and I prefer moves that use more squares and higher numbers ")
+                    .append("to maximize impact from this roll.");
+
             view.showMessage("Suggestion: " + suggestion.getType() +
                     " squares " + suggestion.getSquares() +
-                    " (total " + suggestion.getDiceTotal() + ")");
+                    " (total " + suggestion.getDiceTotal() + "). " +
+                    reason.toString());
         }
+
     }
 
     public void startNextRoundAuto() {
@@ -498,7 +514,10 @@ public class GameController {
                 currentRound.getBoardSize(),
                 currentRound.getCurrentPlayerId(),
                 currentRound.isOver(),
-                currentRound.getWinner()
+                currentRound.getWinner(),
+                currentRound.isAdvantageLockActive(),
+                currentRound.getAdvantagedPlayer(),
+                currentRound.getAdvantageSquare()
         );
 
         view.updateBoard(state);
