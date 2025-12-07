@@ -557,11 +557,34 @@ public class GameActivity extends AppCompatActivity implements GameView {
 
     private void setDiceButtonsVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
+
+        // These are always shown/hidden together
         btnRollDie.setVisibility(visibility);
-        btnRollOneDie.setVisibility(visibility);
         btnInputDie.setVisibility(visibility);
         btnSaveGame.setVisibility(visibility);
+
+        // "Roll 1 Die" is special: only show when it's allowed
+        if (!visible) {
+            // If dice controls are hidden, always hide the 1-die button too
+            btnRollOneDie.setVisibility(View.GONE);
+            return;
+        }
+
+        // At this point, dice controls are visible.
+        // Show 1-die button only if:
+        //  - game has a controller & round
+        //  - it's the human's turn
+        //  - the round is not over
+        //  - canHumanRollOneDie() says yes
+        boolean canShowOneDie =
+                controller != null
+                        && !controller.isRoundOver()
+                        && controller.getCurrentPlayer() == PlayerId.HUMAN
+                        && controller.canHumanRollOneDie();
+
+        btnRollOneDie.setVisibility(canShowOneDie ? View.VISIBLE : View.GONE);
     }
+
 
     // ---------------- Helpers ----------------
 
