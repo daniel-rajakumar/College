@@ -65,6 +65,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
     private ActivityResultLauncher<Intent> roundResultLauncher;
     private ActivityResultLauncher<Intent> setupNextRoundLauncher;
 
+    private Button btnRollOneDie; // NEW
+
 
 
 
@@ -86,6 +88,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
         btnRollDie = findViewById(R.id.btnRollDie);
         btnInputDie = findViewById(R.id.btnInputDie);
         btnSaveGame = findViewById(R.id.btnSaveGame);
+        btnRollOneDie = findViewById(R.id.btnRollOneDie);
+
         spinnerMoves = findViewById(R.id.spinnerMoves);
         btnConfirmMove = findViewById(R.id.btnConfirmMove);
         btnHelp = findViewById(R.id.btnHelp);
@@ -229,8 +233,14 @@ public class GameActivity extends AppCompatActivity implements GameView {
         }
 
 
-        // "Roll Die" => let controller roll 2 dice randomly for human
-        btnRollDie.setOnClickListener(v -> controller.onRollDiceButtonPressed(2));
+        // Roll 1 die (when rules allow it)
+        btnRollOneDie.setOnClickListener(v ->
+                controller.onRollDiceButtonPressed(1));
+
+// Roll 2 dice
+        btnRollDie.setOnClickListener(v ->
+                controller.onRollDiceButtonPressed(2));
+
 
 
         // "Input Die" => show dialog, then pass chosen dice to controller
@@ -444,6 +454,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
         final int[] selectedDie1 = {0};
         final int[] selectedDie2 = {0};
 
+
+
         bindDieRow(dialogView, R.id.btnDie1_1, R.id.btnDie1_2, R.id.btnDie1_3,
                 R.id.btnDie1_4, R.id.btnDie1_5, R.id.btnDie1_6, selectedDie1);
 
@@ -451,13 +463,21 @@ public class GameActivity extends AppCompatActivity implements GameView {
                 R.id.btnDie2_4, R.id.btnDie2_5, R.id.btnDie2_6, selectedDie2);
 
         Button btnDone = dialogView.findViewById(R.id.btnDialogDone);
+
         btnDone.setOnClickListener(v -> {
-            if (selectedDie1[0] == 0 || selectedDie2[0] == 0) {
-                Toast.makeText(this, "Please select both dice.", Toast.LENGTH_SHORT).show();
+            if (selectedDie1[0] == 0 && selectedDie2[0] == 0) {
+                Toast.makeText(this, "Please select at least one die.", Toast.LENGTH_SHORT).show();
                 return;
             }
-            // Use controller to process a manual roll
-            controller.onManualDiceButtonPressed(selectedDie1[0], selectedDie2[0]);
+
+            if (selectedDie2[0] == 0) {
+                // Only first die selected -> treat as 1-die roll
+                controller.onManualDiceButtonPressed(selectedDie1[0], 0);
+            } else {
+                // Both dice selected -> treat as 2-dice roll
+                controller.onManualDiceButtonPressed(selectedDie1[0], selectedDie2[0]);
+            }
+
             dialog.dismiss();
         });
 
@@ -538,10 +558,10 @@ public class GameActivity extends AppCompatActivity implements GameView {
     private void setDiceButtonsVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
         btnRollDie.setVisibility(visibility);
+        btnRollOneDie.setVisibility(visibility);
         btnInputDie.setVisibility(visibility);
         btnSaveGame.setVisibility(visibility);
     }
-
 
     // ---------------- Helpers ----------------
 

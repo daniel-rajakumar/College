@@ -195,8 +195,22 @@ public class GameController {
             return;
         }
 
-        int[] dice = new int[]{die1, die2};
-        handleDiceForCurrentPlayer(dice);
+        PlayerId current = currentRound.getCurrentPlayerId();
+
+        if (die2 == 0) {
+            // Treat as a 1-die roll
+            if (!currentRound.canRollOneDie(current)) {
+                view.showMessage("You are not allowed to roll one die yet.");
+                return;
+            }
+
+            int[] dice = new int[]{die1};
+            handleDiceForCurrentPlayer(dice);
+        } else {
+            // Treat as a 2-dice roll (always allowed)
+            int[] dice = new int[]{die1, die2};
+            handleDiceForCurrentPlayer(dice);
+        }
     }
 
     /**
