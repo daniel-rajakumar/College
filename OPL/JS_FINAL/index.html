@@ -3,90 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <title>Canoga</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h1>Canoga</h1>
 
-  <!-- Tournament Controls -->
-  <section id="setup-section">
-    <label for="board-size">Board size (9–11):</label>
-    <select id="board-size">
-      <option value="9">9</option>
-      <option value="10">10</option>
-      <option value="11">11</option>
-    </select>
-    <button id="start-round-btn">Start New Round</button>
-    <button id="load-game-btn">Load Saved Game</button>
-  </section>
+  <main>
+    <!-- ======================= WELCOME SCREEN ======================= -->
+    <section id="screen-welcome" class="screen active">
+      <h2>Welcome</h2>
+      <p>Play a tournament of Canoga. Start a new game or load one from a save file.</p>
 
-  <!-- Scores -->
-  <section id="score-section">
-    <h2>Scores</h2>
-    <p>Human total: <span id="human-total-score">0</span></p>
-    <p>Computer total: <span id="computer-total-score">0</span></p>
-    <p>Current round: <span id="round-status">Not started</span></p>
-  </section>
-
-  <!-- Board Display -->
-  <section id="board-section">
-    <h2>Board</h2>
-    <div>
-      <strong>Computer:</strong>
-      <div id="computer-row"></div>
-    </div>
-    <div>
-      <strong>Human:</strong>
-      <div id="human-row"></div>
-    </div>
-    <p>First player: <span id="first-player-label"></span></p>
-    <p>Next turn: <span id="next-player-label"></span></p>
-    <p>Advantage: <span id="advantage-label">None</span></p>
-  </section>
-
-  <!-- Dice + Move Controls -->
-  <section id="turn-section">
-    <h2>Turn</h2>
-    <div id="dice-section">
-      <p>Dice: <span id="dice-display">-</span></p>
-      <label><input type="radio" name="dice-mode" value="auto" checked> Random dice</label>
-      <label><input type="radio" name="dice-mode" value="manual"> Manual dice</label>
-      <div id="manual-dice-inputs">
-        <input type="number" id="die1-input" min="1" max="6" placeholder="Die 1">
-        <input type="number" id="die2-input" min="1" max="6" placeholder="Die 2">
+      <div class="welcome-actions">
+        <button id="welcome-new-game-btn">Start New Tournament</button>
       </div>
 
-      <p>Allowed dice: <span id="dice-options-label">Will be shown</span></p>
-      <button id="roll-one-die-btn">Roll 1 die</button>
-      <button id="roll-two-dice-btn">Roll 2 dice</button>
-    </div>
+      <h3>Load Saved Game</h3>
+      <p>Paste your saved game text below and click “Load Game”.</p>
+      <textarea id="welcome-load-input" rows="8" cols="60"
+        placeholder="Paste saved game text here..."></textarea>
+      <br>
+      <button id="welcome-load-btn">Load Game</button>
+    </section>
 
-    <div id="move-section">
-      <p>Move type:</p>
-      <label><input type="radio" name="move-type" value="cover" checked> Cover my squares</label>
-      <label><input type="radio" name="move-type" value="uncover"> Uncover opponent squares</label>
-      <p>Enter squares (comma-separated):</p>
-      <input type="text" id="squares-input" placeholder="e.g. 4,2 or 3,2,1">
-      <button id="apply-move-btn">Apply Move</button>
-    </div>
+    <!-- ======================= SETUP SCREEN ========================= -->
+    <section id="screen-setup" class="screen">
+      <h2>Game Setup</h2>
 
-    <div id="help-section">
-      <button id="help-btn">Need Help?</button>
-      <pre id="help-output"></pre>
-    </div>
+      <div class="setup-row">
+        <label for="game-mode">Game mode:</label>
+        <select id="game-mode">
+          <option value="HvC" selected>Human vs Computer</option>
+          <option value="HvH" disabled>Human vs Human (not implemented)</option>
+          <option value="CvC" disabled>Computer vs Computer (not implemented)</option>
+        </select>
+      </div>
 
-    <div id="save-section">
-      <button id="save-game-btn">Save & Quit</button>
-      <textarea id="save-output" rows="8" cols="60" placeholder="Saved game text will appear here"></textarea>
-      <textarea id="load-input" rows="8" cols="60" placeholder="Paste saved game text here before clicking 'Load Saved Game'"></textarea>
-    </div>
-  </section>
+      <div class="setup-row">
+        <label for="board-size">Board size (9–11):</label>
+        <select id="board-size">
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+        </select>
+      </div>
 
-  <!-- Messages -->
-  <section id="log-section">
-    <h2>Game Log</h2>
-    <pre id="log"></pre>
-  </section>
+      <p>
+        When you’re ready, roll to see who goes first. This will also start a new round.
+      </p>
+
+      <button id="setup-roll-btn">Roll for First Player &amp; Start Round</button>
+      <p id="setup-roll-result"></p>
+
+      <button id="setup-continue-btn" disabled>Continue to Game Board</button>
+      <button id="setup-back-btn" class="secondary">Back to Welcome</button>
+    </section>
+
+    <!-- ======================= GAME SCREEN ========================== -->
+    <section id="screen-game" class="screen">
+      <!-- Scores -->
+      <section id="score-section">
+        <h2>Scores</h2>
+        <p>Human total: <span id="human-total-score">0</span></p>
+        <p>Computer total: <span id="computer-total-score">0</span></p>
+        <p>Current round: <span id="round-status">Not started</span></p>
+      </section>
+
+      <!-- Board Display -->
+      <section id="board-section">
+        <h2>Board</h2>
+        <div>
+          <strong>Computer:</strong>
+          <div id="computer-row"></div>
+        </div>
+        <div>
+          <strong>Human:</strong>
+          <div id="human-row"></div>
+        </div>
+        <p>First player: <span id="first-player-label"></span></p>
+        <p>Next turn: <span id="next-player-label"></span></p>
+        <p>Advantage: <span id="advantage-label">None</span></p>
+      </section>
+
+      <!-- Turn controls -->
+      <section id="turn-section">
+        <h2>Turn</h2>
+        <div id="dice-section">
+          <p>Dice: <span id="dice-display">-</span></p>
+          <label><input type="radio" name="dice-mode" value="auto" checked> Random dice</label>
+          <label><input type="radio" name="dice-mode" value="manual"> Manual dice</label>
+
+          <p>Allowed dice: <span id="dice-options-label">Will be shown</span></p>
+          <button id="roll-one-die-btn">Roll 1 die</button>
+          <button id="roll-two-dice-btn">Roll 2 dice</button>
+
+          <!-- Hidden actual inputs (used by JS; user sets these through the popup) -->
+          <div id="manual-dice-inputs">
+            <input type="hidden" id="die1-input">
+            <input type="hidden" id="die2-input">
+          </div>
+
+        </div>
+
+        <div id="move-section">
+          <p>Move type:</p>
+          <label><input type="radio" name="move-type" value="cover" checked> Cover my squares</label>
+          <label><input type="radio" name="move-type" value="uncover"> Uncover opponent squares</label>
+          <p>Enter squares (comma-separated):</p>
+          <input type="text" id="squares-input" placeholder="e.g. 4,2 or 3,2,1">
+          <button id="apply-move-btn">Apply Move</button>
+        </div>
+
+        <div id="help-section">
+          <button id="help-btn">Need Help?</button>
+          <pre id="help-output"></pre>
+        </div>
+
+        <div id="save-section">
+          <button id="save-game-btn">Save &amp; Quit</button>
+          <textarea id="save-output" rows="4" cols="60"
+            placeholder="Saved game text will appear here"></textarea>
+        </div>
+      </section>
+
+      <!-- Messages -->
+      <section id="log-section">
+        <h2>Game Log</h2>
+        <pre id="log"></pre>
+      </section>
+    </section>
+
+    <!-- ======================= END SCREEN =========================== -->
+    <section id="screen-end" class="screen">
+      <h2>Round Finished</h2>
+      <p id="end-summary"></p>
+
+      <button id="end-play-again-btn">Play Another Round</button>
+      <button id="end-exit-btn" class="secondary">Exit to Welcome</button>
+    </section>
+  </main>
+
+  <!-- ======================= MANUAL DICE POPUP ===================== -->
+  <div id="modal-backdrop" class="backdrop hidden"></div>
+  <div id="manual-dice-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Manual Dice Roll</h3>
+      <p id="modal-instruction">Choose values for your dice.</p>
+      <div class="modal-dice-inputs">
+        <label>Die 1:
+          <select id="modal-die1">
+            <option value="">–</option>
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option>
+          </select>
+        </label>
+        <label id="modal-die2-label">Die 2:
+          <select id="modal-die2">
+            <option value="">–</option>
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-buttons">
+        <button id="modal-confirm-btn">Roll</button>
+        <button id="modal-cancel-btn" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>
