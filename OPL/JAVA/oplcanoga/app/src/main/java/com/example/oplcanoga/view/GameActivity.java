@@ -107,7 +107,14 @@ public class GameActivity extends AppCompatActivity implements GameView {
                                     String data = controller.exportState();
                                     out.write(data.getBytes(StandardCharsets.UTF_8));
                                     out.flush();
+
                                     Toast.makeText(this, "Game saved.", Toast.LENGTH_SHORT).show();
+
+                                    // 🔹 Quit the game: go back to main menu
+                                    Intent home = new Intent(this, MainActivity.class);
+                                    home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(home);
+                                    finish();   // close GameActivity
                                 }
                             } catch (IOException e) {
                                 Toast.makeText(this, "Failed to save game: " + e.getMessage(),
