@@ -693,10 +693,14 @@ function onSaveGame() {
   if (!tournament || !tournament.currentRound) return;
   const text = Serializer.save(tournament, tournament.currentRound);
   const saveOut = document.getElementById('save-output');
-  if (saveOut) saveOut.value = text;
+  if (saveOut) {
+    saveOut.value = text;
+    saveOut.classList.remove('hidden-ui'); // 👈 show it only after save
+  }
 
   view.log('Game serialized into text. Copy and save it to a file.');
 }
+
 
 // fromWelcome = true → read from #welcome-load-input, else from #load-input (if present)
 function onLoadGame(fromWelcome = false) {

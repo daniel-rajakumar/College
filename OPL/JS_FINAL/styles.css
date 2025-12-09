@@ -114,9 +114,10 @@ main {
 
 /* Turn area grid */
 
+/* Turn area: simple vertical layout */
 #turn-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   margin-top: 12px;
 }
@@ -126,11 +127,11 @@ main {
 #dice-section,
 #move-section,
 #help-section,
+
 #save-section {
-  border: 1px solid #1f2937;
-  border-radius: 6px;
-  padding: 10px;
-  background: #020617;
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 #manual-dice-inputs {
@@ -172,9 +173,7 @@ textarea {
 /* save/load text */
 
 #save-output {
-  width: 100%;
-  margin-top: 6px;
-  min-height: 80px;
+  margin-top: 8px;
 }
 
 /* log */
