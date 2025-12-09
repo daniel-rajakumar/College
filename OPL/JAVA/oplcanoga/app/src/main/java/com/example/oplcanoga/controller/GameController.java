@@ -209,7 +209,7 @@ public class GameController {
         }
 
         ComputerPlayer computer = tournament.getComputer();
-        Move chosen = computer.chooseMove(coverMoves, uncoverMoves);
+        Move chosen = computer.chooseMove(coverMoves, uncoverMoves, computer, tournament.getHuman());
 
         if (chosen == null) {
             view.showMessage("Computer skips (no good move). Your turn.");
@@ -283,24 +283,47 @@ public class GameController {
         }
 
         ComputerPlayer pseudoComputer = new ComputerPlayer(currentRound.getBoardSize());
-        Move suggestion = pseudoComputer.chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves);
+        Move suggestion = pseudoComputer.chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
 
         if (suggestion == null) {
             view.showMessage("No good move available.");
         } else {
             StringBuilder reason = new StringBuilder();
 
-            if (!lastHumanCoverMoves.isEmpty() && suggestion.getType() == MoveType.COVER) {
-                reason.append("I chose a COVER move because covering more of your own squares ")
-                        .append("reduces your opponent's chances to score at the end.");
-            } else if (!lastHumanUncoverMoves.isEmpty() && suggestion.getType() == MoveType.UNCOVER) {
-                reason.append("I chose an UNCOVER move because removing your opponent's covered squares ")
-                        .append("makes it harder for them to win by covering all of theirs.");
+            if (suggestion.getType() == MoveType.COVER) {
+                // If this move makes the human win instantly
+                int humanUncoveredCount = 0;
+                Player human = tournament.getHuman();
+                for (int i=1; i<=human.getBoardSize(); i++) {
+                    if (!human.isCovered(i)) humanUncoveredCount++;
+                }
+                if (suggestion.getSquareCount() == humanUncoveredCount) {
+                    reason.append(" This move will let you win the round immediately!");
+                } else {
+                    reason.append("I chose a COVER move because covering more of your own squares ")
+                            .append("reduces your opponent's chances to score at the end.");
+                }
+
+            } else if (suggestion.getType() == MoveType.UNCOVER) {
+                // If this move makes the human win instantly
+                int computerCoveredCount = 0;
+                Player comp = tournament.getComputer();
+                for (int i=1; i<=comp.getBoardSize(); i++) {
+                    if (comp.isCovered(i)) computerCoveredCount++;
+                }
+                if (suggestion.getSquareCount() == computerCoveredCount) {
+                    reason.append(" This move will let you win the round immediately!");
+                } else {
+                    reason.append("I chose an UNCOVER move because removing your opponent's covered squares ")
+                            .append("makes it harder for them to win by covering all of theirs.");
+                }
             }
 
-            reason.append(" This move uses ").append(suggestion.getSquares().size())
-                    .append(" square(s), and I prefer moves that use more squares and higher numbers ")
-                    .append("to maximize impact from this roll.");
+            if (reason.length() == 0) { // If no special reason added yet
+                reason.append(" This move uses ").append(suggestion.getSquares().size())
+                        .append(" square(s), and I prefer moves that use more squares and higher numbers ")
+                        .append("to maximize impact from this roll.");
+            }
 
             view.showMessage("Suggestion: " + suggestion.getType() +
                     " squares " + suggestion.getSquares() +
@@ -392,7 +415,7 @@ public class GameController {
                 break;
             }
 
-            Move chosen = computer.chooseMove(coverMoves, uncoverMoves);
+            Move chosen = computer.chooseMove(coverMoves, uncoverMoves, computer, tournament.getHuman());
             if (chosen == null) {
                 view.showMessage("Computer skips (no good move).");
                 break;
