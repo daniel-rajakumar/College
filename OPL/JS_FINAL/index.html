@@ -1,25 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Canoga (JS Version)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <title>Canoga (JS Version)</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
 
-  <!-- Optional: your own styles -->
-  <!-- <link rel="stylesheet" href="styles.css" /> -->
-</head>
-<body>
-  <h1>Canoga</h1>
+      <!-- WELCOME SCREEN -->
+      <section id="screen-welcome" class="screen active">
+        <h1>Canoga</h1>
+        <p class="subtitle">Dice + strategy game – HTML/JS Version</p>
+        <button id="btn-start-setup" class="primary">Start New Tournament</button>
+      </section>
 
-  <p>
-    This is the text-based version of Canoga.  
-    Click the button below, then open your browser console
-    (<code>F12</code> or <code>Ctrl+Shift+I</code> → “Console”) to see the game output.
-  </p>
+      <!-- SETUP SCREEN -->
+      <section id="screen-setup" class="screen">
+        <h2>Round Setup</h2>
 
-  <button onclick="mainCanoga()">Start Canoga</button>
+        <div class="setup-group">
+          <label for="select-board-size">Board size (squares):</label>
+          <select id="select-board-size">
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+          </select>
+        </div>
 
-  <!-- Load your JS game (ES module) -->
-  <script type="module" src="js/main.js"></script>
-</body>
+        <div class="setup-group">
+          <span>Game Mode:</span>
+          <label><input type="radio" name="mode" value="HvsC" checked /> Human vs Computer</label>
+          <label><input type="radio" name="mode" value="HvsH" /> Human vs Human</label>
+          <label><input type="radio" name="mode" value="CvsC" /> Computer vs Computer</label>
+        </div>
+
+        <div class="setup-group rolloff">
+          <h3>Roll-off: Who goes first?</h3>
+          <button id="btn-rolloff" class="primary">Roll Dice</button>
+          <div id="rolloff-result" class="panel"></div>
+        </div>
+
+        <div class="setup-actions">
+          <button id="btn-setup-back">Back</button>
+          <button id="btn-start-round" class="primary" disabled>Start Round</button>
+        </div>
+      </section>
+
+      <!-- GAME SCREEN -->
+      <section id="screen-game" class="screen">
+        <header class="top-bar">
+          <div>
+            <h2>Canoga – Round <span id="lbl-round-number">1</span></h2>
+            <p>
+              Mode: <span id="lbl-mode"></span> |
+              First player: <span id="lbl-first-player"></span>
+            </p>
+            <p id="lbl-advantage"></p>
+          </div>
+          <div class="scores">
+            <div>
+              <h3>Human</h3>
+              <p>Total: <span id="score-human">0</span></p>
+            </div>
+            <div>
+              <h3>Computer</h3>
+              <p>Total: <span id="score-computer">0</span></p>
+            </div>
+          </div>
+        </header>
+
+        <main class="game-layout">
+          <section class="board-section">
+            <h3>Boards</h3>
+            <p>Current player: <span id="lbl-current-player"></span></p>
+
+            <div id="boards">
+              <div class="board-wrapper">
+                <h4>Human</h4>
+                <div id="board-human" class="board-row"></div>
+              </div>
+              <div class="board-wrapper">
+                <h4>Computer</h4>
+                <div id="board-computer" class="board-row"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="controls-section">
+            <h3>Controls</h3>
+
+            <div id="dice-area" class="panel">
+              <p>Dice: <span id="lbl-dice">–</span></p>
+              <p>Sum: <span id="lbl-dice-sum">–</span></p>
+
+              <div id="dice-buttons">
+                <button id="btn-roll-1" class="primary">Roll 1 Die</button>
+                <button id="btn-roll-2" class="primary">Roll 2 Dice</button>
+              </div>
+            </div>
+
+            <div id="move-area" class="panel">
+              <p>Move type:</p>
+              <div class="btn-group">
+                <button id="btn-move-cover">Cover</button>
+                <button id="btn-move-uncover">Uncover</button>
+              </div>
+              <p class="hint">Click squares on the board to select them.</p>
+              <p>Selected squares: <span id="lbl-selected-squares">[]</span></p>
+              <div class="btn-group">
+                <button id="btn-clear-selection">Clear Selection</button>
+                <button id="btn-confirm-move" class="primary">Confirm Move</button>
+              </div>
+              <button id="btn-help" class="secondary">Ask for Help</button>
+            </div>
+
+            <div id="turn-info" class="panel">
+              <p id="lbl-turn-status">Awaiting roll…</p>
+            </div>
+          </section>
+
+          <section class="log-section">
+            <h3>Log</h3>
+            <div id="log" class="log"></div>
+          </section>
+        </main>
+
+        <footer class="bottom-bar">
+          <button id="btn-quit-round">Quit Tournament</button>
+        </footer>
+      </section>
+
+      <!-- END / ROUND SUMMARY SCREEN -->
+      <section id="screen-end" class="screen">
+        <h2>Round Summary</h2>
+        <p id="lbl-round-result"></p>
+
+        <div class="panel">
+          <p>Round winner: <span id="lbl-round-winner"></span></p>
+          <p>Win type: <span id="lbl-round-win-type"></span></p>
+          <p>Round score: <span id="lbl-round-score"></span></p>
+        </div>
+
+        <div class="panel">
+          <h3>Tournament Scores</h3>
+          <p>Human total: <span id="lbl-final-human-score">0</span></p>
+          <p>Computer total: <span id="lbl-final-computer-score">0</span></p>
+          <p>Next round advantage: <span id="lbl-final-advantage"></span></p>
+        </div>
+
+        <div class="actions">
+          <button id="btn-end-play-again" class="primary">Play Next Round</button>
+          <button id="btn-end-quit">Quit Tournament</button>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
 </html>

@@ -1,236 +1,119 @@
-
 // js/model/Tournament.js
+import { HumanPlayer } from "./HumanPlayer.js";
+import { ComputerPlayer } from "./ComputerPlayer.js";
+import { GameRound } from "./GameRound.js";
 
-// Tournament = tournament-wide state: scores + who starts + advantage system.
-// Advantage flags are static so Human/Computer can query them from anywhere.
-
+/**
+ * Tournament = sequence of rounds between the same human + computer.
+ * Keeps track of:
+ *  - players
+ *  - cumulative scores
+ *  - current round
+ *  - advantage (handicap) to apply to NEXT round
+ */
 export class Tournament {
-  // Who gets advantage / owns advantage
-  static Side = {
-    None: "None",
-    Human: "Human",
-    Computer: "Computer",
-  };
+  constructor(humanName = "Human", computerName = "Computer") {
+    this.human = new HumanPlayer(humanName);
+    this.computer = new ComputerPlayer(computerName);
 
-  // --- Static advantage state, shared across the whole app ---
-  static advantageApplied = false;
-  static advantageSquare = 0;
-
-  static protectHumanAdvantage = false;
-  static protectComputerAdvantage = false;
-  static advantageOwner = Tournament.Side.None;
-
-  constructor() {
-    this.tournamentScoreHuman = 0;
-    this.tournamentScoreComputer = 0;
-
-    // who should act next (used by GameRound when continuing / next round)
-    this.isHumanTurn = true;
-    this.firstPlayerIsHuman = true;
-
-    // queued advantage for NEXT round
-    this.pendingAdvantageSquare = 0;
-    this.pendingAdvantageFor = Tournament.Side.None;
-  }
-
-  // ---------- Simple getters/setters for turn metadata ----------
-
-  getIsHumanTurn() {
-    return this.isHumanTurn;
-  }
-
-  setIsHumanTurn(h) {
-    this.isHumanTurn = !!h;
-  }
-
-  getFirstPlayerIsHuman() {
-    return this.firstPlayerIsHuman;
-  }
-
-  setFirstPlayerIsHuman(isHuman) {
-    this.firstPlayerIsHuman = !!isHuman;
-  }
-
-  // ---------- Advantage: shared static flags ----------
-
-  static getAdvantageApplied() {
-    return Tournament.advantageApplied;
-  }
-
-  static getAdvantageSquare() {
-    return Tournament.advantageSquare;
-  }
-
-  static isHumanAdvantageProtected() {
-    return Tournament.protectHumanAdvantage;
-  }
-
-  static isComputerAdvantageProtected() {
-    return Tournament.protectComputerAdvantage;
-  }
-
-  static getAdvantageOwner() {
-    return Tournament.advantageOwner;
-  }
-
-  static clearAdvantageProtectionForHuman() {
-    Tournament.protectHumanAdvantage = false;
-    if (!Tournament.protectComputerAdvantage) {
-      Tournament.advantageApplied = false;
-      Tournament.advantageOwner = Tournament.Side.None;
-    }
-  }
-
-  static clearAdvantageProtectionForComputer() {
-    Tournament.protectComputerAdvantage = false;
-    if (!Tournament.protectHumanAdvantage) {
-      Tournament.advantageApplied = false;
-      Tournament.advantageOwner = Tournament.Side.None;
-    }
-  }
-
-  // ---------- Advantage helpers (instance + static mix) ----------
-
-  static calculateAdvantageSquare(winningScore) {
-    let sum = 0;
-    let score = Math.max(0, Math.floor(winningScore));
-    while (score > 0) {
-      sum += score % 10;
-      score = Math.floor(score / 10);
-    }
-    return sum;
+    this.currentRound = null;
+    // { playerId: "HUMAN" | "COMPUTER", digitSum: 0..9 } | null
+    this.nextRoundAdvantage = null;
+    this.roundNumber = 0;
   }
 
   /**
-   * Called at end of a round to decide who gets the advantage next round.
-   * Does NOT actually cover any square yet; that happens in applyAdvantageToNewRound().
-   *
-   * @param {boolean} winnerWasFirstPlayer
-   * @param {boolean} winnerIsHuman
-   * @param {number} winningScore - score used to compute advantage square
+   * Start a new round with given board size and first-player id.
+   * Applies any stored advantage from previous round.
    */
-  applyHandicap(winnerWasFirstPlayer, winnerIsHuman, winningScore) {
-    const advSquare = Tournament.calculateAdvantageSquare(winningScore);
-    Tournament.advantageSquare = advSquare;
-
-    let forWhom;
-    if (winnerWasFirstPlayer) {
-      // winner started -> OTHER side gets advantage next round
-      forWhom = winnerIsHuman ? Tournament.Side.Computer : Tournament.Side.Human;
-    } else {
-      // winner did not start -> WINNER gets advantage
-      forWhom = winnerIsHuman ? Tournament.Side.Human : Tournament.Side.Computer;
-    }
-
-    this.pendingAdvantageSquare = advSquare;
-    this.pendingAdvantageFor = forWhom;
-
-    console.log(
-      `[Advantage queued for next round] Square ${advSquare} -> ${
-        forWhom === Tournament.Side.Human ? "Human" : "Computer"
-      }`
-    );
+  startNewRound(boardSize, firstPlayerId) {
+    this.roundNumber += 1;
+    this.currentRound = new GameRound({
+      boardSize,
+      humanPlayer: this.human,
+      computerPlayer: this.computer,
+      firstPlayerId,
+      advantageInfo: this.nextRoundAdvantage
+    });
+    return this.currentRound;
   }
 
   /**
-   * Call this right after you create new Boards for a round.
-   * This actually covers the advantage square and turns on protection flags.
+   * Must be called AFTER a round is over (GameRound.roundOver === true).
+   * Computes who gets advantage in next round (if any).
    *
-   * @param {Board} humanBoard
-   * @param {Board} computerBoard
+   * Rule:
+   *  - If winner WAS the first player in this round => advantage goes to opponent.
+   *  - If winner was NOT first player => winner keeps advantage.
+   *  - Advantage square number = digit sum of winning score (0–9).
    */
-  applyAdvantageToNewRound(humanBoard, computerBoard) {
-    // reset per-round flags
-    Tournament.advantageApplied = false;
-    Tournament.advantageOwner = Tournament.Side.None;
-    Tournament.protectHumanAdvantage = false;
-    Tournament.protectComputerAdvantage = false;
-
-    if (
-      this.pendingAdvantageFor === Tournament.Side.None ||
-      this.pendingAdvantageSquare <= 0
-    ) {
+  updateAdvantageForNextRound() {
+    const round = this.currentRound;
+    if (!round || !round.roundOver || !round.roundWinnerId) {
+      this.nextRoundAdvantage = null;
       return;
     }
 
-    const square = this.pendingAdvantageSquare;
+    const winnerId = round.roundWinnerId;
+    const firstPlayerId = round.firstPlayerId;
+    const rawScore = round.roundScore;
 
-    if (this.pendingAdvantageFor === Tournament.Side.Human) {
-      humanBoard.coverSquare(square);
-      Tournament.protectHumanAdvantage = true;
-      Tournament.advantageOwner = Tournament.Side.Human;
+    if (rawScore <= 0) {
+      this.nextRoundAdvantage = null;
+      return;
+    }
+
+    let recipientId;
+    if (winnerId === firstPlayerId) {
+      // winner started first -> advantage goes to opponent
+      recipientId = round.getOpponentId(winnerId);
     } else {
-      computerBoard.coverSquare(square);
-      Tournament.protectComputerAdvantage = true;
-      Tournament.advantageOwner = Tournament.Side.Computer;
+      // winner was second -> winner keeps advantage
+      recipientId = winnerId;
     }
 
-    Tournament.advantageApplied = true;
-
-    // clear queue
-    this.pendingAdvantageSquare = 0;
-    this.pendingAdvantageFor = Tournament.Side.None;
-  }
-
-  // ---------- Scores ----------
-
-  /**
-   * Update tournament scores based on a round result.
-   * Mirrors your C++ logic.
-   */
-  updateScores(
-    humanWonByCover,
-    humanWonByUncover,
-    computerWonByCover,
-    computerWonByUncover,
-    humanScore,
-    computerScore
-  ) {
-    if (humanWonByCover) {
-      this.tournamentScoreHuman += computerScore;
-    }
-    if (humanWonByUncover) {
-      this.tournamentScoreHuman += humanScore;
-    }
-    if (computerWonByCover) {
-      this.tournamentScoreComputer += humanScore;
-    }
-    if (computerWonByUncover) {
-      this.tournamentScoreComputer += computerScore;
-    }
-  }
-
-  getScores() {
-    return {
-      human: this.tournamentScoreHuman,
-      computer: this.tournamentScoreComputer,
+    const digitSum = this._digitSum(rawScore);
+    this.nextRoundAdvantage = {
+      playerId: recipientId,
+      digitSum
     };
   }
 
-  logScoreBoard() {
-    const { human, computer } = this.getScores();
-    console.log("\n~~~~~~~~~[SCORE BOARD]~~~~~~~~~~");
-    console.log("Your Score: " + human);
-    console.log("Computer's Score: " + computer);
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+  /**
+   * Determine tournament result: who has more cumulative points.
+   * @returns {{
+   *  winnerId: "HUMAN" | "COMPUTER" | "DRAW",
+   *  humanScore: number,
+   *  computerScore: number
+   * }}
+   */
+  getTournamentResult() {
+    const humanScore = this.human.totalScore;
+    const computerScore = this.computer.totalScore;
+
+    let winnerId = "DRAW";
+    if (humanScore > computerScore) winnerId = "HUMAN";
+    else if (computerScore > humanScore) winnerId = "COMPUTER";
+
+    return {
+      winnerId,
+      humanScore,
+      computerScore
+    };
   }
 
-  declareTournamentWinner() {
-    const { human, computer } = this.getScores();
-
-    if (human > computer) {
-      console.log(`You win the tournament with a score of ${human}!`);
-    } else if (computer > human) {
-      console.log(`Computer wins the tournament with a score of ${computer}!`);
-    } else {
-      console.log("The tournament is a draw!");
+  _digitSum(n) {
+    let sum = 0;
+    let x = Math.abs(Math.trunc(n));
+    if (x === 0) return 0;
+    while (x > 0) {
+      sum += x % 10;
+      x = Math.floor(x / 10);
     }
+    // spec says sum is put in range 0..9; if >9, sum digits again
+    if (sum >= 10) {
+      return this._digitSum(sum);
+    }
+    return sum;
   }
 }
-
-
-
-
-
-
-

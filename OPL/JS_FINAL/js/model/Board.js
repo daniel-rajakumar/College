@@ -1,114 +1,182 @@
-
 // js/model/Board.js
 
+/**
+ * Board = one row of squares for a single player.
+ * Squares are numbered 1..size.
+ * Internally we store a boolean covered flag for each square.
+ */
 export class Board {
-  static ONE_DIE_RULE_START = 7; // 1-die allowed when this..size are covered
-
-  constructor(n = 0) {
-    this.size = n;
-    this.squares = Array(n).fill(false); // false = uncovered, true = covered
-  }
-
-  coverSquare(square) {
-    if (square >= 1 && square <= this.size && !this.squares[square - 1]) {
-      this.squares[square - 1] = true;
-      return true;
+  constructor(size) {
+    if (!Number.isInteger(size) || size < 1) {
+      throw new Error("Board size must be a positive integer");
     }
-    return false;
-  }
-
-  uncoverSquare(square) {
-    if (square >= 1 && square <= this.size && this.squares[square - 1]) {
-      this.squares[square - 1] = false;
-      return true;
-    }
-    return false;
-  }
-
-  isSquareCovered(square) {
-    if (square >= 1 && square <= this.size) {
-      return this.squares[square - 1];
-    }
-    return false;
-  }
-
-  getSize() {
-    return this.size;
-  }
-
-  allCovered() {
-    return this.squares.every(sq => sq === true);
-  }
-
-  allUncovered() {
-    return this.squares.every(sq => sq === false);
-  }
-
-  getUncoveredSum() {
-    let sum = 0;
-    for (let i = 1; i <= this.size; ++i) {
-      if (!this.isSquareCovered(i)) sum += i;
-    }
-    return sum;
-  }
-
-  getCoveredSum() {
-    let sum = 0;
-    for (let i = 1; i <= this.size; ++i) {
-      if (this.isSquareCovered(i)) sum += i;
-    }
-    return sum;
+    this.size = size;
+    // index 0 unused so that index === square number
+    this._covered = new Array(size + 1).fill(false);
   }
 
   /**
-   * Return array of combinations, each combination is an array<int>.
-   * forCovering = true  -> choose uncovered squares
-   * forCovering = false -> choose covered squares (for uncovering)
+   * Return true if square number is currently covered.
    */
-  findValidCombinations(sum, forCovering) {
-    const results = [];
+  isCovered(num) {
+    this._validateSquareNumber(num);
+    return this._covered[num];
+  }
 
-    const helper = (remaining, start, current) => {
-      if (remaining === 0) {
-        results.push([...current]);
+  /**
+   * Cover a single square.
+   */
+  cover(num) {
+    this._validateSquareNumber(num);
+    if (this._covered[num]) {
+      throw new Error(`Square ${num} is already covered`);
+    }
+    this._covered[num] = true;
+  }
+
+  /**
+   * Uncover a single square.
+   */
+  uncover(num) {
+    this._validateSquareNumber(num);
+    if (!this._covered[num]) {
+      throw new Error(`Square ${num} is already uncovered`);
+    }
+    this._covered[num] = false;
+  }
+
+  /**
+   * Cover all given squares (array of numbers).
+   */
+  coverSquares(nums) {
+    nums.forEach((n) => this.cover(n));
+  }
+
+  /**
+   * Uncover all given squares (array of numbers).
+   */
+  uncoverSquares(nums) {
+    nums.forEach((n) => this.uncover(n));
+  }
+
+  /**
+   * List of all covered numbers.
+   */
+  getCoveredNumbers() {
+    const result = [];
+    for (let i = 1; i <= this.size; i++) {
+      if (this._covered[i]) result.push(i);
+    }
+    return result;
+  }
+
+  /**
+   * List of all uncovered numbers.
+   */
+  getUncoveredNumbers() {
+    const result = [];
+    for (let i = 1; i <= this.size; i++) {
+      if (!this._covered[i]) result.push(i);
+    }
+    return result;
+  }
+
+  /**
+   * True if all squares are covered.
+   */
+  areAllCovered() {
+    return this.getUncoveredNumbers().length === 0;
+  }
+
+  /**
+   * True if all squares are uncovered.
+   */
+  areAllUncovered() {
+    return this.getCoveredNumbers().length === 0;
+  }
+
+  /**
+   * Combos to COVER: use currently *uncovered* squares.
+   * Returns all combinations of 1–4 squares whose sum equals targetSum.
+   */
+  getCoverCombos(targetSum) {
+    const candidates = this.getUncoveredNumbers();
+    return this._getCombosForSum(candidates, targetSum);
+  }
+
+  /**
+   * Combos to UNCOVER: use currently *covered* squares.
+   * Returns all combinations of 1–4 squares whose sum equals targetSum.
+   */
+  getUncoverCombos(targetSum) {
+    const candidates = this.getCoveredNumbers();
+    return this._getCombosForSum(candidates, targetSum);
+  }
+
+  /**
+   * Internal: all combinations of up to 4 numbers from candidates that sum to target.
+   * candidates must be sorted ascending to avoid duplicates.
+   */
+  _getCombosForSum(candidates, targetSum) {
+    const result = [];
+    const sorted = [...candidates].sort((a, b) => a - b);
+
+    const backtrack = (startIndex, remaining, path) => {
+      if (remaining === 0 && path.length >= 1 && path.length <= 4) {
+        result.push([...path]);
         return;
       }
-      for (let i = start; i <= this.size; ++i) {
-        const covered = this.isSquareCovered(i);
-        if (forCovering && covered) continue;
-        if (!forCovering && !covered) continue;
+      if (remaining < 0 || path.length === 4) return;
 
-        if (i > remaining) break;
-
-        current.push(i);
-        helper(remaining - i, i + 1, current);
-        current.pop();
+      for (let i = startIndex; i < sorted.length; i++) {
+        const n = sorted[i];
+        if (n > remaining) break; // sorted, no need to continue
+        path.push(n);
+        backtrack(i + 1, remaining - n, path);
+        path.pop();
       }
     };
 
-    helper(sum, 1, []);
-    return results;
+    backtrack(0, targetSum, []);
+    return result;
   }
 
-  isValidCombination(combination, forCovering) {
-    for (const square of combination) {
-      const covered = this.isSquareCovered(square);
-      if ((forCovering && covered) || (!forCovering && !covered)) {
-        return false;
+  _validateSquareNumber(num) {
+    if (!Number.isInteger(num) || num < 1 || num > this.size) {
+      throw new Error(`Square number must be between 1 and ${this.size}, got ${num}`);
+    }
+  }
+
+  /**
+   * Useful for serialization: return array like [1,2,3,0,5,...]
+   * Where index i-1 is either i (if uncovered) or 0 (if covered).
+   */
+  toNumberArrayFormat() {
+    const arr = [];
+    for (let i = 1; i <= this.size; i++) {
+      arr.push(this._covered[i] ? 0 : i);
+    }
+    return arr;
+  }
+
+  /**
+   * Restore covered/uncovered from number-array format [1,2,3,0,...].
+   */
+  loadFromNumberArrayFormat(arr) {
+    if (!Array.isArray(arr) || arr.length !== this.size) {
+      throw new Error("Bad board array length in loadFromNumberArrayFormat");
+    }
+    for (let i = 0; i < arr.length; i++) {
+      const expectedNum = i + 1;
+      const val = arr[i];
+      if (val === 0) {
+        this._covered[expectedNum] = true;
+      } else {
+        if (val !== expectedNum) {
+          throw new Error(`Invalid board entry at position ${i}: expected ${expectedNum} or 0, got ${val}`);
+        }
+        this._covered[expectedNum] = false;
       }
     }
-    return true;
-  }
-
-  canThrowOneDie() {
-    for (let i = Board.ONE_DIE_RULE_START; i <= this.size; ++i) {
-      if (!this.isSquareCovered(i)) return false;
-    }
-    return true;
   }
 }
-
-
-
-
-

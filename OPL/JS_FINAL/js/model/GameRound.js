@@ -1,230 +1,276 @@
-
-
 // js/model/GameRound.js
-
-import { BoardView, section } from "../ui/View.js";
-import { Tournament } from "./Tournament.js";
+import { Board } from "./Board.js";
 
 /**
- * GameRound = one round of play between human & computer.
- * It uses Tournament for scoring + advantage, but does not
- * own the Tournament (it's passed in).
+ * GameRound = one round of Canoga between the same two players.
+ *
+ * Players are Player instances (HumanPlayer / ComputerPlayer) passed in.
+ * This class:
+ *  - creates new boards for this round
+ *  - applies handicap/advantage
+ *  - validates and applies moves (cover/uncover)
+ *  - detects when the round is over and computes round score
  */
 export class GameRound {
   /**
-   * @param {Player} player1 - HumanPlayer
-   * @param {Player} player2 - ComputerPlayer
-   * @param {Tournament} tournament
-   * @param {boolean} isNewGame - true if this is a fresh round, not a resumed one
+   * @param {Object} params
+   *  - boardSize: number (9, 10, or 11)
+   *  - humanPlayer
+   *  - computerPlayer
+   *  - firstPlayerId: "HUMAN" | "COMPUTER"
+   *  - advantageInfo: { playerId, digitSum } | null
    */
-  constructor(player1, player2, tournament, isNewGame) {
-    this.player1 = player1;
-    this.player2 = player2;
-    this.tournament = tournament;
-    this.isNewGame = !!isNewGame;
+  constructor({ boardSize, humanPlayer, computerPlayer, firstPlayerId, advantageInfo = null }) {
+    if (!Number.isInteger(boardSize) || boardSize < 1) {
+      throw new Error("boardSize must be positive integer");
+    }
+    if (firstPlayerId !== "HUMAN" && firstPlayerId !== "COMPUTER") {
+      throw new Error('firstPlayerId must be "HUMAN" or "COMPUTER"');
+    }
+
+    this.boardSize = boardSize;
+    this.human = humanPlayer;
+    this.computer = computerPlayer;
+
+    // Fresh boards for this round:
+    this.human.board = new Board(boardSize);
+    this.computer.board = new Board(boardSize);
+
+    this.firstPlayerId = firstPlayerId;
+    this.currentPlayerId = firstPlayerId;
+
+    // Advantage (handicap) info from *previous* round:
+    // digitSum is in range 0..9; we convert to an actual square if in range.
+    this.advantageInfo = advantageInfo; // { playerId, digitSum }
+    this.advantageLock = null; // see below
+    this._applyAdvantageIfAny();
+
+    // Round end state:
+    this.roundOver = false;
+    this.roundWinnerId = null; // "HUMAN" | "COMPUTER"
+    this.winType = null;       // "cover" | "uncover"
+    this.roundScore = 0;
+  }
+
+  getPlayerById(id) {
+    if (id === "HUMAN") return this.human;
+    if (id === "COMPUTER") return this.computer;
+    throw new Error(`Unknown player id: ${id}`);
+  }
+
+  getOpponentId(playerId) {
+    return playerId === "HUMAN" ? "COMPUTER" : "HUMAN";
+  }
+
+  getOpponent(playerId) {
+    return this.getPlayerById(this.getOpponentId(playerId));
   }
 
   /**
-   * Roll 2 dice for each side until one wins; returns the first player.
-   */
-  determineFirstPlayer() {
-    let player1Roll, player2Roll;
-
-    do {
-      player1Roll =
-        (Math.floor(Math.random() * 6) + 1) +
-        (Math.floor(Math.random() * 6) + 1);
-      console.log("Human rolled: " + player1Roll);
-
-      player2Roll =
-        (Math.floor(Math.random() * 6) + 1) +
-        (Math.floor(Math.random() * 6) + 1);
-      console.log("Computer rolled: " + player2Roll);
-
-      if (player1Roll > player2Roll) {
-        console.log("Human plays first!");
-        return this.player1;
-      }
-      if (player2Roll > player1Roll) {
-        console.log("Computer plays first!");
-        return this.player2;
-      }
-      console.log("It's a tie! Rolling again...");
-    } while (player1Roll === player2Roll);
-
-    return this.player1; // should never hit, but just in case
-  }
-
-  isRoundOver() {
-    const b1 = this.player1.getBoard();
-    const b2 = this.player2.getBoard();
-    return (
-      b1.allCovered() ||
-      b2.allCovered() ||
-      b1.allUncovered() ||
-      b2.allUncovered()
-    );
-  }
-
-  /**
-   * Declare winner and update tournament state.
+   * Internal: apply starting advantage (if any) by pre-covering one square
+   * for the player who has the advantage.
    *
-   * @param {Player} currentPlayer - winner
-   * @param {boolean} winnerWasFirstPlayer
+   * Rule: advantage square = digitSum of previous winning score.
+   * That square must exist (1..boardSize).
    */
-  declareWinner(currentPlayer, winnerWasFirstPlayer) {
-    const b1 = this.player1.getBoard();
-    const b2 = this.player2.getBoard();
+  _applyAdvantageIfAny() {
+    if (!this.advantageInfo) return;
 
-    if (b1.allCovered()) {
-      console.log("Human wins by covering all their squares!");
-      this.tournament.updateScores(
-        true,
-        false,
-        false,
-        false,
-        b1.getCoveredSum(),
-        b2.getUncoveredSum()
-      );
-      this.tournament.applyHandicap(
-        winnerWasFirstPlayer,
-        true,
-        b2.getUncoveredSum()
-      );
-    } else if (b2.allCovered()) {
-      console.log("Computer wins by covering all their squares!");
-      this.tournament.updateScores(
-        false,
-        false,
-        true,
-        false,
-        b1.getUncoveredSum(),
-        b2.getCoveredSum()
-      );
-      this.tournament.applyHandicap(
-        winnerWasFirstPlayer,
-        false,
-        b1.getUncoveredSum()
-      );
-    } else if (b2.allUncovered()) {
-      console.log("Human wins by uncovering all the computer's squares!");
-      this.tournament.updateScores(
-        false,
-        true,
-        false,
-        false,
-        b1.getCoveredSum(),
-        0
-      );
-      this.tournament.applyHandicap(
-        winnerWasFirstPlayer,
-        true,
-        b1.getCoveredSum()
-      );
-    } else if (b1.allUncovered()) {
-      console.log("Computer wins by uncovering all the human's squares!");
-      this.tournament.updateScores(
-        false,
-        false,
-        false,
-        true,
-        0,
-        b2.getCoveredSum()
-      );
-      this.tournament.applyHandicap(
-        winnerWasFirstPlayer,
-        false,
-        b2.getCoveredSum()
-      );
-    }
-  }
-
-  /**
-   * Core loop for a single round.
-   */
-  play() {
-    const { player1, player2, tournament } = this;
-
-    // Set the current player based on stored "next turn"
-    let currentPlayer = tournament.getIsHumanTurn() ? player1 : player2;
-
-    // If this is a *new* round, we roll off to see who starts
-    if (this.isNewGame) {
-      console.log("~~~~~~~~[Who Goes First?]~~~~~~~~~");
-      const fp = this.determineFirstPlayer();
-      currentPlayer = fp;
-      tournament.setFirstPlayerIsHuman(fp.getIsHuman());
-      tournament.setIsHumanTurn(currentPlayer.getIsHuman());
-      console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    }
-
-    // show starting boards
-    section("Starting Board State");
-    const humanView = new BoardView(player1.getBoard(), "Human");
-    const compView = new BoardView(player2.getBoard(), "Computer");
-
-    compView.display(
-      Tournament.getAdvantageApplied() &&
-        Tournament.getAdvantageOwner() === Tournament.Side.Computer,
-      Tournament.getAdvantageSquare()
-    );
-    humanView.display(
-      Tournament.getAdvantageApplied() &&
-        Tournament.getAdvantageOwner() === Tournament.Side.Human,
-      Tournament.getAdvantageSquare()
-    );
-    console.log("");
-
-    tournament.setIsHumanTurn(currentPlayer.getIsHuman());
-
-    // quick check: round might already be over (edge case if you ever add loading)
-    if (this.isRoundOver()) {
-      const b1 = player1.getBoard();
-      const b2 = player2.getBoard();
-      let winnerIsHuman = false;
-
-      if (b1.allCovered() || b2.allUncovered()) winnerIsHuman = true;
-      else if (b2.allCovered() || b1.allUncovered()) winnerIsHuman = false;
-
-      const winnerWasFirst =
-        tournament.getFirstPlayerIsHuman() === winnerIsHuman;
-      const winner = winnerIsHuman ? player1 : player2;
-      this.declareWinner(winner, winnerWasFirst);
+    const { playerId, digitSum } = this.advantageInfo;
+    // digitSum is 0..9, but we only use it if in 1..boardSize
+    if (!Number.isInteger(digitSum)) return;
+    const squareNumber = digitSum;
+    if (squareNumber < 1 || squareNumber > this.boardSize) {
+      // no valid square for this board size => no advantage this round
       return;
     }
 
-    // ---- main turn loop ----
-    while (true) {
-      // One *full* turn for this player (they roll until they bust)
-      currentPlayer.takeTurn();
+    const player = this.getPlayerById(playerId);
+    player.board.coverSquares([squareNumber]);
 
-      // Clear one-turn advantage protection after that side's *first* turn
-      if (Tournament.getAdvantageApplied()) {
-        if (
-          Tournament.getAdvantageOwner() === Tournament.Side.Human &&
-          currentPlayer.getIsHuman()
-        ) {
-          Tournament.clearAdvantageProtectionForHuman();
-        } else if (
-          Tournament.getAdvantageOwner() === Tournament.Side.Computer &&
-          !currentPlayer.getIsHuman()
-        ) {
-          Tournament.clearAdvantageProtectionForComputer();
-        }
-      }
+    // Lock rule: this advantage square cannot be uncovered by the opponent
+    // until the advantage player has completed at least one turn this round.
+    this.advantageLock = {
+      playerId,       // the player who has the advantage (the one whose board has this pre-covered square)
+      squareNumber,
+      unlocked: false // becomes true after that player finishes one full turn
+    };
+  }
 
-      if (this.isRoundOver()) {
-        const winnerWasFirst =
-          tournament.getFirstPlayerIsHuman() ===
-          currentPlayer.getIsHuman();
-        this.declareWinner(currentPlayer, winnerWasFirst);
-        break;
-      }
-
-      // Swap players, store whose turn is next (for potential save/load later)
-      currentPlayer = currentPlayer === player1 ? player2 : player1;
-      tournament.setIsHumanTurn(currentPlayer.getIsHuman());
+  /**
+   * Should be called by controller after a player's *turn* has fully ended
+   * (i.e., after they roll dice until no moves possible).
+   * This will unlock the advantage square for the opponent if needed.
+   */
+  notifyTurnEnded(playerId) {
+    if (!this.advantageLock) return;
+    if (this.advantageLock.playerId === playerId && !this.advantageLock.unlocked) {
+      this.advantageLock.unlocked = true;
     }
   }
-}
 
+  /**
+   * Returns all cover options for a given player and dice sum.
+   * This uses the *player's own board*.
+   * @returns {number[][]}
+   */
+  getCoverOptions(playerId, sum) {
+    const player = this.getPlayerById(playerId);
+    return player.board.getCoverCombos(sum);
+  }
+
+  /**
+   * Returns all uncover options for a given player and dice sum.
+   * This uses the *opponent's board*.
+   * If there is a locked advantage square on opponent's board, it will be excluded.
+   * @returns {number[][]}
+   */
+  getUncoverOptions(playerId, sum) {
+    const opponent = this.getOpponent(playerId);
+    let combos = opponent.board.getUncoverCombos(sum);
+
+    // Apply advantage lock rule:
+    // the advantage square (on advantage player's board) cannot be
+    // uncovered by the opponent until the advantage player has completed one turn.
+    if (
+      this.advantageLock &&
+      !this.advantageLock.unlocked &&
+      // acting player is *not* the advantage holder (i.e., they are the opponent)
+      playerId !== this.advantageLock.playerId
+    ) {
+      combos = combos.filter(
+        combo => !combo.includes(this.advantageLock.squareNumber)
+      );
+    }
+
+    return combos;
+  }
+
+  /**
+   * Apply a move to cover the player's own squares.
+   * Does NOT check that the squares correspond to the dice sum; that should be validated by caller using getCoverOptions().
+   */
+  applyCoverMove(playerId, squares) {
+    const player = this.getPlayerById(playerId);
+    player.board.coverSquares(squares);
+    this._checkForRoundEnd();
+  }
+
+  /**
+   * Apply a move to uncover the opponent's squares.
+   * Does NOT check that the squares correspond to the dice sum; that should be validated by caller using getUncoverOptions().
+   */
+  applyUncoverMove(playerId, squares) {
+    const opponent = this.getOpponent(playerId);
+    opponent.board.uncoverSquares(squares);
+    this._checkForRoundEnd();
+  }
+
+  /**
+   * Switch current player to opponent.
+   */
+  switchTurn() {
+    this.currentPlayerId = this.getOpponentId(this.currentPlayerId);
+  }
+
+  /**
+   * Internal: check if someone has just won the round.
+   * A player wins by:
+   *   - covering all own squares, OR
+   *   - uncovering all opponent squares.
+   */
+  _checkForRoundEnd() {
+    const humanCoveredAll = this.human.board.areAllCovered();
+    const compCoveredAll = this.computer.board.areAllCovered();
+    const humanUncoveredAll = this.human.board.areAllUncovered();
+    const compUncoveredAll = this.computer.board.areAllUncovered();
+
+    let winnerId = null;
+    let winType = null;
+
+    if (humanCoveredAll) {
+      winnerId = "HUMAN";
+      winType = "cover";
+    } else if (compCoveredAll) {
+      winnerId = "COMPUTER";
+      winType = "cover";
+    } else if (humanUncoveredAll) {
+      // Computer has uncovered all human squares
+      winnerId = "COMPUTER";
+      winType = "uncover";
+    } else if (compUncoveredAll) {
+      // Human has uncovered all computer squares
+      winnerId = "HUMAN";
+      winType = "uncover";
+    }
+
+    if (!winnerId) return;
+
+    this.roundOver = true;
+    this.roundWinnerId = winnerId;
+    this.winType = winType;
+    this.roundScore = this._computeRoundScore(winnerId, winType);
+
+    // Add to tournament total score for the winner
+    const winner = this.getPlayerById(winnerId);
+    winner.addToScore(this.roundScore);
+  }
+
+  /**
+   * Compute round score for given winner + winType.
+   * If winType === "cover": score = sum of opponent's *uncovered* squares.
+   * If winType === "uncover": score = sum of winner's *covered* squares.
+   */
+  _computeRoundScore(winnerId, winType) {
+    const winner = this.getPlayerById(winnerId);
+    const loser = this.getOpponent(winnerId);
+
+    if (winType === "cover") {
+      const oppUncovered = loser.board.getUncoveredNumbers();
+      return oppUncovered.reduce((acc, n) => acc + n, 0);
+    } else if (winType === "uncover") {
+      const ownCovered = winner.board.getCoveredNumbers();
+      return ownCovered.reduce((acc, n) => acc + n, 0);
+    }
+
+    return 0;
+  }
+
+  /**
+   * Convenience: returns a plain object representing snapshot of this round
+   * (useful for debugging, testing, or serialization glue).
+   */
+  toStateObject() {
+    return {
+      boardSize: this.boardSize,
+      firstPlayerId: this.firstPlayerId,
+      currentPlayerId: this.currentPlayerId,
+      advantageInfo: this.advantageInfo
+        ? { ...this.advantageInfo }
+        : null,
+      advantageLock: this.advantageLock
+        ? { ...this.advantageLock }
+        : null,
+      roundOver: this.roundOver,
+      roundWinnerId: this.roundWinnerId,
+      winType: this.winType,
+      roundScore: this.roundScore,
+      human: {
+        id: this.human.id,
+        totalScore: this.human.totalScore,
+        board: {
+          covered: this.human.board.getCoveredNumbers(),
+          uncovered: this.human.board.getUncoveredNumbers()
+        }
+      },
+      computer: {
+        id: this.computer.id,
+        totalScore: this.computer.totalScore,
+        board: {
+          covered: this.computer.board.getCoveredNumbers(),
+          uncovered: this.computer.board.getUncoveredNumbers()
+        }
+      }
+    };
+  }
+}

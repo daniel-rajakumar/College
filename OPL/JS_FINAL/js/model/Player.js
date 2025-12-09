@@ -1,37 +1,25 @@
-
 // js/model/Player.js
 
+/**
+ * Base Player class.
+ * HumanPlayer and ComputerPlayer extend this.
+ */
 export class Player {
-  constructor(board, human) {
-    this.board = board;
-    this.isHuman = human;
-    this.input = 0;
+  /**
+   * @param {string} id "HUMAN" | "COMPUTER"
+   * @param {string} name display name
+   */
+  constructor(id, name) {
+    this.id = id;
+    this.name = name;
+    this.board = null;      // Board instance (set by GameRound)
+    this.totalScore = 0;    // tournament cumulative score
   }
 
-  getBoard() {
-    return this.board;
-  }
-
-  canThrowOneDie() {
-    // same rule as Board.canThrowOneDie, but from player's perspective
-    for (let i = 7; i <= this.board.getSize(); ++i) {
-      if (!this.board.isSquareCovered(i)) {
-        return false;
-      }
+  addToScore(delta) {
+    if (!Number.isFinite(delta)) {
+      throw new Error("Score delta must be a finite number");
     }
-    return true;
-  }
-
-  getIsHuman() {
-    return this.isHuman;
-  }
-
-  // abstract
-  takeTurn() {
-    throw new Error("takeTurn() must be implemented by subclasses");
+    this.totalScore += delta;
   }
 }
-
-
-
-

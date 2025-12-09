@@ -1,70 +1,203 @@
-
 // js/ui/View.js
 
-// TextUI-style helpers & a simple BoardView for console output
+export class View {
+  constructor() {
+    // Screens
+    this.screens = {
+      welcome: document.getElementById("screen-welcome"),
+      setup: document.getElementById("screen-setup"),
+      game: document.getElementById("screen-game"),
+      end: document.getElementById("screen-end"),
+    };
 
-export const USE_COLOR = true;
+    // Setup screen
+    this.rolloffResultEl = document.getElementById("rolloff-result");
+    this.btnStartRound = document.getElementById("btn-start-round");
 
-export const RESET  = "\x1b[0m";
-export const DIM    = "\x1b[2m";
-export const BOLD   = "\x1b[1m";
-export const CYAN   = "\x1b[36m";
-export const GREEN  = "\x1b[32m";
-export const YELLOW = "\x1b[33m";
+    // Game screen references
+    this.lblRoundNumber = document.getElementById("lbl-round-number");
+    this.lblMode = document.getElementById("lbl-mode");
+    this.lblFirstPlayer = document.getElementById("lbl-first-player");
+    this.lblAdvantage = document.getElementById("lbl-advantage");
 
-export function c(code) {
-  return USE_COLOR ? code : "";
-}
+    this.scoreHuman = document.getElementById("score-human");
+    this.scoreComputer = document.getElementById("score-computer");
 
-export function hr(ch = "-", w = 60) {
-  let s = "";
-  for (let i = 0; i < w; ++i) s += ch;
-  console.log(s);
-}
+    this.lblCurrentPlayer = document.getElementById("lbl-current-player");
 
-export function banner(title, ch = "=", w = 60) {
-  hr(ch, w);
-  console.log(c(BOLD) + title + c(RESET));
-  hr(ch, w);
-}
+    this.boardHuman = document.getElementById("board-human");
+    this.boardComputer = document.getElementById("board-computer");
 
-export function section(title) {
-  console.log("\n" + c(CYAN) + "> " + title + c(RESET));
-}
+    this.lblDice = document.getElementById("lbl-dice");
+    this.lblDiceSum = document.getElementById("lbl-dice-sum");
+    this.lblSelectedSquares = document.getElementById("lbl-selected-squares");
+    this.lblTurnStatus = document.getElementById("lbl-turn-status");
 
-// fixed-width-ish cell (not heavily used)
-export function cell(i, covered, isAdv = false) {
-  if (covered) {
-    console.log(c(DIM) + String(i).padStart(2, "-") + c(RESET) + " ");
-  } else if (isAdv) {
-    console.log(c(YELLOW) + c(BOLD) + String(i).padStart(2, " ") + c(RESET) + " ");
-  } else {
-    console.log(String(i).padStart(2, " ") + " ");
+    this.logEl = document.getElementById("log");
+
+    // End screen
+    this.lblRoundResult = document.getElementById("lbl-round-result");
+    this.lblRoundWinner = document.getElementById("lbl-round-winner");
+    this.lblRoundWinType = document.getElementById("lbl-round-win-type");
+    this.lblRoundScore = document.getElementById("lbl-round-score");
+    this.lblFinalHumanScore = document.getElementById("lbl-final-human-score");
+    this.lblFinalComputerScore = document.getElementById("lbl-final-computer-score");
+    this.lblFinalAdvantage = document.getElementById("lbl-final-advantage");
   }
-}
 
-// BoardView used by Human/Computer/Round
-export class BoardView {
-  constructor(board, name) {
-    this.board = board;
-    this.playerName = name;
+  showScreen(name) {
+    Object.entries(this.screens).forEach(([key, el]) => {
+      el.classList.toggle("active", key === name);
+    });
+  }
+
+  // ----- SETUP -----
+
+  setRolloffText(text, canStart) {
+    this.rolloffResultEl.textContent = text;
+    this.btnStartRound.disabled = !canStart;
+  }
+
+  // ----- GAME -----
+
+  setRoundHeader({ roundNumber, modeLabel, firstPlayerLabel, advantageText }) {
+    this.lblRoundNumber.textContent = roundNumber;
+    this.lblMode.textContent = modeLabel;
+    this.lblFirstPlayer.textContent = firstPlayerLabel;
+    this.lblAdvantage.textContent = advantageText || "";
+  }
+
+  setScores(humanScore, computerScore) {
+    this.scoreHuman.textContent = humanScore;
+    this.scoreComputer.textContent = computerScore;
+  }
+
+  setCurrentPlayerLabel(text) {
+    this.lblCurrentPlayer.textContent = text;
+  }
+
+  setDiceText({ d1, d2, sum }) {
+    if (sum == null) {
+      this.lblDice.textContent = "–";
+      this.lblDiceSum.textContent = "–";
+      return;
+    }
+    if (d2 == null) {
+      this.lblDice.textContent = `${d1}`;
+    } else {
+      this.lblDice.textContent = `${d1} + ${d2}`;
+    }
+    this.lblDiceSum.textContent = String(sum);
+  }
+
+  setSelectedSquares(squares) {
+    this.lblSelectedSquares.textContent = `[${squares.join(", ")}]`;
+  }
+
+  setTurnStatus(text) {
+    this.lblTurnStatus.textContent = text;
+  }
+
+  clearLog() {
+    this.logEl.innerHTML = "";
+  }
+
+  appendLog(line) {
+    const p = document.createElement("p");
+    p.textContent = line;
+    this.logEl.appendChild(p);
+    this.logEl.scrollTop = this.logEl.scrollHeight;
   }
 
   /**
-   * Displays the board.
-   * @param {boolean} advantageApplied
-   * @param {number} advantageSquare
+   * Render both boards.
+   * @param {GameRound} round
+   * @param {Object} opts
+   *   - selectedSquares: number[]
+   *   - selectionOwner: "HUMAN" | "COMPUTER" | null
+   *   - enabledPlayerId: "HUMAN" | "COMPUTER" | null
    */
-  display(advantageApplied = false, advantageSquare = 0) {
-    let s = `${this.playerName}: [ `;
-    for (let i = 1; i <= this.board.getSize(); ++i) {
-      const covered = this.board.isSquareCovered(i);
-      s += covered ? "_" : i.toString();
-      if (advantageApplied && i === advantageSquare) s += "*";
-      s += (i < this.board.getSize()) ? ", " : " ]";
+  renderBoards(round, opts = {}) {
+    const {
+      selectedSquares = [],
+      selectionOwner = null,
+      enabledPlayerId = null,
+    } = opts;
+
+    this._renderBoard(
+      round.human.board,
+      this.boardHuman,
+      "HUMAN",
+      selectedSquares,
+      selectionOwner,
+      enabledPlayerId
+    );
+    this._renderBoard(
+      round.computer.board,
+      this.boardComputer,
+      "COMPUTER",
+      selectedSquares,
+      selectionOwner,
+      enabledPlayerId
+    );
+  }
+
+  _renderBoard(board, container, playerId, selectedSquares, selectionOwner, enabledPlayerId) {
+    container.innerHTML = "";
+    const size = board.size;
+    for (let i = 1; i <= size; i++) {
+      const btn = document.createElement("button");
+      btn.classList.add("square");
+      btn.dataset.player = playerId;
+      btn.dataset.number = String(i);
+      btn.textContent = String(i);
+
+      if (board.isCovered(i)) {
+        btn.classList.add("covered");
+      }
+
+      if (selectionOwner === playerId && selectedSquares.includes(i)) {
+        btn.classList.add("selected");
+      }
+
+      if (enabledPlayerId !== playerId) {
+        btn.classList.add("disabled");
+      }
+
+      container.appendChild(btn);
     }
-    console.log(s);
+  }
+
+  // ----- ROUND SUMMARY -----
+
+  setEndScreen({
+    roundWinnerId,
+    winType,
+    roundScore,
+    humanScore,
+    computerScore,
+    advantageForNext,
+  }) {
+    let winnerText;
+    if (!roundWinnerId) winnerText = "No winner (error?)";
+    else if (roundWinnerId === "HUMAN") winnerText = "Human";
+    else if (roundWinnerId === "COMPUTER") winnerText = "Computer";
+    else winnerText = roundWinnerId;
+
+    this.lblRoundWinner.textContent = winnerText;
+    this.lblRoundWinType.textContent = winType || "–";
+    this.lblRoundScore.textContent = String(roundScore ?? 0);
+    this.lblFinalHumanScore.textContent = String(humanScore ?? 0);
+    this.lblFinalComputerScore.textContent = String(computerScore ?? 0);
+
+    let summary = `Round winner: ${winnerText} | Win type: ${winType} | Round score: ${roundScore}`;
+    this.lblRoundResult.textContent = summary;
+
+    if (!advantageForNext) {
+      this.lblFinalAdvantage.textContent = "None";
+    } else {
+      const who = advantageForNext.playerId === "HUMAN" ? "Human" : "Computer";
+      this.lblFinalAdvantage.textContent = `${who} gets advantage square ${advantageForNext.digitSum}`;
+    }
   }
 }
-
-
