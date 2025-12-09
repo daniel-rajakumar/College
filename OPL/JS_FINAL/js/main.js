@@ -32,161 +32,131 @@ window.addEventListener('DOMContentLoaded', () => {
   showScreen('welcome');
 
   // ====== Welcome screen ======
-  const newGameBtn = document.getElementById('welcome-new-game-btn');
-  if (newGameBtn) {
-    newGameBtn.addEventListener('click', () => {
-      showScreen('setup');
-    });
-  }
+  document.getElementById('welcome-new-game-btn')?.addEventListener('click', () => {
+    showScreen('setup');
+  });
 
-  const welcomeLoadBtn = document.getElementById('welcome-load-btn');
-  if (welcomeLoadBtn) {
-    welcomeLoadBtn.addEventListener('click', () => {
-      onLoadGame(true); // load from welcome textarea
-      if (tournament && tournament.currentRound) {
-        showScreen('game');
-      }
-    });
-  }
+  document.getElementById('welcome-load-btn')?.addEventListener('click', () => {
+    onLoadGame(true);
+    if (tournament && tournament.currentRound) {
+      showScreen('game');
+    }
+  });
 
   // ====== Setup screen ======
-  const setupBackBtn = document.getElementById('setup-back-btn');
-  if (setupBackBtn) {
-    setupBackBtn.addEventListener('click', () => {
-      showScreen('welcome');
-    });
-  }
+  document.getElementById('setup-back-btn')?.addEventListener('click', () => {
+    showScreen('welcome');
+  });
 
-  const setupRollBtn = document.getElementById('setup-roll-btn');
-  if (setupRollBtn) {
-    setupRollBtn.addEventListener('click', () => {
-      onStartRound(); // build tournament + round
-      if (!tournament || !tournament.currentRound) return;
+  document.getElementById('setup-roll-btn')?.addEventListener('click', () => {
+    onStartRound();
+    if (!tournament?.currentRound) return;
 
-      const first = tournament.currentRound.firstPlayer;
-      const resEl = document.getElementById('setup-roll-result');
-      if (resEl) {
-        resEl.textContent = `First player: ${first}`;
-      }
-      const contBtn = document.getElementById('setup-continue-btn');
-      if (contBtn) contBtn.disabled = false;
-    });
-  }
+    document.getElementById('setup-roll-result').textContent =
+      `First player: ${tournament.currentRound.firstPlayer}`;
 
-  const setupContinueBtn = document.getElementById('setup-continue-btn');
-  if (setupContinueBtn) {
-    setupContinueBtn.addEventListener('click', () => {
-      showScreen('game');
-      // if computer is first, let it move immediately
-      if (
-        tournament &&
-        tournament.currentRound &&
-        tournament.currentRound.firstPlayer === 'Computer'
-      ) {
-        setTimeout(computerTurn, 500);
-      }
-    });
-  }
+    document.getElementById('setup-continue-btn').disabled = false;
+  });
+
+  document.getElementById('setup-continue-btn')?.addEventListener('click', () => {
+    showScreen('game');
+    if (tournament.currentRound.firstPlayer === 'Computer') {
+      setTimeout(computerTurn, 500);
+    }
+  });
 
   // ====== End screen ======
-  const endPlayAgainBtn = document.getElementById('end-play-again-btn');
-  if (endPlayAgainBtn) {
-    endPlayAgainBtn.addEventListener('click', () => {
-      if (!tournament) return;
-      tournament.startNewRound();
-      currentDice = { d1: null, d2: null, sum: null };
-      const roundStatus = document.getElementById('round-status');
-      if (roundStatus) roundStatus.textContent = 'Round in progress';
-      renderAll();
-      showScreen('game');
-      if (tournament.currentRound.firstPlayer === 'Computer') {
-        setTimeout(computerTurn, 500);
-      }
-    });
-  }
+  document.getElementById('end-play-again-btn')?.addEventListener('click', () => {
+    if (!tournament) return;
+    tournament.startNewRound();
+    currentDice = { d1: null, d2: null, sum: null };
+    document.getElementById('round-status').textContent = 'Round in progress';
+    renderAll();
+    showScreen('game');
+    if (tournament.currentRound.firstPlayer === 'Computer') {
+      setTimeout(computerTurn, 500);
+    }
+  });
 
-  const endExitBtn = document.getElementById('end-exit-btn');
-  if (endExitBtn) {
-    endExitBtn.addEventListener('click', () => {
-      showScreen('welcome');
-    });
-  }
+  document.getElementById('end-exit-btn')?.addEventListener('click', () => {
+    showScreen('welcome');
+  });
 
   // ====== Game screen buttons ======
-  const saveBtn = document.getElementById('save-game-btn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', onSaveGame);
-  }
+  document.getElementById('save-game-btn')?.addEventListener('click', onSaveGame);
+  document.getElementById('load-game-btn')?.addEventListener('click', () => onLoadGame(false));
 
-  const loadBtn = document.getElementById('load-game-btn');
-  if (loadBtn) {
-    loadBtn.addEventListener('click', () => onLoadGame(false));
-  }
+  document.getElementById('roll-one-die-btn')?.addEventListener('click', () => handleRollClick(1));
+  document.getElementById('roll-two-dice-btn')?.addEventListener('click', () => handleRollClick(2));
 
-  const rollOneBtn = document.getElementById('roll-one-die-btn');
-  if (rollOneBtn) {
-    rollOneBtn.addEventListener('click', () => handleRollClick(1));
-  }
+  // Manual move UI is disabled; old "Apply Move" is unused
+  document.getElementById('apply-move-btn')?.classList.add('hidden-ui');
 
-  const rollTwoBtn = document.getElementById('roll-two-dice-btn');
-  if (rollTwoBtn) {
-    rollTwoBtn.addEventListener('click', () => handleRollClick(2));
-  }
-
-  const applyMoveBtn = document.getElementById('apply-move-btn');
-  if (applyMoveBtn) {
-    applyMoveBtn.addEventListener('click', onApplyHumanMove);
-  }
-
-  const helpBtn = document.getElementById('help-btn');
-  if (helpBtn) {
-    helpBtn.addEventListener('click', onHelp);
-  }
+  document.getElementById('help-btn')?.addEventListener('click', onHelp);
 
   // show/hide hidden manual dice inputs based on radio (for logic)
-  const diceModeRadios = document.querySelectorAll('input[name="dice-mode"]');
-  diceModeRadios.forEach(r => {
+  document.querySelectorAll('input[name="dice-mode"]').forEach(r => {
     r.addEventListener('change', () => {
-      const mode = getDiceMode();
       const box = document.getElementById('manual-dice-inputs');
-      if (box) box.style.display = mode === 'manual' ? 'block' : 'none';
+      box.style.display = getDiceMode() === 'manual' ? 'block' : 'none';
     });
   });
 
   // ====== Manual dice modal ======
-  const modalConfirm = document.getElementById('modal-confirm-btn');
-  const modalCancel = document.getElementById('modal-cancel-btn');
-  const modalBackdrop = document.getElementById('modal-backdrop');
+  document.getElementById('modal-confirm-btn')?.addEventListener('click', () => {
+    const d1Val = document.getElementById('modal-die1').value;
+    const d2Val = document.getElementById('modal-die2').value;
 
-  if (modalConfirm) {
-    modalConfirm.addEventListener('click', () => {
-      const d1Val = document.getElementById('modal-die1')?.value;
-      const d2Val = document.getElementById('modal-die2')?.value;
+    if (!d1Val || (pendingManualNumDice === 2 && !d2Val)) {
+      alert('Please select values for your dice.');
+      return;
+    }
 
-      if (!d1Val || (pendingManualNumDice === 2 && !d2Val)) {
-        alert('Please select values for the dice.');
-        return;
-      }
+    document.getElementById('die1-input').value = d1Val;
+    document.getElementById('die2-input').value =
+      pendingManualNumDice === 2 ? d2Val : 0;
 
-      // write into hidden inputs used by onRollDice
-      const die1Input = document.getElementById('die1-input');
-      const die2Input = document.getElementById('die2-input');
-      if (die1Input) die1Input.value = d1Val;
-      if (die2Input) die2Input.value = pendingManualNumDice === 2 ? d2Val : 0;
+    closeManualDiceModal();
+    onRollDice(pendingManualNumDice);
+  });
 
-      closeManualDiceModal();
-      onRollDice(pendingManualNumDice);
+  document.getElementById('modal-cancel-btn')?.addEventListener('click', closeManualDiceModal);
+  document.getElementById('modal-backdrop')?.addEventListener('click', closeManualDiceModal);
+
+  // ====== Move modal listeners ======
+  document.querySelectorAll('input[name="move-modal-type"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (currentDice.sum) populateMoveOptions(currentDice.sum);
     });
-  }
+  });
 
-  if (modalCancel) {
-    modalCancel.addEventListener('click', closeManualDiceModal);
-  }
-  if (modalBackdrop) {
-    modalBackdrop.addEventListener('click', closeManualDiceModal);
-  }
+  document.getElementById('move-modal-help-btn')?.addEventListener('click', () => {
+    document.getElementById('move-modal-help-output').textContent =
+      generateHelpText(currentDice.sum);
+  });
 
-  // initial UI state: no round yet
+  document.getElementById('move-modal-confirm-btn')?.addEventListener('click', () => {
+    const type = document.querySelector('input[name="move-modal-type"]:checked').value;
+    const val = document.getElementById('move-modal-options').value;
+
+    if (!val) {
+      alert("Select a valid move.");
+      return;
+    }
+
+    const squares = val.split(',').map(Number);
+
+    applyMove('Human', type, squares);
+    view.log(`Human ${type} squares: ${squares.join(', ')}`);
+
+    closeMoveModal();
+    handleEndOfMove('Human');
+  });
+
+  document.getElementById('move-modal-cancel-btn')?.addEventListener('click', closeMoveModal);
+  document.getElementById('move-modal-backdrop')?.addEventListener('click', closeMoveModal);
+
+  // initial UI state
   updateTurnUI();
 });
 
@@ -195,19 +165,18 @@ window.addEventListener('DOMContentLoaded', () => {
 // -----------------------------------------------------------------------
 
 function onStartRound() {
-  const sizeEl = document.getElementById('board-size');
-  const size = sizeEl ? parseInt(sizeEl.value, 10) : 9;
+  const size = parseInt(document.getElementById('board-size').value, 10);
 
   if (!tournament) {
     tournament = new Tournament(size, dice);
   } else {
     tournament.boardSize = size;
   }
+
   tournament.startNewRound();
   currentDice = { d1: null, d2: null, sum: null };
 
-  const roundStatus = document.getElementById('round-status');
-  if (roundStatus) roundStatus.textContent = 'Round in progress';
+  document.getElementById('round-status').textContent = 'Round in progress';
 
   renderAll();
   view.log('Started new round');
@@ -216,11 +185,9 @@ function onStartRound() {
 // ---------- Dice helpers ----------
 
 function getDiceMode() {
-  const radio = document.querySelector('input[name="dice-mode"]:checked');
-  return radio ? radio.value : 'auto';
+  return document.querySelector('input[name="dice-mode"]:checked')?.value || 'auto';
 }
 
-// When user clicks roll buttons: if manual → open modal; else roll directly.
 function handleRollClick(numDice) {
   if (getDiceMode() === 'manual') {
     openManualDiceModal(numDice);
@@ -232,69 +199,49 @@ function handleRollClick(numDice) {
 function openManualDiceModal(numDice) {
   pendingManualNumDice = numDice;
 
-  const backdrop = document.getElementById('modal-backdrop');
-  const modal = document.getElementById('manual-dice-modal');
   const die2Label = document.getElementById('modal-die2-label');
   const instr = document.getElementById('modal-instruction');
 
-  if (die2Label && instr) {
-    if (numDice === 1) {
-      die2Label.style.display = 'none';
-      instr.textContent = 'Choose the value for your die.';
-    } else {
-      die2Label.style.display = 'block';
-      instr.textContent = 'Choose values for both dice.';
-    }
+  if (numDice === 1) {
+    die2Label.style.display = 'none';
+    instr.textContent = 'Choose the value for your die.';
+  } else {
+    die2Label.style.display = 'block';
+    instr.textContent = 'Choose values for both dice.';
   }
 
-  const d1Sel = document.getElementById('modal-die1');
-  const d2Sel = document.getElementById('modal-die2');
-  if (d1Sel) d1Sel.value = '';
-  if (d2Sel) d2Sel.value = '';
+  document.getElementById('modal-die1').value = '';
+  document.getElementById('modal-die2').value = '';
 
-  if (backdrop) backdrop.classList.remove('hidden');
-  if (modal) modal.classList.remove('hidden');
+  document.getElementById('modal-backdrop').classList.remove('hidden');
+  document.getElementById('manual-dice-modal').classList.remove('hidden');
 }
 
 function closeManualDiceModal() {
-  const backdrop = document.getElementById('modal-backdrop');
-  const modal = document.getElementById('manual-dice-modal');
-  if (backdrop) backdrop.classList.add('hidden');
-  if (modal) modal.classList.add('hidden');
+  document.getElementById('modal-backdrop').classList.add('hidden');
+  document.getElementById('manual-dice-modal').classList.add('hidden');
 }
 
-// check rule: if any of 7..n uncovered -> MUST use 2 dice
-// if all 7..n covered -> can use 1 or 2
+// Rule: 1 die only allowed if 7–n are covered
 function canUseNumDice(playerName, numDice) {
   const board =
     playerName === 'Human' ? tournament.human.board : tournament.computer.board;
 
   const n = board.size;
-  let all7toNCovered = true;
   for (let s = 7; s <= n; s++) {
-    if (!board.isCovered(s)) {
-      all7toNCovered = false;
-      break;
-    }
+    if (!board.isCovered(s)) return numDice === 2;
   }
-
-  if (!all7toNCovered) {
-    // must roll 2 dice
-    return numDice === 2;
-  }
-  // all 7..n are covered -> allowed 1 or 2 dice
-  return numDice === 1 || numDice === 2;
+  return true;
 }
 
 function updateDiceOptionsLabel(playerName) {
-  if (!tournament || !tournament.currentRound) return;
+  if (!tournament?.currentRound) return;
 
   const board =
     playerName === 'Human' ? tournament.human.board : tournament.computer.board;
 
-  const n = board.size;
   let all7toNCovered = true;
-  for (let s = 7; s <= n; s++) {
+  for (let s = 7; s <= board.size; s++) {
     if (!board.isCovered(s)) {
       all7toNCovered = false;
       break;
@@ -305,103 +252,118 @@ function updateDiceOptionsLabel(playerName) {
   const rollOneBtn = document.getElementById('roll-one-die-btn');
 
   if (all7toNCovered) {
-    if (label) label.textContent = 'You may roll 1 die or 2 dice.';
-    // show 1-die button
-    if (rollOneBtn) rollOneBtn.classList.remove('hidden-ui');
+    label.textContent = 'You may roll 1 die or 2 dice.';
+    rollOneBtn.classList.remove('hidden-ui');
   } else {
-    if (label) label.textContent =
-      'You must roll 2 dice (7–n not fully covered).';
-    // hide 1-die button
-    if (rollOneBtn) rollOneBtn.classList.add('hidden-ui');
+    label.textContent = 'You must roll 2 dice (7–n not fully covered).';
+    rollOneBtn.classList.add('hidden-ui');
   }
 }
 
-
-
 function onRollDice(numDice) {
-  if (!tournament || !tournament.currentRound) {
+  if (!tournament?.currentRound) {
     alert('Start a round first.');
     return;
   }
-  const playerName = tournament.currentRound.nextPlayer;
-  if (playerName !== 'Human') {
+
+  const player = tournament.currentRound.nextPlayer;
+  if (player !== 'Human') {
     alert('It is not your turn.');
     return;
   }
-  if (!canUseNumDice(playerName, numDice)) {
-    alert('That number of dice is not allowed right now.');
+
+  if (!canUseNumDice(player, numDice)) {
+    alert('That number of dice is not allowed.');
     return;
   }
 
   const mode = getDiceMode();
   let d1, d2;
+
   if (mode === 'auto') {
     const roll = dice.roll(numDice);
     d1 = roll.d1;
     d2 = roll.d2;
   } else {
-    const die1Input = document.getElementById('die1-input');
-    const die2Input = document.getElementById('die2-input');
-    const i1 = die1Input ? parseInt(die1Input.value, 10) : NaN;
-    const i2 =
-      numDice === 2 && die2Input ? parseInt(die2Input.value, 10) : 0;
-    if (
-      Number.isNaN(i1) ||
-      i1 < 1 ||
-      i1 > 6 ||
-      (numDice === 2 && (Number.isNaN(i2) || i2 < 1 || i2 > 6))
-    ) {
-      alert('Enter valid manual dice (1–6).');
+    d1 = parseInt(document.getElementById('die1-input').value, 10);
+    d2 = numDice === 2 ? parseInt(document.getElementById('die2-input').value, 10) : 0;
+
+    if (!d1 || (numDice === 2 && !d2)) {
+      alert("Enter valid manual dice.");
       return;
     }
-    d1 = i1;
-    d2 = i2;
   }
 
   const sum = d1 + d2;
   currentDice = { d1, d2, sum };
-  const diceText = numDice === 2 ? `${d1} + ${d2} = ${sum}` : `${d1} = ${sum}`;
-  const diceDisplay = document.getElementById('dice-display');
-  if (diceDisplay) diceDisplay.textContent = diceText;
-  updateDiceOptionsLabel(playerName);
 
-  // reset user inputs/help for this new roll
-  const sqInput = document.getElementById('squares-input');
-  const helpOut = document.getElementById('help-output');
-  if (sqInput) sqInput.value = '';
-  if (helpOut) helpOut.textContent = '';
+  document.getElementById('dice-display').textContent =
+    numDice === 2 ? `${d1} + ${d2} = ${sum}` : `${d1} = ${sum}`;
 
-  view.log(`Human rolled ${diceText}`);
+  updateDiceOptionsLabel(player);
 
-  // we now expect a move, so update which controls are shown
+  view.log(`Human rolled ${d1}${numDice === 2 ? ' + ' + d2 : ''} = ${sum}`);
+
+  // open modal for choosing a move
+  populateMoveOptions(sum);
+  showMoveModal(sum);
+
   updateTurnUI();
 }
 
-// ---------- Move generation & validation ----------
+// ---------- Move modal logic ----------
+
+function getValidMovesForModal(sum, type) {
+  return getValidMovesForPlayer(sum, 'Human', type)
+    .map(m => ({ text: m.join(' + '), value: m.join(',') }));
+}
+
+function populateMoveOptions(sum) {
+  const type = document.querySelector('input[name="move-modal-type"]:checked').value;
+  const select = document.getElementById('move-modal-options');
+
+  const moves = getValidMovesForModal(sum, type);
+
+  select.innerHTML = '<option value="">-- Select a move --</option>';
+
+  moves.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.value;
+    opt.textContent = m.text;
+    select.appendChild(opt);
+  });
+}
+
+function showMoveModal(sum) {
+  document.getElementById('move-modal-sum').textContent = sum;
+  populateMoveOptions(sum);
+  document.getElementById('move-modal-backdrop').classList.remove('hidden');
+  document.getElementById('move-modal').classList.remove('hidden');
+}
+
+function closeMoveModal() {
+  document.getElementById('move-modal-backdrop').classList.add('hidden');
+  document.getElementById('move-modal').classList.add('hidden');
+  document.getElementById('move-modal-help-output').textContent = '';
+}
+
+// ---------- Board & moves ----------
 
 function getCandidateSquaresForCover(board) {
-  const res = [];
-  for (let i = 0; i < board.squares.length; i++) {
-    if (board.squares[i] !== 0) res.push(board.squares[i]);
-  }
-  return res;
+  return board.squares.filter(v => v !== 0);
 }
 
 function getCandidateSquaresForUncover(board) {
-  const res = [];
-  for (let i = 0; i < board.squares.length; i++) {
-    if (board.squares[i] === 0) res.push(i + 1);
-  }
-  return res;
+  return board.squares
+    .map((v, i) => (v === 0 ? i + 1 : null))
+    .filter(v => v !== null);
 }
 
-function getCombinations(arr, maxLength = 4) {
-  const results = [];
+function getCombinations(arr, max = 4) {
+  const res = [];
   function backtrack(start, path) {
-    if (path.length > 0 && path.length <= maxLength) {
-      results.push([...path]);
-    }
-    if (path.length === maxLength) return;
+    if (path.length > 0 && path.length <= max) res.push([...path]);
+    if (path.length === max) return;
     for (let i = start; i < arr.length; i++) {
       path.push(arr[i]);
       backtrack(i + 1, path);
@@ -409,143 +371,108 @@ function getCombinations(arr, maxLength = 4) {
     }
   }
   backtrack(0, []);
-  return results;
+  return res;
 }
 
 function getValidMovesForPlayer(sum, playerName, type) {
   const me = playerName === 'Human' ? tournament.human : tournament.computer;
   const op = playerName === 'Human' ? tournament.computer : tournament.human;
 
-  let candidates;
-  if (type === 'cover') {
-    candidates = getCandidateSquaresForCover(me.board);
-  } else {
-    candidates = getCandidateSquaresForUncover(op.board);
-  }
-  const combos = getCombinations(candidates, 4);
-  return combos.filter(c => c.reduce((a, b) => a + b, 0) === sum);
+  const candidates =
+    type === 'cover'
+      ? getCandidateSquaresForCover(me.board)
+      : getCandidateSquaresForUncover(op.board);
+
+  return getCombinations(candidates, 4)
+    .filter(c => c.reduce((a, b) => a + b, 0) === sum);
 }
 
-function hasAnyMoveForPlayer(sum, playerName) {
-  const coverMoves = getValidMovesForPlayer(sum, playerName, 'cover');
-  const uncoverMoves = getValidMovesForPlayer(sum, playerName, 'uncover');
-  return coverMoves.length > 0 || uncoverMoves.length > 0;
-}
-
-function arraysEqualIgnoreOrder(a, b) {
-  if (a.length !== b.length) return false;
-  const sa = [...a].sort((x, y) => x - y);
-  const sb = [...b].sort((x, y) => x - y);
-  for (let i = 0; i < sa.length; i++) {
-    if (sa[i] !== sb[i]) return false;
-  }
-  return true;
-}
-
-// ---------- Human move ----------
-
-function onApplyHumanMove() {
-  if (!tournament || !tournament.currentRound) return;
-  const round = tournament.currentRound;
-  if (round.nextPlayer !== 'Human') {
-    alert('It is not your turn.');
-    return;
-  }
-  if (!currentDice.sum) {
-    alert('Roll the dice first.');
-    return;
-  }
-
-  const moveTypeRadio = document.querySelector(
-    'input[name="move-type"]:checked'
-  );
-  const moveType = moveTypeRadio ? moveTypeRadio.value : 'cover';
-
-  const text = document.getElementById('squares-input').value.trim();
-  if (!text) {
-    alert('Enter squares.');
-    return;
-  }
-  const squares = text
-    .split(',')
-    .map(s => parseInt(s.trim(), 10))
-    .filter(n => !Number.isNaN(n));
-
-  const validMoves = getValidMovesForPlayer(currentDice.sum, 'Human', moveType);
-  const isLegal = validMoves.some(m => arraysEqualIgnoreOrder(m, squares));
-
-  if (!isLegal) {
-    alert('Illegal move for current board and dice sum.');
-    return;
-  }
-
-  applyMove('Human', moveType, squares);
-  view.log(
-    `Human ${
-      moveType === 'cover' ? 'covers' : 'uncovers'
-    } squares: ${squares.join(', ')}`
-  );
-
-  handleEndOfMove('Human');
-}
-
-// actually change Board state
 function applyMove(playerName, type, squares) {
   const me = playerName === 'Human' ? tournament.human : tournament.computer;
   const op = playerName === 'Human' ? tournament.computer : tournament.human;
 
   if (type === 'cover') {
-    squares.forEach(sq => me.board.cover(sq));
+    squares.forEach(s => me.board.cover(s));
   } else {
-    squares.forEach(sq => op.board.uncover(sq));
+    squares.forEach(s => op.board.uncover(s));
   }
 }
 
-// ---------- Computer move ----------
+// ---------- Help mode ----------
+
+function generateHelpText(sum) {
+  const coverMoves = getValidMovesForPlayer(sum, 'Human', 'cover');
+  const uncoverMoves = getValidMovesForPlayer(sum, 'Human', 'uncover');
+  const best = chooseBestMoveForComputer(sum);
+
+  let out = `Dice sum: ${sum}\n\nCover options:\n`;
+  out += coverMoves.length
+    ? coverMoves.map(m => '  ' + m.join(', ')).join('\n')
+    : '  (none)\n';
+
+  out += `\nUncover options:\n`;
+  out += uncoverMoves.length
+    ? uncoverMoves.map(m => '  ' + m.join(', ')).join('\n')
+    : '  (none)\n';
+
+  if (!best) {
+    out += `\nRecommendation: End turn (no good moves).`;
+  } else {
+    out += `\nRecommendation: ${best.type.toUpperCase()} [${best.squares.join(', ')}]`;
+  }
+
+  return out;
+}
+
+function onHelp() {
+  if (!tournament?.currentRound) return;
+  if (tournament.currentRound.nextPlayer !== 'Human') {
+    alert('Help is only available on your turn.');
+    return;
+  }
+  if (!currentDice.sum) {
+    alert('Roll dice first.');
+    return;
+  }
+
+  document.getElementById('help-output').textContent =
+    generateHelpText(currentDice.sum);
+}
+
+// ---------- Computer AI ----------
 
 function chooseBestMoveForComputer(sum) {
-  const coverMoves = getValidMovesForPlayer(sum, 'Computer', 'cover');
-  const uncoverMoves = getValidMovesForPlayer(sum, 'Computer', 'uncover');
+  const cover = getValidMovesForPlayer(sum, 'Computer', 'cover');
+  const uncover = getValidMovesForPlayer(sum, 'Computer', 'uncover');
 
-  function pickBest(moves) {
-    if (moves.length === 0) return null;
-    return moves.reduce((best, cur) => {
+  const pickBest = moves =>
+    moves.reduce((best, cur) => {
       if (!best) return cur;
-      // prefer more squares, then higher total
       if (cur.length > best.length) return cur;
       const curSum = cur.reduce((a, b) => a + b, 0);
       const bestSum = best.reduce((a, b) => a + b, 0);
-      if (cur.length === best.length && curSum > bestSum) {
-        return cur;
-      }
-      return best;
+      return (cur.length === best.length && curSum > bestSum) ? cur : best;
     }, null);
-  }
 
-  let type = null;
-  let best = pickBest(coverMoves);
-  if (best) {
-    type = 'cover';
-  } else {
-    best = pickBest(uncoverMoves);
-    if (best) type = 'uncover';
-  }
-  return best ? { type, squares: best } : null;
+  let best = pickBest(cover);
+  if (best) return { type: 'cover', squares: best };
+
+  best = pickBest(uncover);
+  if (best) return { type: 'uncover', squares: best };
+
+  return null;
 }
 
 function computerTurn() {
-  if (!tournament || !tournament.currentRound) return;
   const round = tournament.currentRound;
   if (round.nextPlayer !== 'Computer') return;
 
-  // hide/disable human controls while computer is thinking
   updateTurnUI();
 
-  // decide dice count based on 7–n coverage
+  // dice count selection
   const board = tournament.computer.board;
-  const n = board.size;
   let all7toNCovered = true;
-  for (let s = 7; s <= n; s++) {
+  for (let s = 7; s <= board.size; s++) {
     if (!board.isCovered(s)) {
       all7toNCovered = false;
       break;
@@ -554,14 +481,13 @@ function computerTurn() {
   const numDice = all7toNCovered ? 1 : 2;
 
   const roll = dice.roll(numDice);
-  const d1 = roll.d1;
-  const d2 = roll.d2;
-  const sum = d1 + d2;
-  currentDice = { d1, d2, sum };
-  const diceText = numDice === 2 ? `${d1} + ${d2} = ${sum}` : `${d1} = ${sum}`;
-  const diceDisplay = document.getElementById('dice-display');
-  if (diceDisplay) diceDisplay.textContent = diceText;
-  view.log(`Computer rolled ${diceText}`);
+  const sum = roll.d1 + roll.d2;
+
+  currentDice = { d1: roll.d1, d2: roll.d2, sum };
+  document.getElementById('dice-display').textContent =
+    numDice === 2 ? `${roll.d1} + ${roll.d2} = ${sum}` : `${roll.d1} = ${sum}`;
+
+  view.log(`Computer rolled ${roll.d1}${numDice === 2 ? ' + ' + roll.d2 : ''} = ${sum}`);
 
   const move = chooseBestMoveForComputer(sum);
   if (!move) {
@@ -574,254 +500,175 @@ function computerTurn() {
 
   applyMove('Computer', move.type, move.squares);
   view.log(
-    `Computer ${
-      move.type === 'cover' ? 'covers its' : 'uncovers human'
-    } squares: ${move.squares.join(', ')}`
+    `Computer ${move.type === 'cover' ? 'covers' : 'uncovers'} squares: ${move.squares.join(', ')}`
   );
 
   handleEndOfMove('Computer');
 }
 
-// ---------- Turn end / round end ----------
+// ---------- End of move ----------
 
-function handleEndOfMove(playerName) {
+function handleEndOfMove(player) {
   const round = tournament.currentRound;
 
-  // check for round win
   if (round.checkWin()) {
-    const roundScore = round.computeRoundScore();
+    const score = round.computeRoundScore();
     const winner = round.winner;
+
     tournament.finishRound();
-    view.log(
-      `${winner.name} wins the round by ${round.winnerReason} and earns ${roundScore} points.`
-    );
-    const roundStatus = document.getElementById('round-status');
-    if (roundStatus) {
-      roundStatus.textContent = `Round over. Winner: ${winner.name}`;
-    }
-    renderAll();
+
+    view.log(`${winner.name} wins by ${round.winnerReason} and earns ${score} points.`);
+    document.getElementById('round-status').textContent =
+      `Round over. Winner: ${winner.name}`;
 
     const tourWinner = tournament.getWinnerOfTournament();
-    const summaryLines = [
-      `${winner.name} wins this round by ${round.winnerReason} with ${roundScore} points.`,
-      `Tournament scores — Human: ${tournament.human.totalScore}, Computer: ${tournament.computer.totalScore}.`,
-    ];
-    const endSummaryEl = document.getElementById('end-summary');
-    if (endSummaryEl) {
-      let finalLine;
-      if (tourWinner) {
-        finalLine = `${tourWinner.name} is currently leading the tournament.`;
-      } else {
-        finalLine = 'Tournament is currently tied.';
-      }
-      endSummaryEl.textContent = summaryLines.join('\n') + '\n' + finalLine;
-    }
+    document.getElementById('end-summary').textContent =
+      `${winner.name} wins this round (${score} pts).\n` +
+      `Human: ${tournament.human.totalScore}, Computer: ${tournament.computer.totalScore}\n` +
+      (tourWinner ? `${tourWinner.name} is leading.` : `Tournament is tied.`);
 
+    renderAll();
     showScreen('end');
     return;
   }
 
-  // if no win, check if player can continue or must stop
-  const sum = currentDice.sum;
-  if (!hasAnyMoveForPlayer(sum, playerName)) {
-    view.log(`${playerName} has no more legal moves. Turn ends.`);
-    round.nextPlayer = playerName === 'Human' ? 'Computer' : 'Human';
+  if (!hasAnyMoveForPlayer(currentDice.sum, player)) {
+    view.log(`${player} cannot move. Turn ends.`);
+    round.nextPlayer = player === 'Human' ? 'Computer' : 'Human';
     currentDice = { d1: null, d2: null, sum: null };
   } else {
-    // same player continues, must roll again
-    view.log(`${playerName} may roll again (moves still possible).`);
-    // if it was human and they can continue, we clear the dice to force a re-roll
-    if (playerName === 'Human') {
+    // must roll again
+    if (player === 'Human') {
       currentDice = { d1: null, d2: null, sum: null };
     }
   }
 
   renderAll();
 
-  if (round.nextPlayer === 'Computer' && !round.winner) {
+  if (round.nextPlayer === 'Computer') {
     setTimeout(computerTurn, 500);
   }
 }
 
-// ---------- Help mode ----------
+// ---------- Move availability ----------
 
-function onHelp() {
-  if (!tournament || !tournament.currentRound) return;
-  const round = tournament.currentRound;
-  if (round.nextPlayer !== 'Human') {
-    alert('Help is only for the human turn.');
-    return;
-  }
-  if (!currentDice.sum) {
-    alert('Roll the dice first to get help.');
-    return;
-  }
-  const sum = currentDice.sum;
-  const coverMoves = getValidMovesForPlayer(sum, 'Human', 'cover');
-  const uncoverMoves = getValidMovesForPlayer(sum, 'Human', 'uncover');
-  const best = chooseBestMoveForComputer(sum); // same strategy but conceptually used for human
-
-  let out = `Dice sum: ${sum}\n\n`;
-  out += 'Cover options:\n';
-  out += coverMoves.length
-    ? coverMoves.map(m => '  ' + m.join(', ')).join('\n')
-    : '  (none)\n';
-
-  out += '\nUncover options:\n';
-  out += uncoverMoves.length
-    ? uncoverMoves.map(m => '  ' + m.join(', ')).join('\n')
-    : '  (none)\n';
-
-  if (!best) {
-    out += '\nI recommend ending the turn because no legal moves are available.';
-  } else {
-    out += `\nRecommendation: ${
-      best.type === 'cover' ? 'COVER' : 'UNCOVER'
-    } squares ${best.squares.join(', ')}\n`;
-    out += best.type === 'cover'
-      ? 'Reason: Covering your own squares helps you get closer to winning and lowers their scoring potential.'
-      : 'Reason: You cannot cover, so uncovering opponent squares disrupts their progress.';
-  }
-
-  const helpOutput = document.getElementById('help-output');
-  if (helpOutput) helpOutput.textContent = out;
+function hasAnyMoveForPlayer(sum, player) {
+  return (
+    getValidMovesForPlayer(sum, player, 'cover').length > 0 ||
+    getValidMovesForPlayer(sum, player, 'uncover').length > 0
+  );
 }
 
 // ---------- Serialization ----------
 
 function onSaveGame() {
-  if (!tournament || !tournament.currentRound) return;
-  const text = Serializer.save(tournament, tournament.currentRound);
-  const saveOut = document.getElementById('save-output');
-  if (saveOut) {
-    saveOut.value = text;
-    saveOut.classList.remove('hidden-ui'); // 👈 show it only after save
-  }
+  if (!tournament?.currentRound) return;
 
-  view.log('Game serialized into text. Copy and save it to a file.');
+  const text = Serializer.save(tournament, tournament.currentRound);
+
+  const saveOut = document.getElementById('save-output');
+  saveOut.value = text;
+  saveOut.classList.remove('hidden-ui');
+
+  view.log('Game saved.');
 }
 
-
-// fromWelcome = true → read from #welcome-load-input, else from #load-input (if present)
 function onLoadGame(fromWelcome = false) {
-  let text = '';
-  const welcomeEl = document.getElementById('welcome-load-input');
-  const gameEl = document.getElementById('load-input');
-
-  if (fromWelcome && welcomeEl) {
-    text = welcomeEl.value.trim();
-  } else if (gameEl) {
-    text = gameEl.value.trim();
-  } else if (welcomeEl) {
-    text = welcomeEl.value.trim();
-  }
+  let text = fromWelcome
+    ? document.getElementById('welcome-load-input').value.trim()
+    : document.getElementById('load-input')?.value.trim();
 
   if (!text) {
-    alert('Paste saved game text first.');
+    alert('Paste save text first.');
     return;
   }
+
   try {
     const state = Serializer.load(text);
-    const boardSize = state.computerSquares.length;
+    const size = state.computerSquares.length;
 
     dice = new Dice();
-    tournament = new Tournament(boardSize, dice);
+    tournament = new Tournament(size, dice);
 
-    tournament.computer.board.squares = state.computerSquares;
     tournament.human.board.squares = state.humanSquares;
-    tournament.computer.totalScore = state.computerScore;
+    tournament.computer.board.squares = state.computerSquares;
     tournament.human.totalScore = state.humanScore;
+    tournament.computer.totalScore = state.computerScore;
 
-    // start a round but override first/next player (per spec)
     tournament.startNewRound();
     tournament.currentRound.firstPlayer = state.firstTurn;
     tournament.currentRound.nextPlayer = state.nextTurn;
 
     currentDice = { d1: null, d2: null, sum: null };
-    const roundStatus = document.getElementById('round-status');
-    if (roundStatus) {
-      roundStatus.textContent = 'Round in progress (loaded)';
-    }
+
+    document.getElementById('round-status').textContent =
+      'Round in progress (loaded)';
+
     renderAll();
-    view.log('Game loaded from text.');
-  } catch (e) {
-    console.error(e);
-    alert('Failed to parse save text. Check the format.');
+    view.log('Game loaded.');
+  } catch {
+    alert('Save text invalid.');
   }
 }
 
-// ---------- UI state for turn flow ----------
+// ---------- UI state ----------
 
 function updateTurnUI() {
   const moveSection = document.getElementById('move-section');
   const helpSection = document.getElementById('help-section');
-  const diceSection = document.getElementById('dice-section');
-  const rollOneBtn = document.getElementById('roll-one-die-btn');
-  const rollTwoBtn = document.getElementById('roll-two-dice-btn');
+  const rollOne = document.getElementById('roll-one-die-btn');
+  const rollTwo = document.getElementById('roll-two-dice-btn');
 
-  // no tournament or round yet → hide move/help, disable rolls
-  if (!tournament || !tournament.currentRound) {
-    if (moveSection) moveSection.classList.add('hidden-ui');
-    if (helpSection) helpSection.classList.add('hidden-ui');
-    if (diceSection) diceSection.classList.remove('hidden-ui'); // still show the dice box
-    if (rollOneBtn) rollOneBtn.disabled = true;
-    if (rollTwoBtn) rollTwoBtn.disabled = true;
+  // Hide old move UI
+  moveSection?.classList.add('hidden-ui');
+
+  if (!tournament?.currentRound) {
+    helpSection?.classList.add('hidden-ui');
+    rollOne.disabled = true;
+    rollTwo.disabled = true;
     return;
   }
 
   const round = tournament.currentRound;
-  const isHumanTurn = round.nextPlayer === 'Human' && !round.winner;
-  const hasRoll = !!currentDice.sum;
+  const isHuman = round.nextPlayer === 'Human';
+  const hasRoll = currentDice.sum !== null;
 
-  if (rollOneBtn) rollOneBtn.disabled = !isHumanTurn;
-  if (rollTwoBtn) rollTwoBtn.disabled = !isHumanTurn;
+  rollOne.disabled = !isHuman;
+  rollTwo.disabled = !isHuman;
 
-  if (!isHumanTurn) {
-    // waiting on computer
-    if (moveSection) moveSection.classList.add('hidden-ui');
-    if (helpSection) helpSection.classList.add('hidden-ui');
+  if (!isHuman) {
+    helpSection?.classList.add('hidden-ui');
     return;
   }
 
-  // human's turn
   if (!hasRoll) {
-    // must roll first → hide move & help
-    if (moveSection) moveSection.classList.add('hidden-ui');
-    if (helpSection) helpSection.classList.add('hidden-ui');
+    helpSection?.classList.add('hidden-ui');
   } else {
-    // have dice → show move & help; prevent rolling again until move handled
-    if (moveSection) moveSection.classList.remove('hidden-ui');
-    if (helpSection) helpSection.classList.remove('hidden-ui');
-    if (rollOneBtn) rollOneBtn.disabled = true;
-    if (rollTwoBtn) rollTwoBtn.disabled = true;
+    helpSection?.classList.remove('hidden-ui');
+    rollOne.disabled = true;
+    rollTwo.disabled = true;
   }
 }
 
 // ---------- Render everything ----------
+
 function renderAll() {
   if (!tournament) {
     updateTurnUI();
     return;
   }
+
   const round = tournament.currentRound;
 
   view.renderBoards(tournament.human.board, tournament.computer.board);
-  view.updateScores(
-    tournament.human.totalScore,
-    tournament.computer.totalScore
-  );
+  view.updateScores(tournament.human.totalScore, tournament.computer.totalScore);
   view.updateTurnInfo(
-    round ? round.firstPlayer : null,
-    round ? round.nextPlayer : null,
+    round.firstPlayer,
+    round.nextPlayer,
     tournament.advantageOwner,
     tournament.advantageSquare
   );
 
-  // 👇 update which dice are allowed for whoever is about to play
-  if (round && round.nextPlayer) {
-    updateDiceOptionsLabel(round.nextPlayer);
-  }
-
+  updateDiceOptionsLabel(round.nextPlayer);
   updateTurnUI();
 }
-

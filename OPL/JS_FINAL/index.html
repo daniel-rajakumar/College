@@ -10,6 +10,38 @@
   <h1>Canoga</h1>
 
   <main>
+      <!-- ======================= MOVE SELECTION POPUP ===================== -->
+      <div id="move-modal-backdrop" class="backdrop hidden"></div>
+      <div id="move-modal" class="modal hidden">
+        <div class="modal-content">
+          <h3>Your Move</h3>
+          <p>Dice sum: <span id="move-modal-sum"></span></p>
+
+          <div class="modal-section">
+            <label><input type="radio" name="move-modal-type" value="cover" checked> Cover my squares</label>
+            <br>
+            <label><input type="radio" name="move-modal-type" value="uncover"> Uncover opponent squares</label>
+          </div>
+
+          <div class="modal-section">
+            <label>
+              Valid moves:
+              <select id="move-modal-options">
+                <option value="">-- Select a move --</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="modal-buttons">
+            <button id="move-modal-help-btn">Help</button>
+            <button id="move-modal-confirm-btn">Confirm</button>
+            <button id="move-modal-cancel-btn" class="secondary">Cancel</button>
+          </div>
+
+          <pre id="move-modal-help-output"></pre>
+        </div>
+      </div>
+
     <!-- ======================= WELCOME SCREEN ======================= -->
     <section id="screen-welcome" class="screen active">
       <h2>Welcome</h2>
