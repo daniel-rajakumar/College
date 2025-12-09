@@ -1,28 +1,22 @@
 package com.example.oplcanoga.model;
 
-/**
- * Represents a player (human/computer) with a row of squares and a tournament score.
- * Squares are stored 1..boardSize. squares[i] = 0 means covered, i means uncovered.
- */
 public abstract class Player {
 
     protected final PlayerId id;
-    protected int[] squares;        // index 1..boardSize
+    protected int[] squares;
     protected int boardSize;
     protected int tournamentScore;
 
     protected Player(PlayerId id, int boardSize) {
         this.id = id;
         this.boardSize = boardSize;
-        this.squares = new int[boardSize + 1]; // ignore index 0
-        resetBoard(null); // no advantage by default
+        this.squares = new int[boardSize + 1];
+        resetBoard(null);
     }
 
     public void setBoardSize(int newBoardSize) {
         this.boardSize = newBoardSize;
-        this.squares = new int[newBoardSize + 1]; // index 1..boardSize
-        // We do NOT fill squares here; GameRound.initBoardsForRound()
-        // will call resetBoard(...) to set them all uncovered + advantage.
+        this.squares = new int[newBoardSize + 1];
     }
 
 
@@ -42,15 +36,9 @@ public abstract class Player {
         this.tournamentScore += delta;
     }
 
-    /**
-     * Initialize board with all squares uncovered, plus an optional advantage square
-     * that starts covered.
-     *
-     * @param advantageSquare may be null, or a square number 1..boardSize to start covered.
-     */
     public void resetBoard(Integer advantageSquare) {
         for (int i = 1; i <= boardSize; i++) {
-            squares[i] = i; // uncovered
+            squares[i] = i;
         }
         if (advantageSquare != null && advantageSquare >= 1 && advantageSquare <= boardSize) {
             coverSquare(advantageSquare);

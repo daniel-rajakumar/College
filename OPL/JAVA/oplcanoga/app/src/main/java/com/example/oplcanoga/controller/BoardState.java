@@ -12,7 +12,6 @@ public class BoardState {
     public final boolean roundOver;
     public final PlayerId roundWinner;
 
-    // NEW:
     public final boolean advantageLockActive;
     public final PlayerId advantagedPlayer;
     public final int advantageSquare;

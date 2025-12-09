@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Represents a single move: cover/uncover a set of squares that sum to diceTotal.
- */
 public class Move {
 
     private final PlayerId actor;

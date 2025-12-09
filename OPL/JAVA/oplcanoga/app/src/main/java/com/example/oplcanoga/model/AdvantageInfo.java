@@ -1,11 +1,8 @@
 package com.example.oplcanoga.model;
 
-/**
- * Represents a handicap/advantage for the next round.
- */
 public class AdvantageInfo {
     public final PlayerId advantagedPlayer;
-    public final int advantageSquare; // 1..boardSize, or -1 for "no advantage"
+    public final int advantageSquare;
 
     public AdvantageInfo(PlayerId advantagedPlayer, int advantageSquare) {
         this.advantagedPlayer = advantagedPlayer;

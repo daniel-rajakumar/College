@@ -15,23 +15,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Controller: connects UI (GameView) with Model (Tournament, GameRound, etc.).
- * - No Android imports here.
- * - View = anything that implements GameView (Activity/Fragment).
- */
 public class GameController {
 
     private final GameView view;
 
     private Tournament tournament;
-    GameRound currentRound;   // package-visible for tests if needed
+    GameRound currentRound;
 
     private int roundNumber = 0;
     private int lastDiceTotal = 0;
     private boolean waitingForHumanMove = false;
 
-    // Cache of last human legal moves (so we can validate the selection)
     private List<Move> lastHumanCoverMoves = new ArrayList<>();
     private List<Move> lastHumanUncoverMoves = new ArrayList<>();
 
@@ -39,10 +33,6 @@ public class GameController {
         this.view = view;
     }
 
-    /**
-     * Start a new tournament with a given board size and first player.
-     * (You could randomize firstPlayer in the UI and pass it here.)
-     */
     public void startNewTournament(int boardSize, PlayerId firstPlayer) {
         this.tournament = new Tournament(boardSize);
         this.roundNumber = 0;
@@ -50,41 +40,25 @@ public class GameController {
         startNewRoundInternal(firstPlayer, new AdvantageInfo(null, -1));
     }
 
-    /**
-     * Ask if tournament has a winner (by total score). Null = tie.
-     */
     public PlayerId getTournamentWinner() {
         if (tournament == null) return null;
         return tournament.getTournamentWinner();
     }
 
-    /**
-     * Whether current round is over.
-     */
     public boolean isRoundOver() {
         return currentRound != null && currentRound.isOver();
     }
 
-    /**
-     * Whether the human is allowed to roll one die right now.
-     * You can use this to enable/disable the "Roll 1 die" button.
-     */
     public boolean canHumanRollOneDie() {
         if (currentRound == null) return false;
         return currentRound.canRollOneDie(PlayerId.HUMAN);
     }
 
-    /**
-     * Who's turn is it right now?
-     */
     public PlayerId getCurrentPlayer() {
         if (currentRound == null) return null;
         return currentRound.getCurrentPlayerId();
     }
 
-    /**
-     * Called by the UI when the human presses "Roll 1 die" or "Roll 2 dice".
-     */
     public void onHumanRollDice(int diceCount) {
         if (currentRound == null || currentRound.isOver()) {
             view.showMessage("Round is not active.");
@@ -104,31 +78,21 @@ public class GameController {
 
         lastDiceTotal = dice[0] + (dice.length > 1 ? dice[1] : 0);
 
-        // Generate legal moves for human
         lastHumanCoverMoves = currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.COVER, lastDiceTotal);
         lastHumanUncoverMoves = currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.UNCOVER, lastDiceTotal);
 
         if (lastHumanCoverMoves.isEmpty() && lastHumanUncoverMoves.isEmpty()) {
             view.showMessage("No legal moves. Your turn is over.");
             waitingForHumanMove = false;
-            // turn ends without move; model will switch turn on next apply,
-            // but since we didn't apply a move, we manually give control to computer
             startComputerTurn();
         } else {
             waitingForHumanMove = true;
             view.promptHumanForMove(lastDiceTotal, lastHumanCoverMoves, lastHumanUncoverMoves);
         }
 
-        // Push current board state to UI
         updateBoardInView();
     }
 
-    // Add this inside GameController (next to onHumanRollDice)
-
-    /**
-     * Human manually selects dice values (e.g., from UI "Input Die").
-     * We bypass the model's random rolling and just treat these as the dice rolled.
-     */
     public void onHumanManualRoll(int die1, int die2) {
         if (currentRound == null || currentRound.isOver()) {
             view.showMessage("Round is not active.");
@@ -142,10 +106,8 @@ public class GameController {
         int[] dice = new int[]{die1, die2};
         lastDiceTotal = die1 + die2;
 
-        // Show dice on UI
         view.showDiceRoll(PlayerId.HUMAN, dice);
 
-        // Generate legal moves for this dice total
         lastHumanCoverMoves =
                 currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.COVER, lastDiceTotal);
         lastHumanUncoverMoves =
@@ -154,7 +116,6 @@ public class GameController {
         if (lastHumanCoverMoves.isEmpty() && lastHumanUncoverMoves.isEmpty()) {
             view.showMessage("No legal moves. Your turn is over.");
             waitingForHumanMove = false;
-            // No move; give turn to computer
             startComputerTurn();
         } else {
             waitingForHumanMove = true;
@@ -164,10 +125,6 @@ public class GameController {
         updateBoardInView();
     }
 
-    /**
-     * Called by UI when the Roll button is pressed (1 or 2 dice),
-     * for whichever player currently has the turn.
-     */
     public void onRollDiceButtonPressed(int diceCount) {
         if (currentRound == null || currentRound.isOver()) {
             view.showMessage("Round is not active.");
@@ -185,10 +142,6 @@ public class GameController {
         handleDiceForCurrentPlayer(dice);
     }
 
-    /**
-     * Called by UI when the Input Die dialog is confirmed.
-     * Works for whichever player currently has the turn.
-     */
     public void onManualDiceButtonPressed(int die1, int die2) {
         if (currentRound == null || currentRound.isOver()) {
             view.showMessage("Round is not active.");
@@ -198,7 +151,6 @@ public class GameController {
         PlayerId current = currentRound.getCurrentPlayerId();
 
         if (die2 == 0) {
-            // Treat as a 1-die roll
             if (!currentRound.canRollOneDie(current)) {
                 view.showMessage("You are not allowed to roll one die yet.");
                 return;
@@ -207,15 +159,11 @@ public class GameController {
             int[] dice = new int[]{die1};
             handleDiceForCurrentPlayer(dice);
         } else {
-            // Treat as a 2-dice roll (always allowed)
             int[] dice = new int[]{die1, die2};
             handleDiceForCurrentPlayer(dice);
         }
     }
 
-    /**
-     * Dispatch dice result based on whose turn it is.
-     */
     private void handleDiceForCurrentPlayer(int[] dice) {
         PlayerId current = currentRound.getCurrentPlayerId();
 
@@ -229,9 +177,6 @@ public class GameController {
         }
     }
 
-    /**
-     * After a human roll: either prompt for a move or end the turn.
-     */
     private void handleHumanDiceOutcome() {
         lastHumanCoverMoves =
                 currentRound.getLegalMoves(PlayerId.HUMAN, MoveType.COVER, lastDiceTotal);
@@ -241,7 +186,6 @@ public class GameController {
         if (lastHumanCoverMoves.isEmpty() && lastHumanUncoverMoves.isEmpty()) {
             waitingForHumanMove = false;
             view.showMessage("No legal moves. Your turn is over.");
-            // End of human turn: switch to computer
             currentRound.switchTurn();
             updateBoardInView();
         } else {
@@ -251,10 +195,6 @@ public class GameController {
         }
     }
 
-    /**
-     * After a computer roll: computer auto-chooses a move.
-     * User triggers the roll, but the move selection is automatic.
-     */
     private void handleComputerDiceOutcome() {
         List<Move> coverMoves =
                 currentRound.getLegalMoves(PlayerId.COMPUTER, MoveType.COVER, lastDiceTotal);
@@ -287,16 +227,10 @@ public class GameController {
 
         if (currentRound.isOver()) {
             onRoundFinished();
-        } else {
-            // Still computer's turn; user can roll again for computer.
         }
     }
 
 
-    /**
-     * Called by UI after human selects a move.
-     * The UI should pass the selected MoveType and a list of squares.
-     */
     public void onHumanMoveChosen(MoveType type, List<Integer> squares) {
         if (!waitingForHumanMove) {
             view.showMessage("No move is expected right now. Roll dice first.");
@@ -311,7 +245,6 @@ public class GameController {
             return;
         }
 
-        // Validate the chosen move against legal moves
         Move chosen = findMatchingMove(type, squares);
         if (chosen == null) {
             view.showMessage("Invalid move selection. Please select one of the suggested options.");
@@ -325,17 +258,10 @@ public class GameController {
 
         if (currentRound.isOver()) {
             onRoundFinished();
-        } else {
-            // Still human's turn: user needs to roll again.
-            // Turn only switches when a roll has no legal moves.
         }
     }
 
 
-    /**
-     * Called by UI when human taps "Help".
-     * For now we reuse the computer's strategy to suggest a best move for the human.
-     */
     public void onHelpRequested() {
         if (currentRound == null || currentRound.isOver()) {
             view.showMessage("Round is not active.");
@@ -357,7 +283,6 @@ public class GameController {
         }
 
         ComputerPlayer pseudoComputer = new ComputerPlayer(currentRound.getBoardSize());
-        // We don't actually use its board, just its strategy method:
         Move suggestion = pseudoComputer.chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves);
 
         if (suggestion == null) {
@@ -395,22 +320,17 @@ public class GameController {
             return;
         }
 
-        // Tell the tournament we're done with this round
         tournament.finishCurrentRound();
 
-        // Compute advantage according to the project rules
         AdvantageInfo advantage = tournament.computeNextRoundAdvantage();
 
-        // Alternate first player: if HUMAN started last, COMPUTER starts next, and vice versa
         PlayerId previousFirst = currentRound.getFirstPlayer();
         PlayerId nextFirst =
                 (previousFirst == PlayerId.HUMAN) ? PlayerId.COMPUTER : PlayerId.HUMAN;
 
-        // Actually start the new round inside the same Tournament
         startNewRoundInternal(nextFirst, advantage);
     }
 
-    /** Convenience getters for total scores — used by GameActivity when quitting the tournament. */
     public int getHumanTotalScore() {
         return (tournament != null) ? tournament.getHuman().getTournamentScore() : 0;
     }
@@ -419,8 +339,6 @@ public class GameController {
         return (tournament != null) ? tournament.getComputer().getTournamentScore() : 0;
     }
 
-
-    // ---------- Internal helpers ----------
 
     private void startNewRoundInternal(PlayerId firstPlayer, AdvantageInfo advantageInfo) {
         roundNumber++;
@@ -443,14 +361,6 @@ public class GameController {
 
     }
 
-    /**
-     * Let the computer automatically play its whole turn:
-     * - decide dice (1 or 2)
-     * - roll
-     * - choose move
-     * - apply
-     * until no legal move exists or round ends.
-     */
     private void startComputerTurn() {
         if (currentRound == null || currentRound.isOver()) {
             return;
@@ -537,9 +447,6 @@ public class GameController {
         view.updateBoard(state);
     }
 
-    /**
-     * Given a requested move (type + set of squares), find the matching legal move.
-     */
     private Move findMatchingMove(MoveType type, List<Integer> squares) {
         Set<Integer> requestSet = new HashSet<>(squares);
         List<Move> source =
@@ -558,27 +465,19 @@ public class GameController {
         return tournament != null ? tournament.getBoardSize() : 9;
     }
 
-    // In GameController.java
-
-    /**
-     * Turn the current tournament into a serialized String that can be written to a file.
-     */
     public String exportState() {
         if (tournament == null) {
             throw new IllegalStateException("No tournament to save.");
         }
 
-        return tournament.serialize();   // <--- CHANGE THIS NAME to match your code
+        return tournament.serialize();
     }
 
-    /**
-     * Restore the tournament & current round from a serialized String.
-     */
     public void importState(String serialized) {
-        this.tournament = Tournament.deserialize(serialized);   // <--- CHANGE THIS NAME
+        this.tournament = Tournament.deserialize(serialized);
 
         this.currentRound = tournament.getCurrentRound();
-        this.roundNumber = 1;  // or use a method from Tournament if you track round count
+        this.roundNumber = 1;
 
         lastDiceTotal = 0;
         waitingForHumanMove = false;
@@ -589,12 +488,6 @@ public class GameController {
     }
 
 
-    /**
-     * Roll dice for both players to decide who goes first in a new round.
-     * Re-rolls on ties. Also logs the rolls to the view.
-     *
-     * @return PlayerId of the first player, or null if there is no tournament.
-     */
     public PlayerId rollForFirstPlayer() {
         if (tournament == null) {
             view.showMessage("No tournament in progress.");
@@ -612,7 +505,6 @@ public class GameController {
             humanTotal = humanRoll[0] + humanRoll[1];
             computerTotal = computerRoll[0] + computerRoll[1];
 
-            // Show both rolls in the UI
             view.showDiceRoll(PlayerId.HUMAN, humanRoll);
             view.showDiceRoll(PlayerId.COMPUTER, computerRoll);
             view.showMessage("Roll for first player: Human = " + humanTotal +
@@ -624,13 +516,6 @@ public class GameController {
         return first;
     }
 
-    /**
-     * Start the next round in the same tournament, using a new board size.
-     * - Finishes the current round in the Tournament.
-     * - Computes advantage for the next round.
-     * - Rolls dice to decide who goes first.
-     * - Starts a new GameRound with the chosen board size.
-     */
     public void startNextRoundWithBoardSize(int newBoardSize) {
         if (tournament == null) {
             view.showMessage("No tournament in progress.");
@@ -641,20 +526,15 @@ public class GameController {
             return;
         }
 
-        // Tell the tournament we're done with this round (for advantage calc)
         tournament.finishCurrentRound();
 
-        // Compute advantage according to your project rules
         AdvantageInfo advantage = tournament.computeNextRoundAdvantage();
 
-        // Decide first player by dice
         PlayerId nextFirst = rollForFirstPlayer();
         if (nextFirst == null) {
-            // Something went wrong (no tournament)
             return;
         }
 
-        // Start the new round with the given board size
         roundNumber++;
         tournament.startNextRoundWithBoardSize(newBoardSize, nextFirst, advantage);
         currentRound = tournament.getCurrentRound();
@@ -676,11 +556,6 @@ public class GameController {
     }
 
 
-    /**
-     * Start the next round based on settings chosen in SetupActivity.
-     * Uses the same Tournament (scores persist), applies advantage,
-     * and uses the first player provided by SetupActivity.
-     */
     public void startNextRoundFromSetup(int newBoardSize, PlayerId firstPlayer) {
         if (tournament == null) {
             view.showMessage("No tournament in progress.");
@@ -691,13 +566,10 @@ public class GameController {
             return;
         }
 
-        // Finish the old round in the tournament (for advantage calculation)
         tournament.finishCurrentRound();
 
-        // Compute advantage for the next round
         AdvantageInfo advantage = tournament.computeNextRoundAdvantage();
 
-        // Start new round with chosen board size and first player
         roundNumber++;
         tournament.startNextRoundWithBoardSize(newBoardSize, firstPlayer, advantage);
         currentRound = tournament.getCurrentRound();
@@ -717,7 +589,5 @@ public class GameController {
 
         updateBoardInView();
     }
-
-
 
 }

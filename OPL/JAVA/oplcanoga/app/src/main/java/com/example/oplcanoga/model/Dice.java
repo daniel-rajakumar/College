@@ -4,9 +4,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
-/**
- * Dice roller. Supports random mode and a "manual" queue mode for testing.
- */
 public class Dice {
 
     private final Random random = new Random();
@@ -32,7 +29,7 @@ public class Dice {
             if (manualMode && !manualRolls.isEmpty()) {
                 result[i] = manualRolls.remove();
             } else {
-                result[i] = random.nextInt(6) + 1; // 1..6
+                result[i] = random.nextInt(6) + 1;
             }
         }
 

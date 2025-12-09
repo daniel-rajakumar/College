@@ -1,8 +1,5 @@
 package com.example.oplcanoga.model;
 
-/**
- * Tracks multiple rounds and computes handicap/advantage for the next round.
- */
 public class Tournament {
 
 
@@ -10,7 +7,6 @@ public class Tournament {
     private final ComputerPlayer computer;
     private final Dice dice;
 
-    // board size is NOT final anymore; it can change each round
     private int boardSize;
 
     private GameRound currentRound;
@@ -42,11 +38,9 @@ public class Tournament {
 
         this.boardSize = newBoardSize;
 
-        // Update players to use the new board size.
         human.setBoardSize(newBoardSize);
         computer.setBoardSize(newBoardSize);
 
-        // GameRound will call resetBoard(...) inside its constructor.
         currentRound = new GameRound(human, computer, newBoardSize, dice, firstPlayer, advantageInfo);
     }
 
@@ -71,18 +65,11 @@ public class Tournament {
         return currentRound;
     }
 
-    /**
-     * Start the first round.
-     */
     public void startFirstRound(PlayerId firstPlayer) {
         AdvantageInfo noAdvantage = new AdvantageInfo(null, -1);
         currentRound = new GameRound(human, computer, boardSize, dice, firstPlayer, noAdvantage);
     }
 
-    /**
-     * Should be called after currentRound finishes.
-     * Stores last round info for handicap calculation.
-     */
     public void finishCurrentRound() {
         if (currentRound == null || !currentRound.isOver()) {
             throw new IllegalStateException("Round not finished");
@@ -92,11 +79,6 @@ public class Tournament {
         lastRoundWinningScore = currentRound.getWinningScore();
     }
 
-    /**
-     * Compute handicap for next round using:
-     * - Sum of digits of winning score.
-     * - If winner was also first player, advantage goes to opponent, else to winner.
-     */
     public AdvantageInfo computeNextRoundAdvantage() {
         if (lastRoundWinner == null) {
             return new AdvantageInfo(null, -1);
@@ -118,21 +100,17 @@ public class Tournament {
     }
 
     public void startNextRound(PlayerId firstPlayer, AdvantageInfo advantageInfo) {
-        // Use the current boardSize (the one in the save file or initial tournament)
         startNextRoundWithBoardSize(this.boardSize, firstPlayer, advantageInfo);
     }
 
 
-    /**
-     * Determine tournament winner (by score). Returns null if tie.
-     */
     public PlayerId getTournamentWinner() {
         if (human.getTournamentScore() > computer.getTournamentScore()) {
             return PlayerId.HUMAN;
         } else if (computer.getTournamentScore() > human.getTournamentScore()) {
             return PlayerId.COMPUTER;
         }
-        return null; // tie
+        return null;
     }
 
     private int sumDigits(int n) {
@@ -151,11 +129,6 @@ public class Tournament {
 
 
 
-    // In com.example.oplcanoga.model.Tournament
-
-    /**
-     * Serialize the current tournament + current round into a simple text format.
-     */
     public String serialize() {
         StringBuilder sb = new StringBuilder();
 
@@ -163,9 +136,8 @@ public class Tournament {
         Player computer = getComputer();
         int[] humanSquares = human.getSquaresCopy();
         int[] compSquares = computer.getSquaresCopy();
-        int n = boardSize;   // uses your field
+        int n = boardSize;
 
-        // --- Computer section ---
         sb.append("Computer:\n");
         sb.append("  Squares:");
         for (int i = 1; i <= n; i++) {
@@ -175,7 +147,6 @@ public class Tournament {
         sb.append("  Score: ").append(computer.getTournamentScore()).append('\n');
         sb.append('\n');
 
-        // --- Human section ---
         sb.append("Human:\n");
         sb.append("  Squares:");
         for (int i = 1; i <= n; i++) {
@@ -185,7 +156,6 @@ public class Tournament {
         sb.append("  Score: ").append(human.getTournamentScore()).append('\n');
         sb.append('\n');
 
-        // --- Turn info ---
         GameRound round = getCurrentRound();
         if (round != null) {
             sb.append("First Turn: ").append(round.getFirstPlayer().name()).append('\n');
@@ -198,14 +168,10 @@ public class Tournament {
         return sb.toString();
     }
 
-    /**
-     * Deserialize a tournament from text that was produced by serialize().
-     */
     public static Tournament deserialize(String data) {
         String[] lines = data.split("\\R");
         int idx = 0;
 
-        // Helper lambdas
         java.util.function.Function<String, Integer> parseIntAfterColon = line -> {
             int colon = line.indexOf(':');
             if (colon < 0) return 0;
@@ -242,29 +208,25 @@ public class Tournament {
             return PlayerId.valueOf(part.toUpperCase());
         };
 
-        // skip leading blanks
         while (idx < lines.length && lines[idx].trim().isEmpty()) idx++;
 
-        // --- Computer section ---
         if (idx >= lines.length || !lines[idx].trim().startsWith("Computer")) {
             throw new IllegalArgumentException("Invalid save file: missing 'Computer:'");
         }
-        idx++; // "Computer:"
+        idx++;
 
-        String compSquaresLine = lines[idx++].trim();    // "Squares: ..."
+        String compSquaresLine = lines[idx++].trim();
         int[] compSquaresArr = parseSquaresLine.apply(compSquaresLine);
 
-        String compScoreLine = lines[idx++].trim();      // "Score: ..."
+        String compScoreLine = lines[idx++].trim();
         int compScore = parseIntAfterColon.apply(compScoreLine);
 
-        // skip blank line
         while (idx < lines.length && lines[idx].trim().isEmpty()) idx++;
 
-        // --- Human section ---
         if (idx >= lines.length || !lines[idx].trim().startsWith("Human")) {
             throw new IllegalArgumentException("Invalid save file: missing 'Human:'");
         }
-        idx++; // "Human:"
+        idx++;
 
         String humanSquaresLine = lines[idx++].trim();
         int[] humanSquaresArr = parseSquaresLine.apply(humanSquaresLine);
@@ -272,10 +234,8 @@ public class Tournament {
         String humanScoreLine = lines[idx++].trim();
         int humanScore = parseIntAfterColon.apply(humanScoreLine);
 
-        // skip blank line
         while (idx < lines.length && lines[idx].trim().isEmpty()) idx++;
 
-        // --- Turn info ---
         PlayerId firstPlayer = null;
         PlayerId nextPlayer = null;
 
@@ -286,31 +246,25 @@ public class Tournament {
             nextPlayer = parsePlayerAfterColon.apply(lines[idx++].trim());
         }
 
-        // Board size = how many squares we saw
         int boardSize = Math.max(compSquaresArr.length, humanSquaresArr.length);
-        if (boardSize == 0) boardSize = 9; // fallback
+        if (boardSize == 0) boardSize = 9;
 
-        // --- Build Tournament + Round ---
         Tournament t = new Tournament(boardSize);
         Player human = t.getHuman();
         Player computer = t.getComputer();
 
-        // restore scores
         if (humanScore != 0) human.addToTournamentScore(humanScore);
         if (compScore != 0) computer.addToTournamentScore(compScore);
 
-        // If we have a first player, start a round; else just return scores
         if (firstPlayer != null) {
             AdvantageInfo adv = new AdvantageInfo(null, -1);
             t.startNextRound(firstPlayer, adv);
             GameRound round = t.getCurrentRound();
 
-            // apply board states
             for (int i = 1; i <= boardSize; i++) {
                 int hVal = (i - 1 < humanSquaresArr.length) ? humanSquaresArr[i - 1] : 0;
                 int cVal = (i - 1 < compSquaresArr.length) ? compSquaresArr[i - 1] : 0;
 
-                // 0 = covered in your representation
                 if (hVal == 0 && !human.isCovered(i)) {
                     human.coverSquare(i);
                 } else if (hVal != 0 && human.isCovered(i)) {
@@ -324,7 +278,6 @@ public class Tournament {
                 }
             }
 
-            // Set whose turn it is
             if (nextPlayer != null) {
                 round.forceSetCurrentPlayer(nextPlayer);
             }

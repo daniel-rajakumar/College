@@ -3,15 +3,6 @@ package com.example.oplcanoga.model;
 import java.util.ArrayList;
 import java.util.List;
 
-
-/**
- * One round of Canoga. Knows about:
- * - two players
- * - board size
- * - whose turn it is
- * - advantage rules (simple version)
- * - winner / score for this round
- */
 public class GameRound {
 
     private final HumanPlayer human;
@@ -25,13 +16,11 @@ public class GameRound {
     private boolean isOver;
     private PlayerId winner;
     private WinType winType;
-    private int winningScore; // points added to winner's tournamentScore
+    private int winningScore;
 
-    // Advantage (handicap) for this round:
     private final AdvantageInfo advantageInfo;
-    private boolean advantageLockActive;  // until advantaged player completes first turn
+    private boolean advantageLockActive;
 
-    // Track whether each player has completed at least one turn this round
     private boolean humanHasMoved = false;
     private boolean computerHasMoved = false;
 
@@ -76,7 +65,6 @@ public class GameRound {
         human.resetBoard(humanAdvSquare);
         computer.resetBoard(compAdvSquare);
 
-        // first-turn flags
         humanHasMoved = false;
         computerHasMoved = false;
     }
@@ -129,27 +117,16 @@ public class GameRound {
         return (id == PlayerId.HUMAN) ? computer : human;
     }
 
-    /**
-     * Explicit turn switch. Controller calls this when a player has no legal moves.
-     */
     public void switchTurn() {
         currentPlayer = (currentPlayer == PlayerId.HUMAN)
                 ? PlayerId.COMPUTER
                 : PlayerId.HUMAN;
     }
 
-    /**
-     * Roll dice for current player.
-     *
-     * @param diceCount 1 or 2
-     */
     public int[] rollForCurrentPlayer(int diceCount) {
         return dice.roll(diceCount);
     }
 
-    /**
-     * Can this player roll one die (7..boardSize covered)?
-     */
     public boolean canRollOneDie(PlayerId playerId) {
         Player p = getPlayer(playerId);
         if (boardSize < 7) return true;
@@ -162,10 +139,6 @@ public class GameRound {
         return true;
     }
 
-    /**
-     * Generate all legal moves for given actor, move type, and dice total.
-     * Restricts combinations to length 1..4.
-     */
     public List<Move> getLegalMoves(PlayerId actorId, MoveType type, int diceTotal) {
         List<Move> result = new ArrayList<>();
         Player actor = getPlayer(actorId);
@@ -229,10 +202,6 @@ public class GameRound {
         return true;
     }
 
-    /**
-     * Apply a move to the board.
-     * NOTE: does NOT switch turns. Controller decides when to switch.
-     */
     public void applyMove(Move move) {
         if (isOver) return;
 
@@ -249,26 +218,22 @@ public class GameRound {
             }
         }
 
-        // Mark that this actor has taken at least one turn (made at least one move)
         if (move.getActor() == PlayerId.HUMAN) {
             humanHasMoved = true;
         } else if (move.getActor() == PlayerId.COMPUTER) {
             computerHasMoved = true;
         }
 
-        // If this was the advantaged player's first completed turn, unlock advantage
         if (advantageLockActive &&
                 advantageInfo != null &&
                 move.getActor() == advantageInfo.advantagedPlayer) {
             advantageLockActive = false;
         }
 
-        // Check if round should end (only after both players have moved at least once)
         checkForRoundEnd(move.getActor());
     }
 
     private void checkForRoundEnd(PlayerId actorId) {
-        // Don't allow the round to end until both players have taken at least one turn
         if (!(humanHasMoved && computerHasMoved)) {
             return;
         }
@@ -291,7 +256,6 @@ public class GameRound {
         }
     }
 
-    // Allow Tournament.deserialize to restore whose turn it is.
     public void forceSetCurrentPlayer(PlayerId id) {
         this.currentPlayer = id;
     }
