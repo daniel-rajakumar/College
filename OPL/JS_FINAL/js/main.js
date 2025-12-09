@@ -4,6 +4,7 @@ import { Tournament } from "./model/Tournament.js";
 import { Dice } from "./model/Dice.js";
 
 const view = new View();
+
 let tournament = null;
 let dice = null;
 let currentRound = null;
@@ -14,10 +15,10 @@ let gameMode = "HvsC";
 // For current turn
 let currentDice = { d1: null, d2: null, sum: null };
 let currentPlayerId = "HUMAN";
-let currentMoveType = null; // "cover" | "uncover"
-let selectedSquares = [];
-let selectionOwner = null; // playerId whose squares are being selected
 let phase = "awaitingRoll"; // "awaitingRoll" | "awaitingMove" | "roundOver"
+
+// For human move modal
+let pendingOptions = null; // { sum, coverOptions, uncoverOptions }
 
 window.addEventListener("DOMContentLoaded", () => {
   wireWelcome();
@@ -56,6 +57,40 @@ function getModeLabel() {
 
 function setPhase(newPhase) {
   phase = newPhase;
+}
+
+/**
+ * Show / hide roll buttons based on:
+ *  - phase
+ *  - whose turn
+ *  - 7..n rule
+ */
+function updateRollButtonsVisibility() {
+  if (!currentRound || phase !== "awaitingRoll" || !isPlayerHumanControlled(currentPlayerId)) {
+    // Hide "Roll 1" and disable both when it's not human's turn or not time to roll
+    view.setRollButtonsVisibility({
+      canRoll1: false,
+      enableRollButtons: false,
+    });
+    return;
+  }
+
+  const player = currentRound.getPlayerById(currentPlayerId);
+  const board = player.board;
+  const n = board.size;
+
+  let allHighCovered = true;
+  for (let i = 7; i <= n; i++) {
+    if (i >= 1 && i <= n && !board.isCovered(i)) {
+      allHighCovered = false;
+      break;
+    }
+  }
+
+  view.setRollButtonsVisibility({
+    canRoll1: allHighCovered,
+    enableRollButtons: true,
+  });
 }
 
 /* ---------- WELCOME SCREEN ---------- */
@@ -137,9 +172,7 @@ function startNewRound(boardSize, firstPlayerId) {
   currentRound = tournament.startNewRound(boardSize, firstPlayerId);
   currentPlayerId = currentRound.currentPlayerId;
   currentDice = { d1: null, d2: null, sum: null };
-  currentMoveType = null;
-  selectedSquares = [];
-  selectionOwner = null;
+  pendingOptions = null;
   setPhase("awaitingRoll");
 
   view.showScreen("game");
@@ -163,16 +196,9 @@ function startNewRound(boardSize, firstPlayerId) {
     currentPlayerId === "HUMAN" ? "Human" : "Computer"
   );
   view.setDiceText({ d1: null, d2: null, sum: null });
-  view.setSelectedSquares([]);
   view.setTurnStatus("Awaiting roll…");
 
-  view.renderBoards(currentRound, {
-    selectedSquares,
-    selectionOwner,
-    enabledPlayerId: isPlayerHumanControlled(currentPlayerId)
-      ? currentPlayerId
-      : null,
-  });
+  view.renderBoards(currentRound);
 
   view.appendLog(
     `Round ${tournament.roundNumber} started. First player: ${
@@ -180,89 +206,82 @@ function startNewRound(boardSize, firstPlayerId) {
     }`
   );
 
+  updateRollButtonsVisibility();
+
   // If current player is computer-controlled, auto-play their turn
   maybePlayComputerTurn();
 }
 
-/* ---------- GAME SCREEN ---------- */
+/* ---------- GAME SCREEN + MODAL ---------- */
 
 function wireGame() {
   const btnRoll1 = document.getElementById("btn-roll-1");
   const btnRoll2 = document.getElementById("btn-roll-2");
-  const btnMoveCover = document.getElementById("btn-move-cover");
-  const btnMoveUncover = document.getElementById("btn-move-uncover");
-  const btnClearSelection = document.getElementById("btn-clear-selection");
-  const btnConfirmMove = document.getElementById("btn-confirm-move");
-  const btnHelp = document.getElementById("btn-help");
   const btnQuitRound = document.getElementById("btn-quit-round");
 
-  // Board click – selection
-  const boardsContainer = document.getElementById("boards");
-  boardsContainer.addEventListener("click", (e) => {
-    const target = e.target;
-    if (!target.classList.contains("square")) return;
-    if (phase !== "awaitingMove") return;
-    if (!currentMoveType || !selectionOwner) return;
-
-    // Only allow selecting from the relevant board
-    const playerId = target.dataset.player;
-    const num = Number(target.dataset.number);
-
-    if (playerId !== selectionOwner) {
-      // selecting from wrong board; ignore
-      return;
-    }
-
-    // Toggle selection
-    const idx = selectedSquares.indexOf(num);
-    if (idx === -1) {
-      selectedSquares.push(num);
-    } else {
-      selectedSquares.splice(idx, 1);
-    }
-    view.setSelectedSquares(selectedSquares);
-    view.renderBoards(currentRound, {
-      selectedSquares,
-      selectionOwner,
-      enabledPlayerId: isPlayerHumanControlled(currentPlayerId)
-        ? currentPlayerId
-        : null,
-    });
-  });
+  // Modal elements
+  const modalBtnHelp = document.getElementById("modal-btn-help");
+  const modalBtnCancel = document.getElementById("modal-btn-cancel");
+  const modalBtnConfirm = document.getElementById("modal-btn-confirm");
+  const modalMoveCover = document.getElementById("modal-move-cover");
+  const modalMoveUncover = document.getElementById("modal-move-uncover");
 
   btnRoll1.addEventListener("click", () => handleRollClick(1));
   btnRoll2.addEventListener("click", () => handleRollClick(2));
 
-  btnMoveCover.addEventListener("click", () => handleMoveTypeClick("cover"));
-  btnMoveUncover.addEventListener("click", () => handleMoveTypeClick("uncover"));
-
-  btnClearSelection.addEventListener("click", () => {
-    if (phase !== "awaitingMove") return;
-    selectedSquares = [];
-    view.setSelectedSquares(selectedSquares);
-    view.renderBoards(currentRound, {
-      selectedSquares,
-      selectionOwner,
-      enabledPlayerId: isPlayerHumanControlled(currentPlayerId)
-        ? currentPlayerId
-        : null,
-    });
+  // Modal: switch between Cover / Uncover
+  modalMoveCover.addEventListener("change", () => {
+    if (!pendingOptions || !modalMoveCover.checked) return;
+    view.updateMoveModalOptions("cover", pendingOptions.coverOptions || []);
+  });
+  modalMoveUncover.addEventListener("change", () => {
+    if (!pendingOptions || !modalMoveUncover.checked) return;
+    view.updateMoveModalOptions("uncover", pendingOptions.uncoverOptions || []);
   });
 
-  btnConfirmMove.addEventListener("click", () => {
-    if (phase !== "awaitingMove") return;
-    confirmMove();
-  });
-
-  btnHelp.addEventListener("click", () => {
-    if (phase !== "awaitingMove" || !currentDice.sum) return;
+  // Modal: Help button
+  modalBtnHelp.addEventListener("click", () => {
+    if (!currentRound || !pendingOptions || !currentDice.sum) return;
     const ai = tournament.computer;
-    const suggestion = ai.getHelpSuggestion(currentRound, currentPlayerId, currentDice.sum);
-    view.appendLog(
-      `HELP: Recommended action = ${suggestion.action}, squares = [${suggestion.squares.join(
-        ", "
-      )}]. Reason: ${suggestion.reason}`
+    const suggestion = ai.getHelpSuggestion(
+      currentRound,
+      currentPlayerId,
+      currentDice.sum
     );
+    view.setMoveHelpText(
+      `Recommended: ${suggestion.action.toUpperCase()} [${suggestion.squares.join(
+        ", "
+      )}] – ${suggestion.reason}`
+    );
+  });
+
+  // Modal: Confirm move
+  modalBtnConfirm.addEventListener("click", () => {
+    if (!currentRound || !pendingOptions || phase !== "awaitingMove") return;
+
+    const selection = view.getMoveModalSelection(
+      pendingOptions.coverOptions,
+      pendingOptions.uncoverOptions
+    );
+    if (!selection) {
+      view.setMoveHelpText("Please choose a combination.");
+      return;
+    }
+
+    applyHumanMove(selection.moveType, selection.squares);
+    view.closeMoveModal();
+  });
+
+  // Modal: Cancel (treat as "skip turn" – not ideal by rules, but avoids lock)
+  modalBtnCancel.addEventListener("click", () => {
+    if (!currentRound || !pendingOptions) {
+      view.closeMoveModal();
+      return;
+    }
+    view.appendLog("You skipped your move. Turn ends.");
+    view.closeMoveModal();
+    pendingOptions = null;
+    endTurn();
   });
 
   btnQuitRound.addEventListener("click", () => {
@@ -286,7 +305,7 @@ function handleRollClick(numDice) {
   if (phase !== "awaitingRoll") return;
   if (!isPlayerHumanControlled(currentPlayerId)) return;
 
-  // Check 7..n rule
+  // Check 7..n rule (safety; UI already hides 1-die when illegal)
   const player = currentRound.getPlayerById(currentPlayerId);
   const board = player.board;
   const n = board.size;
@@ -297,12 +316,10 @@ function handleRollClick(numDice) {
       break;
     }
   }
-
   if (numDice === 1 && !allHighCovered) {
     view.appendLog("You may roll ONE die only if squares 7..n are ALL covered.");
     return;
   }
-
   if (numDice !== 1 && numDice !== 2) return;
 
   // Actually roll
@@ -316,7 +333,6 @@ function handleRollClick(numDice) {
     } (sum = ${roll.sum})`
   );
 
-  // Check if there are any options at all
   const coverOptions = currentRound.getCoverOptions(currentPlayerId, roll.sum);
   const uncoverOptions = currentRound.getUncoverOptions(currentPlayerId, roll.sum);
 
@@ -326,119 +342,82 @@ function handleRollClick(numDice) {
     return;
   }
 
-  // Move phase now
-  currentMoveType = null;
-  selectedSquares = [];
-  selectionOwner = null;
+  // Enter move-selection phase via modal
+  pendingOptions = {
+    sum: roll.sum,
+    coverOptions,
+    uncoverOptions,
+  };
   setPhase("awaitingMove");
-  view.setSelectedSquares(selectedSquares);
-  view.setTurnStatus("Choose Cover or Uncover, then select squares.");
+  view.setTurnStatus("Choose your move.");
+  view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
+  view.openMoveModal(roll.sum, coverOptions, uncoverOptions);
 }
 
-function handleMoveTypeClick(type) {
-  if (phase !== "awaitingMove") return;
+/**
+ * Apply a human move selected from the modal.
+ * @param {"cover"|"uncover"} moveType
+ * @param {number[]} squares
+ */
+function applyHumanMove(moveType, squares) {
+  if (!currentRound) return;
   if (!currentDice.sum) return;
-  if (!["cover", "uncover"].includes(type)) return;
 
-  currentMoveType = type;
-  selectedSquares = [];
-  selectionOwner = type === "cover" ? currentPlayerId : currentRound.getOpponentId(currentPlayerId);
-
-  view.setSelectedSquares(selectedSquares);
-  view.renderBoards(currentRound, {
-    selectedSquares,
-    selectionOwner,
-    enabledPlayerId: isPlayerHumanControlled(currentPlayerId)
-      ? currentPlayerId
-      : null,
-  });
-
-  view.setTurnStatus(
-    `Selected move: ${type.toUpperCase()}. Click squares on the ${
-      selectionOwner === "HUMAN" ? "Human" : "Computer"
-    } board that add up to ${currentDice.sum}.`
-  );
-}
-
-function confirmMove() {
-  if (!currentMoveType || !currentDice.sum) return;
-  if (selectedSquares.length === 0) {
-    view.appendLog("No squares selected.");
-    return;
-  }
-
-  const sum = selectedSquares.reduce((a, b) => a + b, 0);
-  if (sum !== currentDice.sum) {
-    view.appendLog(
-      `Invalid move: sum of selected squares = ${sum}, but dice sum = ${currentDice.sum}.`
-    );
-    return;
-  }
-
-  // Validate using getCoverOptions / getUncoverOptions
+  // For safety, ensure combo is legal according to model
   const options =
-    currentMoveType === "cover"
+    moveType === "cover"
       ? currentRound.getCoverOptions(currentPlayerId, currentDice.sum)
       : currentRound.getUncoverOptions(currentPlayerId, currentDice.sum);
 
-  const sortedSelected = [...selectedSquares].sort((a, b) => a - b);
+  const sortedSel = [...squares].sort((a, b) => a - b);
   const exists = options.some((combo) => {
     const s = [...combo].sort((a, b) => a - b);
-    if (s.length !== sortedSelected.length) return false;
-    return s.every((v, i) => v === sortedSelected[i]);
+    if (s.length !== sortedSel.length) return false;
+    return s.every((v, i) => v === sortedSel[i]);
   });
 
   if (!exists) {
     view.appendLog(
-      "Invalid combination: this set of squares is not allowed based on the rules and current board."
+      "Selected combination is no longer valid based on current board. Try again."
     );
     return;
   }
 
-  // Apply move
-  if (currentMoveType === "cover") {
-    currentRound.applyCoverMove(currentPlayerId, selectedSquares);
+  if (moveType === "cover") {
+    currentRound.applyCoverMove(currentPlayerId, squares);
     view.appendLog(
-      `${currentPlayerId === "HUMAN" ? "Human" : "Computer"} covers squares [${selectedSquares.join(
+      `${currentPlayerId === "HUMAN" ? "Human" : "Computer"} covers squares [${squares.join(
         ", "
       )}]`
     );
   } else {
-    currentRound.applyUncoverMove(currentPlayerId, selectedSquares);
+    currentRound.applyUncoverMove(currentPlayerId, squares);
     view.appendLog(
-      `${currentPlayerId === "HUMAN" ? "Human" : "Computer"} uncovers opponent squares [${selectedSquares.join(
+      `${currentPlayerId === "HUMAN" ? "Human" : "Computer"} uncovers opponent squares [${squares.join(
         ", "
       )}]`
     );
   }
 
-  // Update boards
-  view.renderBoards(currentRound, {
-    selectedSquares: [],
-    selectionOwner: null,
-    enabledPlayerId: isPlayerHumanControlled(currentPlayerId)
-      ? currentPlayerId
-      : null,
-  });
-  view.setSelectedSquares([]);
-  selectedSquares = [];
-  currentMoveType = null;
-  selectionOwner = null;
+  view.renderBoards(currentRound);
+  pendingOptions = null;
 
-  // Check for round end
   if (currentRound.roundOver) {
     handleRoundFinished();
     return;
   }
 
-  // Move completed; user must roll again
+  // Human must roll again
   setPhase("awaitingRoll");
   currentDice = { d1: null, d2: null, sum: null };
   view.setDiceText(currentDice);
   view.setTurnStatus("Move completed. Roll again.");
+  updateRollButtonsVisibility();
 }
 
 function endTurn() {
+  if (!currentRound) return;
+
   currentRound.notifyTurnEnded(currentPlayerId);
 
   if (currentRound.roundOver) {
@@ -451,25 +430,17 @@ function endTurn() {
   currentPlayerId = currentRound.currentPlayerId;
 
   currentDice = { d1: null, d2: null, sum: null };
-  currentMoveType = null;
-  selectedSquares = [];
-  selectionOwner = null;
+  pendingOptions = null;
   setPhase("awaitingRoll");
 
   view.setDiceText(currentDice);
-  view.setSelectedSquares(selectedSquares);
   view.setCurrentPlayerLabel(
     currentPlayerId === "HUMAN" ? "Human" : "Computer"
   );
   view.setTurnStatus("New turn. Awaiting roll…");
 
-  view.renderBoards(currentRound, {
-    selectedSquares,
-    selectionOwner,
-    enabledPlayerId: isPlayerHumanControlled(currentPlayerId)
-      ? currentPlayerId
-      : null,
-  });
+  view.renderBoards(currentRound);
+  updateRollButtonsVisibility();
 
   maybePlayComputerTurn();
 }
@@ -477,7 +448,8 @@ function endTurn() {
 function maybePlayComputerTurn() {
   if (!currentRound) return;
   if (!isPlayerHumanControlled(currentPlayerId)) {
-    // Auto-play full turn for this player using AI
+    // Disable roll buttons while AI is thinking
+    view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
     playComputerFullTurn();
   }
 }
@@ -527,11 +499,7 @@ function playComputerFullTurn() {
       );
     }
 
-    view.renderBoards(currentRound, {
-      selectedSquares: [],
-      selectionOwner: null,
-      enabledPlayerId: null,
-    });
+    view.renderBoards(currentRound);
 
     if (currentRound.roundOver) {
       break;
@@ -548,9 +516,7 @@ function playComputerFullTurn() {
     currentRound.switchTurn();
     currentPlayerId = currentRound.currentPlayerId;
     currentDice = { d1: null, d2: null, sum: null };
-    currentMoveType = null;
-    selectedSquares = [];
-    selectionOwner = null;
+    pendingOptions = null;
     setPhase("awaitingRoll");
 
     view.setDiceText(currentDice);
@@ -559,13 +525,8 @@ function playComputerFullTurn() {
     );
     view.setTurnStatus("New turn. Awaiting roll…");
 
-    view.renderBoards(currentRound, {
-      selectedSquares,
-      selectionOwner,
-      enabledPlayerId: isPlayerHumanControlled(currentPlayerId)
-        ? currentPlayerId
-        : null,
-    });
+    view.renderBoards(currentRound);
+    updateRollButtonsVisibility();
 
     // If next player is also computer-controlled (CvsC mode), recurse
     if (!isPlayerHumanControlled(currentPlayerId)) {
@@ -611,7 +572,6 @@ function wireEnd() {
     // Go back to setup to pick board size / roll-off again,
     // carrying forward tournament scores and advantage.
     view.showScreen("setup");
-    // Reset rolloff text so user rolls again
     const defaultText = "Click 'Roll Dice' to determine the first player.";
     view.setRolloffText(defaultText, false);
   });

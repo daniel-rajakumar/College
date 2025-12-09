@@ -253,3 +253,147 @@ button:active:not(:disabled) {
     gap: 0.75rem;
   }
 }
+
+/* ... existing global styles above ... */
+
+/* GAME LAYOUT: boards on top, controls under, log at bottom */
+.game-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.board-section {
+  /* top section */
+}
+
+.controls-under-boards {
+  /* controls under boards */
+}
+
+.log-section {
+}
+
+/* Boards */
+.boards-wrapper {
+  margin-top: 0.5rem;
+}
+
+.board-wrapper {
+  margin-bottom: 0.75rem;
+}
+
+.board-row {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.square {
+  min-width: 2rem;
+  padding: 0.25rem 0.4rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  border: 1px solid #4b5563;
+  background: #111827;
+  cursor: default; /* no click selection now */
+}
+
+.square.covered {
+  background: #059669;
+  border-color: #34d399;
+  color: #022c22;
+}
+
+/* Controls under boards */
+#dice-area p {
+  margin: 0.25rem 0;
+}
+
+#dice-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Log */
+.log {
+  height: 200px;
+  overflow-y: auto;
+  background: #020617;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #1f2937;
+  font-size: 0.9rem;
+}
+
+.log p {
+  margin: 0.1rem 0;
+}
+
+/* MODAL */
+.modal.hidden {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #020617;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  width: min(420px, 90vw);
+  border: 1px solid #374151;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.modal-move-type {
+  margin: 0.5rem 0;
+}
+
+.modal-move-type label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 0.75rem;
+}
+
+.modal-options {
+  margin: 0.5rem 0;
+}
+
+.modal-options select {
+  width: 100%;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.4rem;
+  border: 1px solid #4b5563;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.modal-buttons {
+  justify-content: flex-end;
+}
+
+/* responsive minor tweak */
+@media (max-width: 768px) {
+  .top-bar {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}

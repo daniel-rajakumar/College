@@ -3,11 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>Canoga (JS Version)</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
     <div id="app">
-
       <!-- WELCOME SCREEN -->
       <section id="screen-welcome" class="screen active">
         <h1>Canoga</h1>
@@ -30,15 +29,23 @@
 
         <div class="setup-group">
           <span>Game Mode:</span>
-          <label><input type="radio" name="mode" value="HvsC" checked /> Human vs Computer</label>
+          <label
+            ><input type="radio" name="mode" value="HvsC" checked />
+            Human vs Computer</label
+          >
           <label><input type="radio" name="mode" value="HvsH" /> Human vs Human</label>
-          <label><input type="radio" name="mode" value="CvsC" /> Computer vs Computer</label>
+          <label
+            ><input type="radio" name="mode" value="CvsC" /> Computer vs
+            Computer</label
+          >
         </div>
 
         <div class="setup-group rolloff">
           <h3>Roll-off: Who goes first?</h3>
           <button id="btn-rolloff" class="primary">Roll Dice</button>
-          <div id="rolloff-result" class="panel"></div>
+          <div id="rolloff-result" class="panel">
+            Click "Roll Dice" to determine the first player.
+          </div>
         </div>
 
         <div class="setup-actions">
@@ -71,11 +78,15 @@
         </header>
 
         <main class="game-layout">
+          <!-- Boards -->
           <section class="board-section">
             <h3>Boards</h3>
-            <p>Current player: <span id="lbl-current-player"></span></p>
+            <p>
+              Current player:
+              <span id="lbl-current-player"></span>
+            </p>
 
-            <div id="boards">
+            <div class="boards-wrapper">
               <div class="board-wrapper">
                 <h4>Human</h4>
                 <div id="board-human" class="board-row"></div>
@@ -87,39 +98,23 @@
             </div>
           </section>
 
-          <section class="controls-section">
-            <h3>Controls</h3>
-
+          <!-- Controls UNDER boards -->
+          <section class="controls-under-boards">
             <div id="dice-area" class="panel">
               <p>Dice: <span id="lbl-dice">–</span></p>
               <p>Sum: <span id="lbl-dice-sum">–</span></p>
 
               <div id="dice-buttons">
-                <button id="btn-roll-1" class="primary">Roll 1 Die</button>
+                <button id="btn-roll-1" class="primary" style="display: none;">
+                  Roll 1 Die
+                </button>
                 <button id="btn-roll-2" class="primary">Roll 2 Dice</button>
               </div>
-            </div>
-
-            <div id="move-area" class="panel">
-              <p>Move type:</p>
-              <div class="btn-group">
-                <button id="btn-move-cover">Cover</button>
-                <button id="btn-move-uncover">Uncover</button>
-              </div>
-              <p class="hint">Click squares on the board to select them.</p>
-              <p>Selected squares: <span id="lbl-selected-squares">[]</span></p>
-              <div class="btn-group">
-                <button id="btn-clear-selection">Clear Selection</button>
-                <button id="btn-confirm-move" class="primary">Confirm Move</button>
-              </div>
-              <button id="btn-help" class="secondary">Ask for Help</button>
-            </div>
-
-            <div id="turn-info" class="panel">
               <p id="lbl-turn-status">Awaiting roll…</p>
             </div>
           </section>
 
+          <!-- Log -->
           <section class="log-section">
             <h3>Log</h3>
             <div id="log" class="log"></div>
@@ -129,6 +124,50 @@
         <footer class="bottom-bar">
           <button id="btn-quit-round">Quit Tournament</button>
         </footer>
+
+        <!-- MOVE MODAL -->
+        <div id="move-modal" class="modal hidden">
+          <div class="modal-backdrop"></div>
+          <div class="modal-content">
+            <h3>Choose Your Move</h3>
+            <p>Dice sum: <span id="modal-dice-sum">0</span></p>
+
+            <div class="modal-move-type">
+              <label>
+                <input
+                  type="radio"
+                  id="modal-move-cover"
+                  name="modal-move-type"
+                  value="cover"
+                  checked
+                />
+                Cover own squares
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  id="modal-move-uncover"
+                  name="modal-move-type"
+                  value="uncover"
+                />
+                Uncover opponent squares
+              </label>
+            </div>
+
+            <div class="modal-options">
+              <label for="modal-move-options">Options:</label>
+              <select id="modal-move-options"></select>
+            </div>
+
+            <p id="modal-help-text" class="hint"></p>
+
+            <div class="btn-group modal-buttons">
+              <button id="modal-btn-help" class="secondary">Help</button>
+              <button id="modal-btn-cancel">Cancel</button>
+              <button id="modal-btn-confirm" class="primary">Confirm Move</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- END / ROUND SUMMARY SCREEN -->
