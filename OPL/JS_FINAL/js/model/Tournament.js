@@ -1,69 +1,236 @@
+
 // js/model/Tournament.js
-import { Board } from './Board.js';
-import { HumanPlayer } from './HumanPlayer.js';
-import { ComputerPlayer } from './ComputerPlayer.js';
-import { GameRound } from './GameRound.js';
+
+// Tournament = tournament-wide state: scores + who starts + advantage system.
+// Advantage flags are static so Human/Computer can query them from anywhere.
 
 export class Tournament {
-  constructor(boardSize, dice) {
-    this.boardSize = boardSize;
-    this.dice = dice;
+  // Who gets advantage / owns advantage
+  static Side = {
+    None: "None",
+    Human: "Human",
+    Computer: "Computer",
+  };
 
-    this.human = new HumanPlayer(new Board(boardSize));
-    this.computer = new ComputerPlayer(new Board(boardSize));
+  // --- Static advantage state, shared across the whole app ---
+  static advantageApplied = false;
+  static advantageSquare = 0;
 
-    this.currentRound = null;
+  static protectHumanAdvantage = false;
+  static protectComputerAdvantage = false;
+  static advantageOwner = Tournament.Side.None;
 
-    // handicap
-    this.advantageOwner = null;   // 'Human' or 'Computer'
-    this.advantageSquare = null;  // 1..9
-    this.lastWinnerWasFirst = false;
+  constructor() {
+    this.tournamentScoreHuman = 0;
+    this.tournamentScoreComputer = 0;
+
+    // who should act next (used by GameRound when continuing / next round)
+    this.isHumanTurn = true;
+    this.firstPlayerIsHuman = true;
+
+    // queued advantage for NEXT round
+    this.pendingAdvantageSquare = 0;
+    this.pendingAdvantageFor = Tournament.Side.None;
   }
 
-  startNewRound() {
-    // new boards each round
-    this.human.board = new Board(this.boardSize);
-    this.computer.board = new Board(this.boardSize);
+  // ---------- Simple getters/setters for turn metadata ----------
 
-    // apply advantage if any
-    if (this.advantageOwner && this.advantageSquare != null) {
-      const target =
-        this.advantageOwner === 'Human' ? this.human.board : this.computer.board;
-      target.cover(this.advantageSquare);
+  getIsHumanTurn() {
+    return this.isHumanTurn;
+  }
+
+  setIsHumanTurn(h) {
+    this.isHumanTurn = !!h;
+  }
+
+  getFirstPlayerIsHuman() {
+    return this.firstPlayerIsHuman;
+  }
+
+  setFirstPlayerIsHuman(isHuman) {
+    this.firstPlayerIsHuman = !!isHuman;
+  }
+
+  // ---------- Advantage: shared static flags ----------
+
+  static getAdvantageApplied() {
+    return Tournament.advantageApplied;
+  }
+
+  static getAdvantageSquare() {
+    return Tournament.advantageSquare;
+  }
+
+  static isHumanAdvantageProtected() {
+    return Tournament.protectHumanAdvantage;
+  }
+
+  static isComputerAdvantageProtected() {
+    return Tournament.protectComputerAdvantage;
+  }
+
+  static getAdvantageOwner() {
+    return Tournament.advantageOwner;
+  }
+
+  static clearAdvantageProtectionForHuman() {
+    Tournament.protectHumanAdvantage = false;
+    if (!Tournament.protectComputerAdvantage) {
+      Tournament.advantageApplied = false;
+      Tournament.advantageOwner = Tournament.Side.None;
     }
-
-    this.currentRound = new GameRound(this.human, this.computer, this.dice);
-    this.currentRound.determineFirstPlayer();
   }
 
-  finishRound() {
-    const roundScore = this.currentRound.computeRoundScore();
-    const winner = this.currentRound.winner;
-    winner.addScore(roundScore);
+  static clearAdvantageProtectionForComputer() {
+    Tournament.protectComputerAdvantage = false;
+    if (!Tournament.protectHumanAdvantage) {
+      Tournament.advantageApplied = false;
+      Tournament.advantageOwner = Tournament.Side.None;
+    }
+  }
 
-    // compute new advantage
-    const digitSum = String(roundScore)
-      .split('')
-      .map(Number)
-      .reduce((a, b) => a + b, 0);
+  // ---------- Advantage helpers (instance + static mix) ----------
 
-    const winnerWasFirst =
-      this.currentRound.firstPlayer === this.currentRound.winner.name;
-    this.lastWinnerWasFirst = winnerWasFirst;
+  static calculateAdvantageSquare(winningScore) {
+    let sum = 0;
+    let score = Math.max(0, Math.floor(winningScore));
+    while (score > 0) {
+      sum += score % 10;
+      score = Math.floor(score / 10);
+    }
+    return sum;
+  }
 
-    if (winnerWasFirst) {
-      // advantage goes to opponent
-      this.advantageOwner = winner === this.human ? 'Computer' : 'Human';
+  /**
+   * Called at end of a round to decide who gets the advantage next round.
+   * Does NOT actually cover any square yet; that happens in applyAdvantageToNewRound().
+   *
+   * @param {boolean} winnerWasFirstPlayer
+   * @param {boolean} winnerIsHuman
+   * @param {number} winningScore - score used to compute advantage square
+   */
+  applyHandicap(winnerWasFirstPlayer, winnerIsHuman, winningScore) {
+    const advSquare = Tournament.calculateAdvantageSquare(winningScore);
+    Tournament.advantageSquare = advSquare;
+
+    let forWhom;
+    if (winnerWasFirstPlayer) {
+      // winner started -> OTHER side gets advantage next round
+      forWhom = winnerIsHuman ? Tournament.Side.Computer : Tournament.Side.Human;
     } else {
-      // winner keeps advantage
-      this.advantageOwner = winner.name;
+      // winner did not start -> WINNER gets advantage
+      forWhom = winnerIsHuman ? Tournament.Side.Human : Tournament.Side.Computer;
     }
-    this.advantageSquare = digitSum; // 0..9, fits rubric example with 27->9 :contentReference[oaicite:8]{index=8}
+
+    this.pendingAdvantageSquare = advSquare;
+    this.pendingAdvantageFor = forWhom;
+
+    console.log(
+      `[Advantage queued for next round] Square ${advSquare} -> ${
+        forWhom === Tournament.Side.Human ? "Human" : "Computer"
+      }`
+    );
   }
 
-  getWinnerOfTournament() {
-    if (this.human.totalScore > this.computer.totalScore) return this.human;
-    if (this.computer.totalScore > this.human.totalScore) return this.computer;
-    return null; // draw
+  /**
+   * Call this right after you create new Boards for a round.
+   * This actually covers the advantage square and turns on protection flags.
+   *
+   * @param {Board} humanBoard
+   * @param {Board} computerBoard
+   */
+  applyAdvantageToNewRound(humanBoard, computerBoard) {
+    // reset per-round flags
+    Tournament.advantageApplied = false;
+    Tournament.advantageOwner = Tournament.Side.None;
+    Tournament.protectHumanAdvantage = false;
+    Tournament.protectComputerAdvantage = false;
+
+    if (
+      this.pendingAdvantageFor === Tournament.Side.None ||
+      this.pendingAdvantageSquare <= 0
+    ) {
+      return;
+    }
+
+    const square = this.pendingAdvantageSquare;
+
+    if (this.pendingAdvantageFor === Tournament.Side.Human) {
+      humanBoard.coverSquare(square);
+      Tournament.protectHumanAdvantage = true;
+      Tournament.advantageOwner = Tournament.Side.Human;
+    } else {
+      computerBoard.coverSquare(square);
+      Tournament.protectComputerAdvantage = true;
+      Tournament.advantageOwner = Tournament.Side.Computer;
+    }
+
+    Tournament.advantageApplied = true;
+
+    // clear queue
+    this.pendingAdvantageSquare = 0;
+    this.pendingAdvantageFor = Tournament.Side.None;
+  }
+
+  // ---------- Scores ----------
+
+  /**
+   * Update tournament scores based on a round result.
+   * Mirrors your C++ logic.
+   */
+  updateScores(
+    humanWonByCover,
+    humanWonByUncover,
+    computerWonByCover,
+    computerWonByUncover,
+    humanScore,
+    computerScore
+  ) {
+    if (humanWonByCover) {
+      this.tournamentScoreHuman += computerScore;
+    }
+    if (humanWonByUncover) {
+      this.tournamentScoreHuman += humanScore;
+    }
+    if (computerWonByCover) {
+      this.tournamentScoreComputer += humanScore;
+    }
+    if (computerWonByUncover) {
+      this.tournamentScoreComputer += computerScore;
+    }
+  }
+
+  getScores() {
+    return {
+      human: this.tournamentScoreHuman,
+      computer: this.tournamentScoreComputer,
+    };
+  }
+
+  logScoreBoard() {
+    const { human, computer } = this.getScores();
+    console.log("\n~~~~~~~~~[SCORE BOARD]~~~~~~~~~~");
+    console.log("Your Score: " + human);
+    console.log("Computer's Score: " + computer);
+    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+  }
+
+  declareTournamentWinner() {
+    const { human, computer } = this.getScores();
+
+    if (human > computer) {
+      console.log(`You win the tournament with a score of ${human}!`);
+    } else if (computer > human) {
+      console.log(`Computer wins the tournament with a score of ${computer}!`);
+    } else {
+      console.log("The tournament is a draw!");
+    }
   }
 }
+
+
+
+
+
+
+

@@ -1,36 +1,114 @@
+
 // js/model/Board.js
+
 export class Board {
-  constructor(size) {
-    this.size = size;            // 9,10,11
-    this.squares = [];
-    for (let i = 1; i <= size; i++) {
-      this.squares.push(i);      // i if uncovered, 0 if covered (matches spec) :contentReference[oaicite:2]{index=2}
+  static ONE_DIE_RULE_START = 7; // 1-die allowed when this..size are covered
+
+  constructor(n = 0) {
+    this.size = n;
+    this.squares = Array(n).fill(false); // false = uncovered, true = covered
+  }
+
+  coverSquare(square) {
+    if (square >= 1 && square <= this.size && !this.squares[square - 1]) {
+      this.squares[square - 1] = true;
+      return true;
     }
+    return false;
   }
 
-  isCovered(square) {
-    return this.squares[square - 1] === 0;
+  uncoverSquare(square) {
+    if (square >= 1 && square <= this.size && this.squares[square - 1]) {
+      this.squares[square - 1] = false;
+      return true;
+    }
+    return false;
   }
 
-  cover(square) {
-    this.squares[square - 1] = 0;
+  isSquareCovered(square) {
+    if (square >= 1 && square <= this.size) {
+      return this.squares[square - 1];
+    }
+    return false;
   }
 
-  uncover(square) {
-    this.squares[square - 1] = square;
+  getSize() {
+    return this.size;
   }
 
   allCovered() {
-    return this.squares.every(v => v === 0);
+    return this.squares.every(sq => sq === true);
   }
 
   allUncovered() {
-    return this.squares.every((v, i) => v === i + 1);
+    return this.squares.every(sq => sq === false);
   }
 
-  clone() {
-    const b = new Board(this.size);
-    b.squares = [...this.squares];
-    return b;
+  getUncoveredSum() {
+    let sum = 0;
+    for (let i = 1; i <= this.size; ++i) {
+      if (!this.isSquareCovered(i)) sum += i;
+    }
+    return sum;
+  }
+
+  getCoveredSum() {
+    let sum = 0;
+    for (let i = 1; i <= this.size; ++i) {
+      if (this.isSquareCovered(i)) sum += i;
+    }
+    return sum;
+  }
+
+  /**
+   * Return array of combinations, each combination is an array<int>.
+   * forCovering = true  -> choose uncovered squares
+   * forCovering = false -> choose covered squares (for uncovering)
+   */
+  findValidCombinations(sum, forCovering) {
+    const results = [];
+
+    const helper = (remaining, start, current) => {
+      if (remaining === 0) {
+        results.push([...current]);
+        return;
+      }
+      for (let i = start; i <= this.size; ++i) {
+        const covered = this.isSquareCovered(i);
+        if (forCovering && covered) continue;
+        if (!forCovering && !covered) continue;
+
+        if (i > remaining) break;
+
+        current.push(i);
+        helper(remaining - i, i + 1, current);
+        current.pop();
+      }
+    };
+
+    helper(sum, 1, []);
+    return results;
+  }
+
+  isValidCombination(combination, forCovering) {
+    for (const square of combination) {
+      const covered = this.isSquareCovered(square);
+      if ((forCovering && covered) || (!forCovering && !covered)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  canThrowOneDie() {
+    for (let i = Board.ONE_DIE_RULE_START; i <= this.size; ++i) {
+      if (!this.isSquareCovered(i)) return false;
+    }
+    return true;
   }
 }
+
+
+
+
+
