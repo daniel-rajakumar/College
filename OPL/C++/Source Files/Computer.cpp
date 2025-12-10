@@ -1,48 +1,25 @@
-//
-// Created by Daniel Rajakumar on 2/10/25.
-//
-
 #include "../Header Files/Computer.h"
 #include <iostream>
 #include <string>
 #include "../Header Files/Tournament.h"
 #include "../Header Files/TextUI.h"
-
+#include <random>
 
 using namespace std;
 using namespace ui;
 
-/**
- * @brief Constructs a Computer object.
- * 
- * @param b Reference to the computer's board.
- * @param humanBoard Reference to the human player's board.
- */
 Computer::Computer(Board& b, Board& humanBoard)
     : Player(b, false), boardView(b, "Computer"), humanBoardView(humanBoard, "Human"), humanBoard(humanBoard) {}
-
-/**
- * @brief Takes a turn for the computer player.
- * 
- * @return True if the turn was successful, false otherwise.
- */
-#include "../Header Files/Computer.h"
-#include <iostream>
-#include <string>
-#include <cstdlib>            // <-- add this for std::rand
-#include "../Header Files/Tournament.h"
-
-using namespace std;
 
 bool Computer::takeTurn() {
     using std::cout; using std::cin; using std::endl;
 
-    // ---- input helpers (declare once, used every roll) ----
     auto readYN = [&]()->char{
         char c;
         while (true) {
             if (cin >> c) {
-                c = std::tolower(c);
+                int tmp = std::tolower(static_cast<unsigned char>(c));
+                c = static_cast<char>(tmp);
                 if (c=='y' || c=='n') return c;
             }
             cin.clear();
@@ -79,11 +56,9 @@ bool Computer::takeTurn() {
         }
     };
 
-    // ======= FULL COMPUTER TURN (loop rolls until stuck) =======
     while (true) {
         section("Computer Turn");
 
-        // Ask each roll whether to drive manually (mirrors Human flow)
         cout << "Do you want to enter the die manually for the computer? (y/n): ";
         const char manual = readYN();
 
@@ -109,11 +84,9 @@ bool Computer::takeTurn() {
                  << (diceCount==2 ? std::to_string(d2)+" = " : "")
                  << sum << "\n";
 
-            // compute options
-            auto coverCombos   = board.findValidCombinations(sum, /*cover=*/true);
-            auto uncoverCombos = humanBoard.findValidCombinations(sum, /*cover=*/false);
+            auto coverCombos   = board.findValidCombinations(sum, /*forCovering=*/true);
+            auto uncoverCombos = humanBoard.findValidCombinations(sum, /*forCovering=*/false);
 
-            // filter uncover by one-turn protection on the human advantage
             if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
                 for (auto it = uncoverCombos.begin(); it != uncoverCombos.end(); ) {
                     if (it->contains(Tournament::getAdvantageSquare())) it = uncoverCombos.erase(it);
@@ -123,15 +96,15 @@ bool Computer::takeTurn() {
 
             if (coverCombos.empty() && uncoverCombos.empty()) {
                 cout << "Computer has no legal moves for this roll. Its turn ends.\n";
-                return true; // end of the entire computer turn
+                return true;
             }
 
-            // choose cover/uncover like human
             char cu;
             while (true) {
                 cout << "Do you want the computer to (c)over its squares or (u)ncover yours? (c/u): ";
                 if (cin >> cu) {
-                    cu = std::tolower(cu);
+                    int tmp = std::tolower(static_cast<unsigned char>(cu));
+                    cu = static_cast<char>(tmp);
                     if (cu=='c' && !coverCombos.empty()) break;
                     if (cu=='u' && !uncoverCombos.empty()) break;
                 }
@@ -159,7 +132,6 @@ bool Computer::takeTurn() {
             }
         }
         else {
-            // ---- AI path for this roll ----
             const bool oneDieAllowed = board.canThrowOneDie();
             auto highestUncovered = [&](const Board& b){ for (int v=b.getSize(); v>=1; --v) if (!b.isSquareCovered(v)) return v; return 0; };
             auto remainingCount   = [&](const Board& b){ int c=0; for (int v=1; v<=b.getSize(); ++v) if (!b.isSquareCovered(v)) ++c; return c; };
@@ -167,10 +139,11 @@ bool Computer::takeTurn() {
             int diceCount = 2;
             if (oneDieAllowed && (highestUncovered(board) <= 6 || remainingCount(board) <= 3)) diceCount = 1;
 
-            const int d1 = (std::rand()%6)+1;
-            const int d2 = (diceCount==2) ? ((std::rand()%6)+1) : 0;
+            static thread_local std::mt19937_64 rng(std::random_device{}());
+            std::uniform_int_distribution<int> dieDist(1,6);
+            const int d1 = dieDist(rng);
+            const int d2 = (diceCount==2) ? dieDist(rng) : 0;
             sum = d1 + d2;
-            // Explain WHY 1 vs 2 dice
             std::string diceWhy;
             if (!oneDieAllowed) {
                 diceWhy = "must use 2 dice (1-die not allowed until 7.." + std::to_string(board.getSize()) + " are covered)";
@@ -180,10 +153,9 @@ bool Computer::takeTurn() {
                 if (hi <= 6)      diceWhy = "1 die because highest remaining square <= 6 (aiming small)";
                 else if (rem <= 3) diceWhy = "1 die because only " + std::to_string(rem) + " squares remain (lower bust risk)";
                 else               diceWhy = "1 die (heuristic)";
-            } else { // diceCount == 2 with 1-die allowed
+            } else {
                 diceWhy = "2 dice to reach sums > 6 (need higher targets)";
             }
-
 
             cout << "Chooses to roll " << (diceCount==1 ? "1 die" : "2 dice")
                  << " " << c(DIM) << "(" << diceWhy << ")" << c(RESET) << ".\n";
@@ -191,12 +163,12 @@ bool Computer::takeTurn() {
             else              cout << "Rolled: " << d1 << " = " << sum
                                    << " " << c(DIM) << "(1-die allowed)" << c(RESET) << "\n";
 
-            const bool canCover   = !board.findValidCombinations(sum, true ).empty();
-            const bool canUncover = !humanBoard.findValidCombinations(sum, false).empty();
+            const bool canCover   = !board.findValidCombinations(sum, /*forCovering=*/true ).empty();
+            const bool canUncover = !humanBoard.findValidCombinations(sum, /*forCovering=*/false).empty();
 
             if (!canCover && !canUncover) {
                 cout << "Computer has no legal moves for this roll. Its turn ends.\n";
-                return true; // end of the entire computer turn
+                return true;
             }
 
             cout << c(GREEN) << "Decision: " << c(RESET)
@@ -206,7 +178,6 @@ bool Computer::takeTurn() {
             else                  uncoverSquares(sum);
         }
 
-        // After one move, show boards then loop to roll again.
         boardView.display(
     Tournament::getAdvantageApplied() &&
     Tournament::getAdvantageOwner() == Tournament::Side::Computer,
@@ -219,28 +190,45 @@ bool Computer::takeTurn() {
 
         std::cout << "\n";
 
-        // If computer already finished its board, we'll exit now; Round will detect win.
         if (board.allCovered()) return true;
     }
 }
 
-
-/**
- * @brief Determines if the computer should cover squares based on the sum.
- * 
- * @param sum The sum of the dice.
- * @return True if the computer should cover squares, false otherwise.
- */
 bool Computer::shouldCover(const int sum) const {
-    const set<set<int>> coverCombinations = board.findValidCombinations(sum, true);
-    return !coverCombinations.empty();
+    const set<set<int>> coverCombos = board.findValidCombinations(sum, true);
+    set<set<int>> uncoverCombos = humanBoard.findValidCombinations(sum, false);
+
+    if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
+        for (auto it = uncoverCombos.begin(); it != uncoverCombos.end(); ) {
+            if (it->contains(Tournament::getAdvantageSquare())) it = uncoverCombos.erase(it);
+            else ++it;
+        }
+    }
+
+    if (coverCombos.empty()) return false;
+    if (uncoverCombos.empty()) return true;
+
+    for (const auto &combo : coverCombos) {
+        Board simulated = board;
+        for (int v : combo) simulated.coverSquare(v);
+        if (simulated.allCovered()) return true;
+    }
+
+    auto bestOf = [](const set<set<int>> &combos){
+        set<int> bestC; size_t bestCount = 0; int bestSum = -1;
+        for (const auto &c : combos) {
+            size_t cnt = c.size(); int s = 0; for (int v : c) s += v;
+            if (cnt > bestCount || (cnt == bestCount && s > bestSum)) { bestC = c; bestCount = cnt; bestSum = s; }
+        }
+        return bestC;
+    };
+
+    const auto bestCover = bestOf(coverCombos);
+    const auto bestUncover = bestOf(uncoverCombos);
+
+    return bestCover.size() >= bestUncover.size();
 }
 
-/**
- * @brief Covers squares on the board based on the sum.
- * 
- * @param sum The sum of the dice.
- */
 void Computer::coverSquares(const int sum) const {
     const set<set<int>> validCombinations = board.findValidCombinations(sum, true);
 
@@ -249,13 +237,28 @@ void Computer::coverSquares(const int sum) const {
         return;
     }
 
-    // Choose the combination with the most squares
+    for (const auto &combination : validCombinations) {
+        Board simulated = board;
+        for (int v : combination) simulated.coverSquare(v);
+        if (simulated.allCovered()) {
+            cout << "Computer chooses a WINNING cover: ";
+            for (int v : combination) cout << v << " ";
+            cout << "\n";
+            for (int v : combination) board.coverSquare(v);
+            return;
+        }
+    }
+
     set<int> selectedCombination;
-    int maxSquares = 0;
+    size_t maxSquares = 0;
+    int maxSum = -1;
     for (const set<int>& combination : validCombinations) {
-        if (combination.size() > maxSquares) {
+        int currentSum = 0;
+        for (int val : combination) currentSum += val;
+        if (combination.size() > maxSquares || (combination.size() == maxSquares && currentSum > maxSum)) {
             selectedCombination = combination;
             maxSquares = combination.size();
+            maxSum = currentSum;
         }
     }
 
@@ -265,17 +268,11 @@ void Computer::coverSquares(const int sum) const {
     }
     cout << "because covering more squares gives it a better chance of winning." << endl;
 
-    // Cover the selected squares
     for (const int square : selectedCombination) {
         board.coverSquare(square);
     }
 }
 
-/**
- * @brief Uncovers squares on the human's board based on the sum.
- * 
- * @param sum The sum of the dice.
- */
 void Computer::uncoverSquares(const int sum) const {
     set<set<int>> validCombinations = humanBoard.findValidCombinations(sum, false);
 
@@ -284,7 +281,6 @@ void Computer::uncoverSquares(const int sum) const {
         return;
     }
 
-    // Remove combinations that include the advantage square if the advantage has been applied
     if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
         for (auto it = validCombinations.begin(); it != validCombinations.end(); ) {
             if (it->contains(Tournament::getAdvantageSquare())) it = validCombinations.erase(it);
@@ -292,44 +288,35 @@ void Computer::uncoverSquares(const int sum) const {
         }
     }
 
-    // Choose the combination with the most squares
     set<int> selectedCombination;
-    int maxSquares = 0;
+    size_t maxSquares = 0;
+    int maxSum = -1;
     for (const set<int>& combination : validCombinations) {
-        if (combination.size() > maxSquares) {
+        int currentSum = 0;
+        for (int val : combination) currentSum += val;
+        if (combination.size() > maxSquares || (combination.size() == maxSquares && currentSum > maxSum)) {
             selectedCombination = combination;
             maxSquares = combination.size();
+            maxSum = currentSum;
         }
     }
 
     cout << "Computer chooses to uncover the following squares: ";
-    for (const int square : selectedCombination) {
-        cout << square << " ";
-    }
+    for (const int square : selectedCombination) cout << square << " ";
     cout << "because uncovering more squares reduces your chances of winning." << endl;
 
-    // Uncover the selected squares on the human's board
     for (const int square : selectedCombination) {
         humanBoard.uncoverSquare(square);
     }
 }
 
-/**
- * @brief Provides help to the human player by suggesting moves.
- * 
- * @param diceSum The sum of the dice.
- * @param humanBoard Reference to the human player's board.
- * @param computerBoard Reference to the computer's board.
- */
 void Computer::provideHelp(const int diceSum,
                            const Board& humanBoard,
                            const Board& computerBoard) const
 {
-    // pretty header
     banner("Help");
     std::cout << "Dice sum: " << diceSum << "\n";
 
-    // helpers
     auto printCombos = [](const std::set<std::set<int>>& combos) {
         int idx = 1;
         for (const auto& c : combos) {
@@ -339,7 +326,6 @@ void Computer::provideHelp(const int diceSum,
         }
     };
     auto best = [](const std::set<std::set<int>>& combos) {
-        // primary: most squares; secondary: highest total
         std::set<int> bestC;
         int bestCount = -1, bestSum = -1;
         for (const auto& c : combos) {
@@ -352,11 +338,9 @@ void Computer::provideHelp(const int diceSum,
         return bestC;
     };
 
-    // compute options
-    const auto coverCombos   = humanBoard.findValidCombinations(diceSum, /*cover=*/true);
-    const auto uncoverCombos = computerBoard.findValidCombinations(diceSum, /*cover=*/false);
+    const auto coverCombos   = humanBoard.findValidCombinations(diceSum, /*forCovering=*/true);
+    const auto uncoverCombos = computerBoard.findValidCombinations(diceSum, /*forCovering=*/false);
 
-    // lists
     section("Cover options (your board)");
     if (coverCombos.empty()) std::cout << "  none\n";
     else printCombos(coverCombos);
@@ -365,7 +349,6 @@ void Computer::provideHelp(const int diceSum,
     if (uncoverCombos.empty()) std::cout << "  none\n";
     else printCombos(uncoverCombos);
 
-    // recommendation
     if (!coverCombos.empty()) {
         const auto rec = best(coverCombos);
         std::cout << "\n" << c(GREEN) << "Recommended: COVER  " << c(RESET);
@@ -384,7 +367,6 @@ void Computer::provideHelp(const int diceSum,
         std::cout << "\nNo legal moves. You must pass.\n";
     }
 
-    // advantage note (one-turn protection)
     if (Tournament::getAdvantageApplied()) {
         std::cout << "\n" << c(YELLOW) << "Note:" << c(RESET)
                   << " advantage square " << Tournament::getAdvantageSquare()
@@ -393,4 +375,3 @@ void Computer::provideHelp(const int diceSum,
 
     hr();
 }
-

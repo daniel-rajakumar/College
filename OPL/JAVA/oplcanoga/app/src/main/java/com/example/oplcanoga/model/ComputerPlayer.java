@@ -19,8 +19,6 @@ public class ComputerPlayer extends Player {
      */
     public Move chooseMove(List<Move> coverMoves, List<Move> uncoverMoves, Player me, Player opponent) {
         
-        // 1. Check strict win by covering own squares
-        // If a move covers all remaining uncovered squares, it's a win.
         int myUncoveredCount = 0;
         for (int i = 1; i <= me.getBoardSize(); i++) {
             if (!me.isCovered(i)) myUncoveredCount++;
@@ -31,8 +29,6 @@ public class ComputerPlayer extends Player {
             }
         }
 
-        // 2. Check strict win by uncovering opponent squares
-        // If a move uncovers all remaining covered squares of opponent, it's a win.
         int oppCoveredCount = 0;
         for (int i = 1; i <= opponent.getBoardSize(); i++) {
             if (opponent.isCovered(i)) oppCoveredCount++;
@@ -43,11 +39,6 @@ public class ComputerPlayer extends Player {
             }
         }
 
-        // 3. Fallback Heuristics
-        // Prefer Cover > Uncover
-        // Then Max Squares
-        // Then Max Value
-        
         List<Move> candidates;
         if (!coverMoves.isEmpty()) {
             candidates = coverMoves;

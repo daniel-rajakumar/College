@@ -1,16 +1,7 @@
-//
-// Created by Daniel Rajakumar on 3/1/25.
-//
-
 #include "../Header Files/Board.h"
 #include <set>
 using namespace std;
 
-/**
- * @brief Covers a specific square on the board.
- * 
- * @param square The index of the square to cover.
- */
 bool Board::coverSquare(const int square) {
     if (square >= 1 && square <= size && !squares[square - 1]) {
         squares[square - 1] = true;
@@ -19,11 +10,6 @@ bool Board::coverSquare(const int square) {
     return false;
 }
 
-/**
- * @brief Uncovers a specific square on the board.
- * 
- * @param square The index of the square to uncover.
- */
 bool Board::uncoverSquare(const int square) {
     if (square >= 1 && square <= size && squares[square - 1]) {
         squares[square - 1] = false;
@@ -32,12 +18,6 @@ bool Board::uncoverSquare(const int square) {
     return false;
 }
 
-/**
- * @brief Checks if a specific square is covered.
- * 
- * @param square The index of the square to check.
- * @return True if the square is covered, false otherwise.
- */
 bool Board::isSquareCovered(const int square) const {
     if (square >= 1 && square <= size) {
         return squares[square - 1];
@@ -45,20 +25,10 @@ bool Board::isSquareCovered(const int square) const {
     return false;
 }
 
-/**
- * @brief Gets the size of the board.
- * 
- * @return The size of the board.
- */
 int Board::getSize() const {
     return size;
 }
 
-/**
- * @brief Checks if all squares on the board are covered.
- * 
- * @return True if all squares are covered, false otherwise.
- */
 bool Board::allCovered() const {
     for (const bool square : squares) {
         if (!square) return false;
@@ -66,11 +36,6 @@ bool Board::allCovered() const {
     return true;
 }
 
-/**
- * @brief Checks if all squares on the board are uncovered.
- * 
- * @return True if all squares are uncovered, false otherwise.
- */
 bool Board::allUncovered() const {
     for (const bool square : squares) {
         if (square) return false;
@@ -78,11 +43,6 @@ bool Board::allUncovered() const {
     return true;
 }
 
-/**
- * @brief Gets the sum of the indices of all uncovered squares.
- * 
- * @return The sum of the indices of all uncovered squares.
- */
 int Board::getUncoveredSum() const {
     int sum = 0;
     for (int i = 1; i <= size; ++i) {
@@ -93,11 +53,6 @@ int Board::getUncoveredSum() const {
     return sum;
 }
 
-/**
- * @brief Gets the sum of the indices of all covered squares.
- * 
- * @return The sum of the indices of all covered squares.
- */
 int Board::getCoveredSum() const {
     int sum = 0;
     for (int i = 1; i <= size; ++i) {
@@ -108,13 +63,6 @@ int Board::getCoveredSum() const {
     return sum;
 }
 
-/**
- * @brief Finds valid combinations of squares that sum to a given value.
- * 
- * @param sum The target sum.
- * @param forCovering Whether the combinations are for covering squares.
- * @return A set of valid combinations of squares that sum to the given value.
- */
 set<set<int>> Board::findValidCombinations(const int sum, const bool forCovering) const {
     set<set<int>> combinations;
     for (int i = 1; i <= size; ++i) {
@@ -135,13 +83,6 @@ set<set<int>> Board::findValidCombinations(const int sum, const bool forCovering
     return combinations;
 }
 
-/**
- * @brief Checks if a given combination of squares is valid.
- * 
- * @param combination The combination of squares to check.
- * @param forCovering Whether the combination is for covering squares.
- * @return True if the combination is valid, false otherwise.
- */
 bool Board::isValidCombination(const set<int>& combination, bool forCovering) const {
     for (const int square : combination) {
         if ((forCovering && isSquareCovered(square)) || (!forCovering && !isSquareCovered(square))) {
@@ -152,7 +93,6 @@ bool Board::isValidCombination(const set<int>& combination, bool forCovering) co
 }
 
 bool Board::canThrowOneDie() const {
-    // You may roll 1 die only if 7..size are already covered
     for (int i = Board::ONE_DIE_RULE_START; i <= size; ++i) {
         if (!isSquareCovered(i)) return false;
     }

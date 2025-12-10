@@ -5,13 +5,6 @@
 
 using namespace std;
 
-/**
- * @brief The main function to start the tournament.
- *
- * This function initializes the random number generator and starts the tournament.
- *
- * @return 0 on successful execution.
- */
 int main() {
     srand(static_cast<unsigned int>(time(nullptr)));
     Board human(11);

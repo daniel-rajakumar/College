@@ -1,6 +1,3 @@
-//
-// Created by Daniel Rajakumar on 3/1/25.
-//
 
 #include "../Header Files/Round.h"
 #include <iostream>
@@ -14,31 +11,16 @@
 using namespace std;
 using namespace ui;
 
-/**
- * @brief Constructs a Round object.
- * 
- * @param p1 Reference to the first player.
- * @param p2 Reference to the second player.
- * @param tournament Reference to the tournament.
- * @param isANewGame Flag indicating if it is a new game.
- */
 Round::Round(Player& p1, Player& p2, Tournament& tournament, const bool isANewGame)
     : player1(p1), player2(p2), isOver(false), tournament(tournament), isANewGame(isANewGame) {}
 
-/**
- * @brief Determines the first player for the round.
- * 
- * @return Reference to the first player.
- */
 Player& Round::determineFirstPlayer() const {
     int player1Roll, player2Roll;
 
     do {
-        // Roll two dice for player1
         player1Roll = (rand() % 6 + 1) + (rand() % 6 + 1);
         cout << "Human rolled: " << player1Roll << endl;
 
-        // Roll two dice for player2
         player2Roll = (rand() % 6 + 1) + (rand() % 6 + 1);
         cout << "Computer rolled: " << player2Roll << endl;
 
@@ -56,19 +38,13 @@ Player& Round::determineFirstPlayer() const {
     return player1;
 }
 
-/**
- * @brief Plays the round.
- */
-// Round.cpp
 void Round::play() const {
-    // decide whose turn it is
     Player* currentPlayer;
     if (tournament.getIsHumanTurn())
         currentPlayer = &player1;
     else
         currentPlayer = &player2;
 
-    // remember who actually started (for handicap logic on NEW rounds)
     const Player* firstPlayer = nullptr;
     if (isANewGame) {
         cout << "~~~~~~~~[Who Goes First?]~~~~~~~~~\n";
@@ -96,12 +72,9 @@ void Round::play() const {
 
     std::cout << "\n";
 
-    // Ensure tournament knows whose turn is next (for save files)
     tournament.setIsHumanTurn(currentPlayer->getIsHuman());
 
-    // If a loaded game is already won, declare immediately before any move
     if (isRoundOver()) {
-        // Determine actual winner from board state
         bool winnerIsHuman = false;
         if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
             winnerIsHuman = true;
@@ -109,7 +82,6 @@ void Round::play() const {
             winnerIsHuman = false;
         }
         bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
-        // Pass a pointer to the actual winner (not strictly used, but clearer)
         const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
                                                 : static_cast<const Player*>(&player2);
         declareWinner(winnerPtr, winnerWasFirst);
@@ -118,10 +90,8 @@ void Round::play() const {
 
 
     while (true) {
-        // Current player plays their whole turn (keeps rolling until stuck)
-        currentPlayer->takeTurn();      // returns only when the player CANNOT move anymore
+        currentPlayer->takeTurn();
 
-        // Clear one-turn advantage protection after that side’s turn completes
         if (Tournament::getAdvantageApplied()) {
             if (Tournament::getAdvantageOwner() == Tournament::Side::Human && currentPlayer->getIsHuman()) {
                 Tournament::clearAdvantageProtectionForHuman();
@@ -130,7 +100,6 @@ void Round::play() const {
             }
         }
 
-        // Round ends if someone covered all
         if (player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
             player1.getBoard().allUncovered() || player2.getBoard().allUncovered()) {
             bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == currentPlayer->getIsHuman());
@@ -138,10 +107,8 @@ void Round::play() const {
             break;
         }
 
-        // Now and only now pass play to the other side
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
 
-        // Update tournament next-turn flag and offer save after EVERY turn
         tournament.setIsHumanTurn(currentPlayer->getIsHuman());
         char saveChoice;
         cout << "Do you want to save the game? (y/n): ";
@@ -158,21 +125,10 @@ void Round::play() const {
 
 }
 
-/**
- * @brief Checks if the round is over.
- * 
- * @return True if the round is over, false otherwise.
- */
 bool Round::isRoundOver() const {
     return player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
            player1.getBoard().allUncovered() || player2.getBoard().allUncovered();
 }
-
-/**
- * @brief Declares the winner of the round.
- * 
- * @param currentPlayer Pointer to the current player.
- */
 
 void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirstPlayer) const {
     if (player1.getBoard().allCovered()) {
@@ -192,21 +148,20 @@ void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirst
         cout << "Human wins by uncovering all the computer's squares!" << endl;
         // humanScore = HUMAN COVERED sum
         tournament.updateScores(false, true, false, false,
-                                player1.getBoard().getCoveredSum(), // <-- change here
+                                player1.getBoard().getCoveredSum(),
                                 0);
         tournament.applyHandicap(winnerWasFirstPlayer,
                                  /*winnerIsHuman=*/true,
-                                 player1.getBoard().getCoveredSum()); // also better here
+                                 player1.getBoard().getCoveredSum());
 
     } else if (player1.getBoard().allUncovered()) {
         cout << "Computer wins by uncovering all the human's squares!" << endl;
-        // computerScore = COMPUTER COVERED sum
         tournament.updateScores(false, false, false, true,
                                 0,
-                                player2.getBoard().getCoveredSum()); // <-- change here
+                                player2.getBoard().getCoveredSum());
         tournament.applyHandicap(winnerWasFirstPlayer,
                                  /*winnerIsHuman=*/false,
-                                 player2.getBoard().getCoveredSum()); // and here
+                                 player2.getBoard().getCoveredSum());
     }
 }
 

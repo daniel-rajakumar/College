@@ -1,30 +1,15 @@
-//
-// Created by Daniel Rajakumar on 2/10/25.
-//
 
 #include "../Header Files/Player.h"
 #include <iostream>
 
 using namespace std;
 
-/**
- * @brief Constructs a Player object.
- * 
- * @param b Reference to the player's board.
- * @param human Flag indicating if the player is human.
- */
 Player::Player(Board& b, const bool human) : board(b), isHuman(human) {}
 
-/**
- * @brief Rolls a die or dice and returns the result.
- * 
- * @return The result of the die roll.
- */
 int Player::rollDie() const {
     int diceSum = 0;
     char choice, isManual;
 
-    // Determine if the player can choose to roll one die
     if (canThrowOneDie() && isHuman) {
         do {
             cout << "Do you want to roll 1 die or 2 dice? (1/2): ";
@@ -34,13 +19,11 @@ int Player::rollDie() const {
         choice = '2';
     }
 
-    // Ask if the player wants to enter the die value manually
     do {
         cout << "Do you want to enter the die manually? (y/n): ";
         cin >> isManual;
     } while (isManual != 'y' && isManual != 'n');
 
-    // Handle manual die entry
     if (isManual == 'y') {
         int choiceOne;
         if (choice == '1') {
@@ -58,7 +41,6 @@ int Player::rollDie() const {
             diceSum = choiceOne + choiceTwo;
         }
     } else {
-        // Generate random die values
         if (choice == '1') {
             diceSum = rand() % 6 + 1;
             if (!isHuman) {
@@ -77,20 +59,10 @@ int Player::rollDie() const {
     return diceSum;
 }
 
-/**
- * @brief Gets the player's board.
- * 
- * @return Reference to the player's board.
- */
 const Board& Player::getBoard() const {
     return board;
 }
 
-/**
- * @brief Checks if the player can throw one die.
- * 
- * @return True if the player can throw one die, false otherwise.
- */
 bool Player::canThrowOneDie() const {
     for (int i = 7; i <= board.getSize(); ++i) {
         if (!board.isSquareCovered(i)) {
@@ -100,11 +72,6 @@ bool Player::canThrowOneDie() const {
     return true;
 }
 
-/**
- * @brief Gets whether the player is human.
- * 
- * @return True if the player is human, false otherwise.
- */
 bool Player::getIsHuman() const {
     return isHuman;
 }

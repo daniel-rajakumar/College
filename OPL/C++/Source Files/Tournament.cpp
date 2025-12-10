@@ -20,41 +20,21 @@ bool Tournament::protectHumanAdvantage   = false;
 bool Tournament::protectComputerAdvantage= false;
 Tournament::Side Tournament::advantageOwner = Tournament::Side::None;
 
-/**
- * @brief Constructs a Tournament object.
- * 
- * @param humanBoard Reference to the human's board.
- * @param computerBoard Reference to the computer's board.
- */
 Tournament::Tournament(Board& humanBoard, Board& computerBoard)
     : isHumanTurn(true), humanBoard(humanBoard), computerBoard(computerBoard), isANewGame(true), firstPlayerIsHuman(true) {
 }
 
-// Static member initialization
 bool Tournament::advantageApplied = false;
 int Tournament::advantageSquare = 0;
 
-/**
- * @brief Gets whether the advantage has been applied.
- * 
- * @return True if the advantage has been applied, false otherwise.
- */
 bool Tournament::getAdvantageApplied() {
     return advantageApplied;
 }
 
-/**
- * @brief Gets the advantage square.
- * 
- * @return The advantage square.
- */
 int Tournament::getAdvantageSquare() {
     return advantageSquare;
 }
 
-/**
- * @brief Clears the console screen.
- */
 void clearScreen() {
 #ifdef _WIN32
     system("cls");
@@ -63,20 +43,10 @@ void clearScreen() {
 #endif
 }
 
-/**
- * @brief Gets whether it is a new game.
- * 
- * @return True if it is a new game, false otherwise.
- */
 bool Tournament::getIsANewGame() const {
     return isANewGame;
 }
 
-/**
- * @brief Gets whether it is the human player's turn.
- * 
- * @return True if it is the human player's turn, false otherwise.
- */
 bool Tournament::getIsHumanTurn() const {
     return isHumanTurn;
 }
@@ -93,17 +63,11 @@ void Tournament::setFirstPlayerIsHuman(bool isHuman) {
     firstPlayerIsHuman = isHuman;
 }
 
-/**
- * @brief Starts the tournament.
- */
 
 void Tournament::start() {
-    // Reuse the member boards of *this* Tournament
-    // Create players that reference those member boards
     Human human(humanBoard, computerBoard);
     Computer computer(computerBoard, humanBoard);
 
-    // LOAD?
     char loadChoice;
     cout << "~~~~~~~~~~~~[LOAD?]~~~~~~~~~~~~" << endl;
     do {
@@ -118,7 +82,6 @@ void Tournament::start() {
 
         if (!loadGame(filename)) {
             cout << "Starting a new game..." << endl;
-            // choose size for a brand-new game
             const int boardSize = promptBoardSize();
             humanBoard    = Board(boardSize);
             computerBoard = Board(boardSize);
@@ -127,11 +90,10 @@ void Tournament::start() {
 
             isANewGame = true;
         } else {
-            // successfully loaded a mid-round save
             isANewGame = false;
         }
     } else {
-        const int boardSize = promptBoardSize();  // ask size for new game
+        const int boardSize = promptBoardSize();
         humanBoard    = Board(boardSize);
         computerBoard = Board(boardSize);
 
@@ -141,7 +103,6 @@ void Tournament::start() {
     }
     cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 
-    // ===== Game loop (ask size again for each *new* round) =====
     char playAgain;
     do {
         Round round(human, computer, *this, isANewGame);  // <- pass *this*, not a second Tournament
@@ -171,14 +132,12 @@ void Tournament::start() {
         if (playAgain == 'y' || playAgain == 'Y') {
             clearScreen();
 
-            // Ask for size at the start of EVERY new round
             const int boardSize = promptBoardSize();
             humanBoard    = Board(boardSize);
             computerBoard = Board(boardSize);
 
             applyAdvantageToNewRound();
 
-            // Reset per-round flags
             isHumanTurn = true;
             isANewGame  = true;
 
@@ -189,16 +148,6 @@ void Tournament::start() {
     declareTournamentWinner();
 }
 
-/**
- * @brief Updates the scores based on the outcome of the round.
- * 
- * @param humanWonByCover True if the human won by covering squares.
- * @param humanWonByUncover True if the human won by uncovering squares.
- * @param computerWonByCover True if the computer won by covering squares.
- * @param computerWonByUncover True if the computer won by uncovering squares.
- * @param humanScore The human player's score.
- * @param computerScore The computer player's score.
- */
 void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByUncover, const bool computerWonByCover, const bool computerWonByUncover, const int humanScore, const int computerScore) {
     if (humanWonByCover) {
         tournamentScoreHuman += computerScore;
@@ -214,9 +163,6 @@ void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByU
     }
 }
 
-/**
- * @brief Declares the winner of the tournament.
- */
 void Tournament::declareTournamentWinner() const {
     if (tournamentScoreHuman > tournamentScoreComputer) {
         cout << "You win the tournament with a score of " << tournamentScoreHuman << "!" << endl;
@@ -227,9 +173,6 @@ void Tournament::declareTournamentWinner() const {
     }
 }
 
-/**
- * @brief Resets the game state.
- */
 void Tournament::resetGame() {
     humanBoard = Board(humanBoard.getSize());
     computerBoard = Board(computerBoard.getSize());
@@ -241,11 +184,6 @@ void Tournament::resetGame() {
     cout << "[ Human: " << tournamentScoreHuman << ", Computer: " << tournamentScoreComputer << " ]" << endl;
 }
 
-/**
- * @brief Saves the game state to a file.
- * 
- * @param filename The name of the file to save the game state to.
- */
 void Tournament::saveGame(const string& filename) const {
     if (ofstream file(filename); file.is_open()) {
         file << "Computer:" << endl;
@@ -282,12 +220,6 @@ void Tournament::saveGame(const string& filename) const {
     }
 }
 
-/**
- * @brief Loads the game state from a file.
- * 
- * @param filename The name of the file to load the game state from.
- * @return True if the game state was successfully loaded, false otherwise.
- */
 bool Tournament::loadGame(const string& filename) {
     if (ifstream file(filename); file.is_open()) {
         string line;
@@ -296,25 +228,21 @@ bool Tournament::loadGame(const string& filename) {
 
         while (getline(file, line)) {
             if (line.find("Computer:") != string::npos) {
-                // ----- read "   Squares: ..." -----
                 getline(file, line);
-                string squares = line.substr(12);          // FIX: was 11; "   Squares: " is 12 chars
+                string squares = line.substr(12);
 
-                // Pass 1: count entries to infer board size
                 {
-                    stringstream ss(squares);              // fresh stream bound to text
+                    stringstream ss(squares);
                     int v;
                     boardSize = 0;
                     while (ss >> v) ++boardSize;
                 }
 
-                // Rebuild boards to that size
                 humanBoard    = Board(boardSize);
                 computerBoard = Board(boardSize);
 
-                // Pass 2: set covered/uncovered state
                 {
-                    stringstream ss(squares);              // rebuild with the same text
+                    stringstream ss(squares);
                     for (int i = 1; i <= boardSize; ++i) {
                         int v; ss >> v;
                         if (v == 0) computerBoard.coverSquare(i);
@@ -360,33 +288,18 @@ bool Tournament::loadGame(const string& filename) {
     }
 }
 
-/**
- * @brief Calculates the advantage square based on the sum of the digits of the winning score.
- * 
- * @param winningScore The winning score.
- * @return The calculated advantage square.
- */
 int Tournament::calculateAdvantageSquare(int winningScore) {
     int sum = 0;
     while (winningScore > 0) {
-        sum += winningScore % 10; // Add the last digit
-        winningScore /= 10; // Remove the last digit
+        sum += winningScore % 10;
+        winningScore /= 10;
     }
     return sum;
 }
 
-/**
- * @brief Applies a handicap based on the winner and winning score.
- * 
- * @param winnerWasFirstPlayer True if the winner was the first player.
- * @param winnerIsHuman
- * @param winningScore The winning score.
- */
 void Tournament::applyHandicap(bool winnerWasFirstPlayer, bool winnerIsHuman, int winningScore) const {
-    // compute the square to award next round
     advantageSquare = calculateAdvantageSquare(winningScore);
 
-    // decide who gets it NEXT round based on winner and starter
     Side forWhom;
     if (winnerWasFirstPlayer) {
         // winner started first -> the OTHER side gets advantage
@@ -396,18 +309,15 @@ void Tournament::applyHandicap(bool winnerWasFirstPlayer, bool winnerIsHuman, in
         forWhom = winnerIsHuman ? Side::Human : Side::Computer;
     }
 
-    // queue for next round
     auto* self = const_cast<Tournament*>(this);
     self->pendingAdvantageSquare = advantageSquare;
     self->pendingAdvantageFor    = forWhom;
 
-    // do NOT cover now; do NOT set advantageApplied now
     cout << "[Advantage queued for next round] Square "
          << advantageSquare << " -> "
          << (forWhom == Side::Human ? "Human" : "Computer") << endl;
 }
 
-// Tournament.cpp
 int Tournament::promptBoardSize() {
     int n;
     while (true) {
@@ -420,9 +330,7 @@ int Tournament::promptBoardSize() {
     }
 }
 
-// Apply any queued advantage to the freshly rebuilt boards and enable one-turn protection
 void Tournament::applyAdvantageToNewRound() {
-    // reset current-round flags
     advantageApplied          = false;
     advantageOwner            = Side::None;
     protectHumanAdvantage     = false;
@@ -432,26 +340,23 @@ void Tournament::applyAdvantageToNewRound() {
 
     if (pendingAdvantageFor == Side::Human) {
         humanBoard.coverSquare(pendingAdvantageSquare);
-        protectHumanAdvantage = true;     // opponent (Computer) cannot uncover this square until Human takes one turn
+        protectHumanAdvantage = true;
         advantageOwner = Side::Human;
-    } else { // Computer
+    } else {
         computerBoard.coverSquare(pendingAdvantageSquare);
-        protectComputerAdvantage = true;  // opponent (Human) cannot uncover this square until Computer takes one turn
+        protectComputerAdvantage = true;
         advantageOwner = Side::Computer;
     }
 
-    advantageApplied = true;              // for your existing UI display
-    // clear "pending" now that it's applied
+    advantageApplied = true;
     pendingAdvantageSquare = 0;
     pendingAdvantageFor    = Side::None;
 }
 
-// Static helpers used by Human/Computer during uncover filtering
 bool Tournament::isHumanAdvantageProtected()    { return protectHumanAdvantage; }
 bool Tournament::isComputerAdvantageProtected() { return protectComputerAdvantage; }
 Tournament::Side Tournament::getAdvantageOwner(){ return advantageOwner; }
 
-// Clear protection after the advantaged side completes their FIRST turn this round
 void Tournament::clearAdvantageProtectionForHuman() {
     protectHumanAdvantage = false;
     if (!protectComputerAdvantage) {
