@@ -8,13 +8,26 @@
 using namespace std;
 using namespace ui;
 
+// *********************************************************************
+// Function Name: Human
+// Purpose: Constructor for Human player.
+// Parameters:
+//   b - Reference to the player's board.
+//   computerBoard - Reference to the opponent's (computer) board.
+// *********************************************************************
 Human::Human(Board& b, Board& computerBoard)
     : Player(b, true), boardView(b, "Human"), computerBoardView(computerBoard, "Computer"), computerBoard(computerBoard) {}
 
+// *********************************************************************
+// Function Name: takeTurn
+// Purpose: Handles the interactive turn for the human player.
+// Returns: true if the turn completes successfully.
+// *********************************************************************
 bool Human::takeTurn() {
     using namespace ui;
     using std::cout; using std::cin;
 
+    // Helper to read Yes/No
     auto readYN = [&]()->char{
         char c;
         while (true) {
@@ -28,6 +41,8 @@ bool Human::takeTurn() {
             cout << "Please enter y or n: ";
         }
     };
+
+    // Helper to read dice input
     auto readDie = [&](const char* prompt)->int{
         int v;
         while (true) {
@@ -42,6 +57,7 @@ bool Human::takeTurn() {
     while (true) {
         section("Human Turn");
 
+        // Step 1: Dice configuration
         cout << "Do you want to enter the die manually? (y/n): ";
         const char manual = readYN();
 
@@ -56,6 +72,7 @@ bool Human::takeTurn() {
             diceCount = 2;
         }
 
+        // Step 2: Roll dice (manual or random)
         int d1 = 0, d2 = 0, sum = 0;
         if (manual == 'y') {
             d1 = readDie("Enter die 1 (1-6): ");
@@ -72,6 +89,7 @@ bool Human::takeTurn() {
         if (diceCount==2) cout << " + " << d2 << " = " << sum << "\n";
         else              cout << " = " << sum << " " << c(DIM) << "(1-die)" << c(RESET) << "\n";
 
+        // Step 3: Check validity of move
         bool canCover   = !board.findValidCombinations(sum, true ).empty();
         bool canUncover = !computerBoard.findValidCombinations(sum, false).empty();
 
@@ -80,6 +98,7 @@ bool Human::takeTurn() {
             return true;
         }
 
+        // Step 4: Display current state
         banner("Current Board State");
         computerBoardView.display(
             Tournament::getAdvantageApplied() &&
@@ -91,6 +110,7 @@ bool Human::takeTurn() {
             Tournament::getAdvantageOwner() == Tournament::Side::Human,
             Tournament::getAdvantageSquare());
 
+        // Step 5: Offer Help
         cout << "Do you want help from the computer? (y/n): ";
         if (readYN()=='y') {
             const Computer helper(computerBoard, board);
@@ -98,6 +118,7 @@ bool Human::takeTurn() {
             cout << "\n";
         }
 
+        // Step 6: Choose Action (Cover vs Uncover)
         char choice = 0;
         while (true) {
             cout << "Cover your squares or uncover the opponent's squares? (c/u): ";
@@ -114,6 +135,7 @@ bool Human::takeTurn() {
         if (choice=='c') coverSquares(sum);
         else             uncoverSquares(sum);
 
+        // Step 7: Display end state
         banner("Board After Your Move");
         computerBoardView.display( Tournament::getAdvantageApplied() &&
                                     Tournament::getAdvantageOwner() == Tournament::Side::Computer,
@@ -128,9 +150,15 @@ bool Human::takeTurn() {
     }
 }
 
+// *********************************************************************
+// Function Name: coverSquares
+// Purpose: Allows the human user to select a combination to cover.
+// Parameters: sum - The dice sum.
+// *********************************************************************
 void Human::coverSquares(const int sum) const {
     using namespace ui;
 
+    // Step 1: Find options
     std::set<std::set<int>> validCombinations = board.findValidCombinations(sum, true);
     section("Valid cover options");
 
@@ -150,6 +178,7 @@ void Human::coverSquares(const int sum) const {
     };
     printCombos(validCombinations);
 
+    // Step 2: Get User Selection
     int choice = 0;
     const int maxIdx = static_cast<int>(validCombinations.size());
     while (true) {
@@ -160,6 +189,7 @@ void Human::coverSquares(const int sum) const {
         std::cout << "Invalid choice. Try again.\n";
     }
 
+    // Step 3: Execute Move
     auto it = validCombinations.begin();
     std::advance(it, choice - 1);
     const std::set<int> selected = *it;
@@ -171,7 +201,13 @@ void Human::coverSquares(const int sum) const {
     std::cout << "\n";
 }
 
+// *********************************************************************
+// Function Name: uncoverSquares
+// Purpose: Allows the human user to select a combination to uncover.
+// Parameters: sum - The dice sum.
+// *********************************************************************
 void Human::uncoverSquares(const int sum) const {
+    // Step 1: Find options
     set<set<int>> validCombinations = computerBoard.findValidCombinations(sum, false);
 
     if (validCombinations.empty()) {
@@ -179,6 +215,7 @@ void Human::uncoverSquares(const int sum) const {
         return;
     }
 
+    // Step 2: Filter Advantage Square
     if (Tournament::getAdvantageApplied() && Tournament::isComputerAdvantageProtected()) {
         for (auto it = validCombinations.begin(); it != validCombinations.end(); ) {
             if (it->contains(Tournament::getAdvantageSquare())) it = validCombinations.erase(it);
@@ -203,6 +240,7 @@ void Human::uncoverSquares(const int sum) const {
         index++;
     }
 
+    // Step 3: Get User Selection
     int choice = 0;
     const int maxIdx = static_cast<int>(validCombinations.size());
     while (true) {
@@ -214,6 +252,7 @@ void Human::uncoverSquares(const int sum) const {
         cout << "Invalid choice. Try again.\n";
     }
 
+    // Step 4: Execute Move
     auto it = validCombinations.begin();
     advance(it, choice - 1);
     const set<int> selectedCombination = *it;

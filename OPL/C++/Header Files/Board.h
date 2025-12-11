@@ -7,11 +7,6 @@ class Board {
 public:
     static constexpr int ONE_DIE_RULE_START = 7;
 
-private:
-    std::vector<bool> squares;
-    int size;
-
-public:
     Board() : squares(), size(0) {}
     explicit Board(int n) : squares(n, false), size(n) {}
     Board(const Board&) = default;
@@ -27,6 +22,13 @@ public:
     std::set<std::set<int>> findValidCombinations(int sum, bool forCovering) const;
     bool isValidCombination(const std::set<int> &combination, bool forCovering) const;
     bool canThrowOneDie() const;
+
+protected:
+    // Protected members (none currently, but place here if added)
+
+private:
+    std::vector<bool> squares;
+    int size;
 };
 
 #endif

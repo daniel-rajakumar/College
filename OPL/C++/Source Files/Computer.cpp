@@ -8,12 +8,25 @@
 using namespace std;
 using namespace ui;
 
+// *********************************************************************
+// Function Name: Computer
+// Purpose: Constructor for the Computer player class.
+// Parameters:
+//   b - Reference to the computer's board.
+//   humanBoard - Reference to the opponent's (human's) board.
+// *********************************************************************
 Computer::Computer(Board& b, Board& humanBoard)
     : Player(b, false), boardView(b, "Computer"), humanBoardView(humanBoard, "Human"), humanBoard(humanBoard) {}
 
+// *********************************************************************
+// Function Name: takeTurn
+// Purpose: Orchestrates the computer's turn logic (rolling, deciding, acting).
+// Returns: true if the turn completes successfully (always true in this logic).
+// *********************************************************************
 bool Computer::takeTurn() {
     using std::cout; using std::cin; using std::endl;
 
+    // Helper lambda to safely read Yes/No input
     auto readYN = [&]()->char{
         char c;
         while (true) {
@@ -27,6 +40,8 @@ bool Computer::takeTurn() {
             cout << "Please enter y or n: ";
         }
     };
+
+    // Helper lambda to safely read a die value (1-6)
     auto readDie = [&](const char* prompt)->int{
         int v;
         while (true) {
@@ -37,6 +52,8 @@ bool Computer::takeTurn() {
             cout << "Please enter a number 1..6.\n";
         }
     };
+
+    // Helper lambda to safely read a menu choice index
     auto chooseIndex = [&](int maxIdx)->int{
         int idx;
         while (true) {
@@ -47,6 +64,8 @@ bool Computer::takeTurn() {
             cout << "Invalid choice. Try again.\n";
         }
     };
+
+    // Helper lambda to print a list of combinations
     auto printCombos = [](const std::set<std::set<int>>& combos){
         int i=1;
         for (const auto& c : combos) {
@@ -57,13 +76,16 @@ bool Computer::takeTurn() {
     };
 
     while (true) {
+        // Step 1: Start the turn display
         section("Computer Turn");
 
+        // Step 2: Determine if manual input is requested
         cout << "Do you want to enter the die manually for the computer? (y/n): ";
         const char manual = readYN();
 
         int sum = 0;
 
+        // Step 3: Handle Manual Dice Entry
         if (manual == 'y') {
             const bool oneDieAllowed = board.canThrowOneDie();
             int diceCount = 2;
@@ -84,9 +106,11 @@ bool Computer::takeTurn() {
                  << (diceCount==2 ? std::to_string(d2)+" = " : "")
                  << sum << "\n";
 
+            // Step 3a: Calculate valid moves for manual roll
             auto coverCombos   = board.findValidCombinations(sum, /*forCovering=*/true);
             auto uncoverCombos = humanBoard.findValidCombinations(sum, /*forCovering=*/false);
 
+            // Filter advantage square if protected
             if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
                 for (auto it = uncoverCombos.begin(); it != uncoverCombos.end(); ) {
                     if (it->contains(Tournament::getAdvantageSquare())) it = uncoverCombos.erase(it);
@@ -99,6 +123,7 @@ bool Computer::takeTurn() {
                 return true;
             }
 
+            // Step 3b: Ask user for decision (since it's manual mode)
             char cu;
             while (true) {
                 cout << "Do you want the computer to (c)over its squares or (u)ncover yours? (c/u): ";
@@ -131,8 +156,11 @@ bool Computer::takeTurn() {
                 for (int v : *it) cout << v << " "; cout << "\n";
             }
         }
+        // Step 4: Handle Automatic Computer Logic (AI Strategy)
         else {
+            // Step 4a: Decide 1 vs 2 dice based on strategy
             const bool oneDieAllowed = board.canThrowOneDie();
+            // Strategy: Check if high numbers are uncovered or few squares remain
             auto highestUncovered = [&](const Board& b){ for (int v=b.getSize(); v>=1; --v) if (!b.isSquareCovered(v)) return v; return 0; };
             auto remainingCount   = [&](const Board& b){ int c=0; for (int v=1; v<=b.getSize(); ++v) if (!b.isSquareCovered(v)) ++c; return c; };
 
@@ -144,6 +172,8 @@ bool Computer::takeTurn() {
             const int d1 = dieDist(rng);
             const int d2 = (diceCount==2) ? dieDist(rng) : 0;
             sum = d1 + d2;
+
+            // Explain dice choice logic
             std::string diceWhy;
             if (!oneDieAllowed) {
                 diceWhy = "must use 2 dice (1-die not allowed until 7.." + std::to_string(board.getSize()) + " are covered)";
@@ -163,6 +193,7 @@ bool Computer::takeTurn() {
             else              cout << "Rolled: " << d1 << " = " << sum
                                    << " " << c(DIM) << "(1-die allowed)" << c(RESET) << "\n";
 
+            // Step 4b: Calculate valid moves
             const bool canCover   = !board.findValidCombinations(sum, /*forCovering=*/true ).empty();
             const bool canUncover = !humanBoard.findValidCombinations(sum, /*forCovering=*/false).empty();
 
@@ -171,6 +202,7 @@ bool Computer::takeTurn() {
                 return true;
             }
 
+            // Step 4c: Decide Strategy (Cover vs Uncover)
             cout << c(GREEN) << "Decision: " << c(RESET)
                  << (shouldCover(sum) ? "Cover own squares" : "Uncover opponent squares") << "\n";
 
@@ -178,10 +210,11 @@ bool Computer::takeTurn() {
             else                  uncoverSquares(sum);
         }
 
+        // Step 5: Display resulting boards
         boardView.display(
-    Tournament::getAdvantageApplied() &&
-    Tournament::getAdvantageOwner() == Tournament::Side::Computer,
-    Tournament::getAdvantageSquare());
+            Tournament::getAdvantageApplied() &&
+            Tournament::getAdvantageOwner() == Tournament::Side::Computer,
+            Tournament::getAdvantageSquare());
 
         humanBoardView.display(
             Tournament::getAdvantageApplied() &&
@@ -194,10 +227,18 @@ bool Computer::takeTurn() {
     }
 }
 
+// *********************************************************************
+// Function Name: shouldCover
+// Purpose: Determines the strategy: whether to cover own squares or uncover opponent's.
+// Parameters: sum - The dice sum rolled.
+// Returns: true if Computer should cover, false if it should uncover.
+// *********************************************************************
 bool Computer::shouldCover(const int sum) const {
+    // Step 1: Get all valid combinations for both actions
     const set<set<int>> coverCombos = board.findValidCombinations(sum, true);
     set<set<int>> uncoverCombos = humanBoard.findValidCombinations(sum, false);
 
+    // Step 2: Remove protected advantage squares from uncover options
     if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
         for (auto it = uncoverCombos.begin(); it != uncoverCombos.end(); ) {
             if (it->contains(Tournament::getAdvantageSquare())) it = uncoverCombos.erase(it);
@@ -205,15 +246,20 @@ bool Computer::shouldCover(const int sum) const {
         }
     }
 
+    // Step 3: Handle forced moves (only one option available)
     if (coverCombos.empty()) return false;
     if (uncoverCombos.empty()) return true;
 
+    // Step 4: Check for immediate win (if covering wins the game, do it)
     for (const auto &combo : coverCombos) {
         Board simulated = board;
         for (int v : combo) simulated.coverSquare(v);
         if (simulated.allCovered()) return true;
     }
 
+    // Step 5: Heuristic comparison
+    // Compare the "best" cover move vs the "best" uncover move.
+    // "Best" is defined as maximizing the count of squares processed.
     auto bestOf = [](const set<set<int>> &combos){
         set<int> bestC; size_t bestCount = 0; int bestSum = -1;
         for (const auto &c : combos) {
@@ -226,10 +272,17 @@ bool Computer::shouldCover(const int sum) const {
     const auto bestCover = bestOf(coverCombos);
     const auto bestUncover = bestOf(uncoverCombos);
 
+    // Prefer covering if we can cover as many squares as we could uncover
     return bestCover.size() >= bestUncover.size();
 }
 
+// *********************************************************************
+// Function Name: coverSquares
+// Purpose: Executes the best move to cover the computer's own squares.
+// Parameters: sum - The dice sum.
+// *********************************************************************
 void Computer::coverSquares(const int sum) const {
+    // Step 1: Find combinations
     const set<set<int>> validCombinations = board.findValidCombinations(sum, true);
 
     if (validCombinations.empty()) {
@@ -237,6 +290,7 @@ void Computer::coverSquares(const int sum) const {
         return;
     }
 
+    // Step 2: Look for winning move
     for (const auto &combination : validCombinations) {
         Board simulated = board;
         for (int v : combination) simulated.coverSquare(v);
@@ -249,6 +303,7 @@ void Computer::coverSquares(const int sum) const {
         }
     }
 
+    // Step 3: Select best combination (Max squares, then Max Sum)
     set<int> selectedCombination;
     size_t maxSquares = 0;
     int maxSum = -1;
@@ -262,6 +317,7 @@ void Computer::coverSquares(const int sum) const {
         }
     }
 
+    // Step 4: Execute move
     cout << "Computer chooses to cover the following squares: ";
     for (const int square : selectedCombination) {
         cout << square << " ";
@@ -273,7 +329,13 @@ void Computer::coverSquares(const int sum) const {
     }
 }
 
+// *********************************************************************
+// Function Name: uncoverSquares
+// Purpose: Executes the best move to uncover the opponent's squares.
+// Parameters: sum - The dice sum.
+// *********************************************************************
 void Computer::uncoverSquares(const int sum) const {
+    // Step 1: Find combinations
     set<set<int>> validCombinations = humanBoard.findValidCombinations(sum, false);
 
     if (validCombinations.empty()) {
@@ -281,6 +343,7 @@ void Computer::uncoverSquares(const int sum) const {
         return;
     }
 
+    // Step 2: Apply Handicap/Advantage protection
     if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
         for (auto it = validCombinations.begin(); it != validCombinations.end(); ) {
             if (it->contains(Tournament::getAdvantageSquare())) it = validCombinations.erase(it);
@@ -288,6 +351,7 @@ void Computer::uncoverSquares(const int sum) const {
         }
     }
 
+    // Step 3: Select best combination (Max squares, then Max Sum)
     set<int> selectedCombination;
     size_t maxSquares = 0;
     int maxSum = -1;
@@ -301,6 +365,7 @@ void Computer::uncoverSquares(const int sum) const {
         }
     }
 
+    // Step 4: Execute move
     cout << "Computer chooses to uncover the following squares: ";
     for (const int square : selectedCombination) cout << square << " ";
     cout << "because uncovering more squares reduces your chances of winning." << endl;
@@ -310,6 +375,14 @@ void Computer::uncoverSquares(const int sum) const {
     }
 }
 
+// *********************************************************************
+// Function Name: provideHelp
+// Purpose: Analyzes the board and recommends a move to the Human player.
+// Parameters:
+//   diceSum - The current roll.
+//   humanBoard - The Human's board (for covering).
+//   computerBoard - The Computer's board (for uncovering).
+// *********************************************************************
 void Computer::provideHelp(const int diceSum,
                            const Board& humanBoard,
                            const Board& computerBoard) const
@@ -338,17 +411,21 @@ void Computer::provideHelp(const int diceSum,
         return bestC;
     };
 
+    // Step 1: Calculate all legal options
     const auto coverCombos   = humanBoard.findValidCombinations(diceSum, /*forCovering=*/true);
     const auto uncoverCombos = computerBoard.findValidCombinations(diceSum, /*forCovering=*/false);
 
+    // Step 2: Display Cover Options
     section("Cover options (your board)");
     if (coverCombos.empty()) std::cout << "  none\n";
     else printCombos(coverCombos);
 
+    // Step 3: Display Uncover Options
     section("Uncover options (opponent board)");
     if (uncoverCombos.empty()) std::cout << "  none\n";
     else printCombos(uncoverCombos);
 
+    // Step 4: Determine Recommendation
     if (!coverCombos.empty()) {
         const auto rec = best(coverCombos);
         std::cout << "\n" << c(GREEN) << "Recommended: COVER  " << c(RESET);
