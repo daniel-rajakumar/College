@@ -1,4 +1,3 @@
-
 #include "../Header Files/Round.h"
 #include <iostream>
 #include <stdlib.h>
@@ -74,20 +73,21 @@ void Round::play() const {
 
     tournament.setIsHumanTurn(currentPlayer->getIsHuman());
 
-    if (isRoundOver()) {
-        bool winnerIsHuman = false;
-        if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
-            winnerIsHuman = true;
-        } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
-            winnerIsHuman = false;
-        }
-        bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
-        const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
-                                                : static_cast<const Player*>(&player2);
-        declareWinner(winnerPtr, winnerWasFirst);
-        return;
-    }
+    // if (isRoundOver()) {
+    //     bool winnerIsHuman = false;
+    //     if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
+    //         winnerIsHuman = true;
+    //     } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
+    //         winnerIsHuman = false;
+    //     }
+    //     bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
+    //     const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
+    //                                             : static_cast<const Player*>(&player2);
+    //     declareWinner(winnerPtr, winnerWasFirst);
+    //     return;
+    // }
 
+    int movesSinceLastCheck = 0;
 
     while (true) {
         currentPlayer->takeTurn();
@@ -100,11 +100,23 @@ void Round::play() const {
             }
         }
 
-        if (player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
-            player1.getBoard().allUncovered() || player2.getBoard().allUncovered()) {
-            bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == currentPlayer->getIsHuman());
-            declareWinner(currentPlayer, winnerWasFirst);
-            break;
+        movesSinceLastCheck++;
+
+        if (movesSinceLastCheck % 2 == 0) {
+            if (player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
+                player1.getBoard().allUncovered() || player2.getBoard().allUncovered()) {
+                bool winnerIsHuman = false;
+                if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
+                    winnerIsHuman = true;
+                } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
+                    winnerIsHuman = false;
+                }
+                const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
+                                                        : static_cast<const Player*>(&player2);
+                bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
+                declareWinner(winnerPtr, winnerWasFirst);
+                break;
+            }
         }
 
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
@@ -120,6 +132,23 @@ void Round::play() const {
             tournament.saveGame(filename);
             exit(0);
         }
+
+
+
+        if (isRoundOver()) {
+            bool winnerIsHuman = false;
+            if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
+                winnerIsHuman = true;
+            } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
+                winnerIsHuman = false;
+            }
+            bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
+            const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
+                                                    : static_cast<const Player*>(&player2);
+            declareWinner(winnerPtr, winnerWasFirst);
+            return;
+        }
+
     }
 
 
@@ -164,5 +193,3 @@ void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirst
                                  player2.getBoard().getCoveredSum());
     }
 }
-
-

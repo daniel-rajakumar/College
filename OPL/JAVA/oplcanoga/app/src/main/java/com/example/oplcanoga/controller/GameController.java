@@ -507,6 +507,9 @@ public class GameController {
         lastHumanCoverMoves.clear();
         lastHumanUncoverMoves.clear();
 
+        // this will not be humans first turn
+
+
         updateBoardInView();
     }
 

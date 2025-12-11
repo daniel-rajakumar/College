@@ -168,6 +168,10 @@ public class Tournament {
         return sb.toString();
     }
 
+
+
+
+
     public static Tournament deserialize(String data) {
         String[] lines = data.split("\\R");
         int idx = 0;
@@ -208,8 +212,10 @@ public class Tournament {
             return PlayerId.valueOf(part.toUpperCase());
         };
 
+        // Skip leading blank lines
         while (idx < lines.length && lines[idx].trim().isEmpty()) idx++;
 
+        // Expect "Computer:"
         if (idx >= lines.length || !lines[idx].trim().startsWith("Computer")) {
             throw new IllegalArgumentException("Invalid save file: missing 'Computer:'");
         }
@@ -221,8 +227,10 @@ public class Tournament {
         String compScoreLine = lines[idx++].trim();
         int compScore = parseIntAfterColon.apply(compScoreLine);
 
+        // Skip blank lines
         while (idx < lines.length && lines[idx].trim().isEmpty()) idx++;
 
+        // Expect "Human:"
         if (idx >= lines.length || !lines[idx].trim().startsWith("Human")) {
             throw new IllegalArgumentException("Invalid save file: missing 'Human:'");
         }
@@ -234,6 +242,7 @@ public class Tournament {
         String humanScoreLine = lines[idx++].trim();
         int humanScore = parseIntAfterColon.apply(humanScoreLine);
 
+        // Skip blank lines
         while (idx < lines.length && lines[idx].trim().isEmpty()) idx++;
 
         PlayerId firstPlayer = null;
@@ -257,20 +266,24 @@ public class Tournament {
         if (compScore != 0) computer.addToTournamentScore(compScore);
 
         if (firstPlayer != null) {
+            // No advantage when loading mid-round from file
             AdvantageInfo adv = new AdvantageInfo(null, -1);
             t.startNextRound(firstPlayer, adv);
             GameRound round = t.getCurrentRound();
 
+            // Restore board state
             for (int i = 1; i <= boardSize; i++) {
                 int hVal = (i - 1 < humanSquaresArr.length) ? humanSquaresArr[i - 1] : 0;
                 int cVal = (i - 1 < compSquaresArr.length) ? compSquaresArr[i - 1] : 0;
 
+                // Human row
                 if (hVal == 0 && !human.isCovered(i)) {
                     human.coverSquare(i);
                 } else if (hVal != 0 && human.isCovered(i)) {
                     human.uncoverSquare(i);
                 }
 
+                // Computer row
                 if (cVal == 0 && !computer.isCovered(i)) {
                     computer.coverSquare(i);
                 } else if (cVal != 0 && computer.isCovered(i)) {
@@ -278,23 +291,18 @@ public class Tournament {
                 }
             }
 
+            // Set whose turn it is next
             if (nextPlayer != null) {
                 round.forceSetCurrentPlayer(nextPlayer);
             }
+
+            // 🔹 IMPORTANT: after deserialization, treat both players as having moved
+            // so round-end logic that checks humanHasMoved/computerHasMoved works.
+            round.markBothPlayersHaveMoved();
         }
 
         return t;
     }
-
-
-
-
-
-
-
-
-
-
 
 
 
