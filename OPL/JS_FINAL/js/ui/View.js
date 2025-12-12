@@ -70,7 +70,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.lblFinalAdvantage = document.getElementById("lbl-final-advantage");
     this.lblLastPlay = document.getElementById("lbl-last-play");
     this.rewindModal = document.getElementById("rewind-modal");
-    this.rewindSelect = document.getElementById("rewind-select");
     this.rewindList = document.getElementById("rewind-list");
     this.rewindPreview = document.getElementById("rewind-preview");
     this.rewindPreviewHuman = document.getElementById("rewind-preview-human");
