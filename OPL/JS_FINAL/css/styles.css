@@ -404,6 +404,53 @@ button:active:not(:disabled) {
   justify-content: flex-end;
 }
 
+.rewind-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #4b5563;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  background: #020617;
+}
+
+.rewind-item {
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.35rem;
+  cursor: pointer;
+}
+
+.rewind-item:hover {
+  background: #1f2937;
+}
+
+.rewind-item.selected {
+  background: #2563eb;
+  color: #f9fafb;
+}
+
+.panel.small {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.preview-boards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+#rewind-preview .board-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+
+#rewind-preview .square {
+  min-width: 1.75rem;
+  padding: 0.25rem;
+  font-size: 0.8rem;
+}
 /* responsive minor tweak */
 @media (max-width: 768px) {
   .top-bar {

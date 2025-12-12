@@ -2,12 +2,14 @@
 import { Tournament } from "./Tournament.js";
 import { Dice } from "./Dice.js";
 import { Serializer } from "./Serializer.js";
+import { GameRound } from "./GameRound.js";
 
 export class GameSession {
   constructor() {
     this.tournament = null;
     this.dice = null;
     this.currentRound = null;
+    this.history = [];
 
     this.gameMode = "HvsC"; // "HvsC" | "HvsH" | "CvsC"
     this.currentPlayerId = "HUMAN"; // "HUMAN" | "COMPUTER"
@@ -25,6 +27,7 @@ export class GameSession {
     this.currentPlayerId = "HUMAN";
     this.phase = "idle";
     this.currentDice = { d1: null, d2: null, sum: null };
+    this.history = [];
   }
 
   setMode(mode) {
@@ -152,12 +155,19 @@ export class GameSession {
     this.currentPlayerId = this.currentRound.currentPlayerId;
     this.phase = "awaitingRoll";
     this.currentDice = { d1: null, d2: null, sum: null };
+    this.history = [];
 
     const advantageText = this.tournament.nextRoundAdvantage
       ? `Advantage: ${
           this.getPlayerDisplayName(this.tournament.nextRoundAdvantage.playerId)
         } has square ${this.tournament.nextRoundAdvantage.digitSum} pre-covered.`
       : "";
+
+    this._pushHistory(
+      `Round ${this.tournament.roundNumber} start (first: ${this.getPlayerDisplayName(
+        firstPlayerId
+      )})`
+    );
 
     return {
       header: {
@@ -239,6 +249,19 @@ export class GameSession {
     } else {
       this.currentRound.applyUncoverMove(this.currentPlayerId, squares);
     }
+
+    const lastAction = {
+      playerId: this.currentPlayerId,
+      action: moveType,
+      squares: [...squares],
+      roll: { ...this.currentDice },
+    };
+    this._pushHistory(
+      `${this.getPlayerDisplayName(this.currentPlayerId)} ${moveType}s [${squares.join(
+        ", "
+      )}]`,
+      lastAction
+    );
 
     // Check for end-of-round
     if (this.currentRound.roundOver) {
@@ -428,6 +451,7 @@ export class GameSession {
     if (!this.tournament || !this.dice) {
       this.resetTournament();
     }
+    this.history = [];
 
     const snapshot = Serializer.parseSnapshot(text);
 
@@ -466,6 +490,10 @@ export class GameSession {
 
     this.currentDice = { d1: null, d2: null, sum: null };
     this.phase = "awaitingRoll";
+
+    this._pushHistory(
+      `Loaded snapshot (first: ${this.getPlayerDisplayName(snapshot.firstTurnId)})`
+    );
 
     const header = {
       roundNumber: this.tournament.roundNumber,
@@ -596,18 +624,23 @@ export class GameSession {
       if (this.currentRound.roundOver) {
         this.phase = "roundOver";
         this.tournament.updateAdvantageForNextRound();
+        const lastAction = {
+          playerId: this.currentPlayerId,
+          action: "none",
+          squares: [],
+          roll: this.currentDice,
+        };
+        this._pushHistory(
+          `${this.getPlayerDisplayName(this.currentPlayerId)} had no moves`,
+          lastAction
+        );
         return {
           roll: this.currentDice,
           canMove: false,
           autoMoveDone: true,
           roundOver: true,
           summary: this._buildRoundSummary(),
-          lastAction: {
-            playerId: this.currentPlayerId,
-            action: "none",
-            squares: [],
-            roll: this.currentDice,
-          },
+          lastAction,
         };
       }
 
@@ -642,6 +675,12 @@ export class GameSession {
       squares: [...decision.squares],
       roll: this.currentDice,
     };
+    this._pushHistory(
+      `${this.getPlayerDisplayName(this.currentPlayerId)} ${decision.action}s [${decision.squares.join(
+        ", "
+      )}]`,
+      lastAction
+    );
 
     // After applying AI move, check for round end
     if (this.currentRound.roundOver) {
@@ -784,6 +823,141 @@ export class GameSession {
     }
 
     return { logs, switchedToHuman: false, roundOver: false };
+  }
+
+  /* ---------- HISTORY / REWIND ---------- */
+
+  _captureSnapshot(lastAction = null) {
+    if (!this.currentRound || !this.tournament) return null;
+    return {
+      gameMode: this.gameMode,
+      currentPlayerId: this.currentPlayerId,
+      phase: this.phase,
+      currentDice: { ...this.currentDice },
+      lastAction,
+      tournament: {
+        humanScore: this.tournament.human.totalScore,
+        computerScore: this.tournament.computer.totalScore,
+        nextRoundAdvantage: this.tournament.nextRoundAdvantage
+          ? { ...this.tournament.nextRoundAdvantage }
+          : null,
+        roundNumber: this.tournament.roundNumber,
+      },
+      round: {
+        boardSize: this.currentRound.boardSize,
+        firstPlayerId: this.currentRound.firstPlayerId,
+        currentPlayerId: this.currentRound.currentPlayerId,
+        advantageInfo: this.currentRound.advantageInfo
+          ? { ...this.currentRound.advantageInfo }
+          : null,
+        advantageLock: this.currentRound.advantageLock
+          ? { ...this.currentRound.advantageLock }
+          : null,
+        roundOver: this.currentRound.roundOver,
+        roundWinnerId: this.currentRound.roundWinnerId,
+        winType: this.currentRound.winType,
+        roundScore: this.currentRound.roundScore,
+        humanBoard: this.currentRound.human.board.toNumberArrayFormat(),
+        computerBoard: this.currentRound.computer.board.toNumberArrayFormat(),
+        humanScore: this.currentRound.human.totalScore,
+        computerScore: this.currentRound.computer.totalScore,
+      },
+    };
+  }
+
+  _restoreSnapshot(snap) {
+    this.gameMode = snap.gameMode;
+    this.tournament = new Tournament("Human", "Computer");
+    this.tournament.roundNumber = snap.tournament.roundNumber;
+    this.tournament.nextRoundAdvantage = snap.tournament.nextRoundAdvantage
+      ? { ...snap.tournament.nextRoundAdvantage }
+      : null;
+    this.tournament.human.totalScore = snap.tournament.humanScore;
+    this.tournament.computer.totalScore = snap.tournament.computerScore;
+
+    this.currentRound = new GameRound({
+      boardSize: snap.round.boardSize,
+      humanPlayer: this.tournament.human,
+      computerPlayer: this.tournament.computer,
+      firstPlayerId: snap.round.firstPlayerId,
+      advantageInfo: snap.round.advantageInfo,
+    });
+
+    this.currentRound.advantageLock = snap.round.advantageLock
+      ? { ...snap.round.advantageLock }
+      : null;
+
+    this.currentRound.human.board.loadFromNumberArrayFormat(
+      snap.round.humanBoard
+    );
+    this.currentRound.computer.board.loadFromNumberArrayFormat(
+      snap.round.computerBoard
+    );
+    this.currentRound.human.totalScore = snap.round.humanScore;
+    this.currentRound.computer.totalScore = snap.round.computerScore;
+
+    this.currentRound.humanEverCovered =
+      this.currentRound.human.board.getCoveredNumbers().length > 0;
+    this.currentRound.computerEverCovered =
+      this.currentRound.computer.board.getCoveredNumbers().length > 0;
+
+    this.currentRound.currentPlayerId = snap.round.currentPlayerId;
+    this.currentRound.roundOver = snap.round.roundOver;
+    this.currentRound.roundWinnerId = snap.round.roundWinnerId;
+    this.currentRound.winType = snap.round.winType;
+    this.currentRound.roundScore = snap.round.roundScore;
+
+    this.currentPlayerId = snap.currentPlayerId;
+    this.phase = snap.phase;
+    this.currentDice = { ...snap.currentDice };
+  }
+
+  _pushHistory(label, lastAction = null) {
+    const snap = this._captureSnapshot(lastAction);
+    if (!snap) return;
+    this.history.push({ label, snapshot: snap, lastAction });
+  }
+
+  getHistoryEntries() {
+    return this.history.map((h, idx) => ({
+      index: idx,
+      label: h.label,
+    }));
+  }
+
+  getHistorySnapshot(index) {
+    if (index < 0 || index >= this.history.length) return null;
+    return this.history[index].snapshot;
+  }
+
+  rewindTo(index) {
+    if (index < 0 || index >= this.history.length) {
+      return { error: "Invalid rewind selection." };
+    }
+    const entry = this.history[index];
+    this._restoreSnapshot(entry.snapshot);
+    // After rewind, force a fresh roll state
+    this.phase = "awaitingRoll";
+    this.currentDice = { d1: null, d2: null, sum: null };
+    const header = {
+      roundNumber: this.tournament.roundNumber,
+      modeLabel: this.getModeLabel(),
+      firstPlayerLabel: this.getPlayerDisplayName(
+        this.currentRound.firstPlayerId
+      ),
+      advantageText: this.tournament.nextRoundAdvantage
+        ? `Advantage: ${this.getPlayerDisplayName(
+            this.tournament.nextRoundAdvantage.playerId
+          )} has square ${this.tournament.nextRoundAdvantage.digitSum} pre-covered.`
+        : "",
+    };
+    return {
+      header,
+      scores: this.getScores(),
+      lastAction: entry.lastAction,
+      currentDice: { ...this.currentDice },
+      phase: this.phase,
+    };
   }
 
   /**

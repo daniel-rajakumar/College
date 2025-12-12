@@ -35,6 +35,7 @@ export class View {
     this.logEl = document.getElementById("log");
 
     this.btnRollManual = document.getElementById("btn-roll-manual");
+    this.btnRewind = document.getElementById("btn-rewind");
 
 // Manual dice modal
 this.manualDiceModal = document.getElementById("manual-dice-modal");
@@ -68,6 +69,15 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.lblFinalComputerScore = document.getElementById("lbl-final-computer-score");
     this.lblFinalAdvantage = document.getElementById("lbl-final-advantage");
     this.lblLastPlay = document.getElementById("lbl-last-play");
+    this.rewindModal = document.getElementById("rewind-modal");
+    this.rewindSelect = document.getElementById("rewind-select");
+    this.rewindList = document.getElementById("rewind-list");
+    this.rewindPreview = document.getElementById("rewind-preview");
+    this.rewindPreviewHuman = document.getElementById("rewind-preview-human");
+    this.rewindPreviewComputer = document.getElementById("rewind-preview-computer");
+    this.rewindPreviewText = document.getElementById("rewind-preview-text");
+    this.rewindConfirm = document.getElementById("rewind-confirm");
+    this.rewindCancel = document.getElementById("rewind-cancel");
 
     // Headings for players (score + boards)
     const scoreHeadings = document.querySelectorAll(".scores h3");
@@ -117,6 +127,58 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     if (this.scoreComputerHeading) this.scoreComputerHeading.textContent = computerLabel;
     if (this.boardHumanHeading) this.boardHumanHeading.textContent = humanLabel;
     if (this.boardComputerHeading) this.boardComputerHeading.textContent = computerLabel;
+  }
+
+  /* ---------- REWIND MODAL ---------- */
+
+  openRewindModal(entries) {
+    if (!this.rewindModal || !this.rewindList) return;
+    this.rewindList.innerHTML = "";
+    entries.forEach(({ index, label }) => {
+      const item = document.createElement("div");
+      item.classList.add("rewind-item");
+      item.dataset.index = index;
+      item.textContent = label;
+      this.rewindList.appendChild(item);
+    });
+    this.rewindModal.classList.remove("hidden");
+  }
+
+  closeRewindModal() {
+    if (this.rewindModal) {
+      this.rewindModal.classList.add("hidden");
+    }
+  }
+
+  getRewindSelection() {
+    const selected = this.rewindList?.querySelector(".selected");
+    if (!selected) return null;
+    const idx = Number(selected.dataset.index);
+    return Number.isNaN(idx) ? null : idx;
+  }
+
+  setRewindPreview(text) {
+    if (this.rewindPreviewText) {
+      this.rewindPreviewText.textContent = text || "";
+    }
+  }
+
+  renderRewindBoards(humanBoardArr, computerBoardArr) {
+    const render = (arr, container) => {
+      if (!container || !arr) return;
+      container.innerHTML = "";
+      for (let i = 0; i < arr.length; i++) {
+        const squareNum = i + 1;
+        const covered = arr[i] === 0;
+        const cell = document.createElement("div");
+        cell.classList.add("square");
+        if (covered) cell.classList.add("covered");
+        cell.textContent = String(squareNum);
+        container.appendChild(cell);
+      }
+    };
+    render(humanBoardArr, this.rewindPreviewHuman);
+    render(computerBoardArr, this.rewindPreviewComputer);
   }
 
   setCurrentPlayerLabel(text) {

@@ -220,6 +220,7 @@ function wireGame() {
   const btnRoll1 = document.getElementById("btn-roll-1");
   const btnRoll2 = document.getElementById("btn-roll-2");
   const btnRollManual = document.getElementById("btn-roll-manual");
+  const btnRewind = document.getElementById("btn-rewind");
   const btnQuitRound = document.getElementById("btn-quit-round");
 
   const modalBtnHelp = document.getElementById("modal-btn-help");
@@ -231,6 +232,9 @@ function wireGame() {
   const manualDiceConfirm = document.getElementById("manual-dice-confirm");
   const manualDiceCancel = document.getElementById("manual-dice-cancel");
   const btnSaveSnapshot = document.getElementById("btn-save-snapshot");
+  const rewindConfirm = document.getElementById("rewind-confirm");
+  const rewindCancel = document.getElementById("rewind-cancel");
+  const rewindListEl = document.getElementById("rewind-list");
 
   // Helper: open manual dice modal if rolling is allowed for the *current* player
   function openManualDice() {
@@ -332,6 +336,34 @@ function wireGame() {
   }
   if (btnRollManual) {
     btnRollManual.addEventListener("click", openManualDice);
+  }
+
+  // Rewind (UI only, placeholder)
+  if (btnRewind) {
+    btnRewind.addEventListener("click", () => {
+      const entries = session.getHistoryEntries();
+      if (!entries.length) {
+        view.appendLog("No moves to rewind.");
+        return;
+      }
+      // show newest first
+      view.openRewindModal(entries.slice().reverse());
+
+      // attach hover/select listeners
+      const items = rewindListEl ? rewindListEl.querySelectorAll(".rewind-item") : [];
+      items.forEach((item) => {
+        item.addEventListener("mouseenter", () => {
+          const idx = Number(item.dataset.index);
+          const snap = session.getHistorySnapshot(idx);
+          if (!snap) return;
+          view.setRewindPreview(buildPreviewText(snap));
+        });
+        item.addEventListener("click", () => {
+          items.forEach((el) => el.classList.remove("selected"));
+          item.classList.add("selected");
+        });
+      });
+    });
   }
 
   // Modal: switch type (cover / uncover)
@@ -504,6 +536,80 @@ function wireGame() {
         alert("Could not save snapshot: " + (err.message || err));
       }
     });
+  }
+
+  // Rewind modal buttons
+  if (rewindCancel) {
+    rewindCancel.addEventListener("click", () => view.closeRewindModal());
+  }
+  if (rewindConfirm) {
+    rewindConfirm.addEventListener("click", () => {
+      const sel = view.getRewindSelection();
+      if (sel == null) {
+        view.appendLog("No rewind selection made.");
+        return;
+      }
+      const res = session.rewindTo(sel);
+      if (res.error) {
+        view.appendLog(res.error);
+        view.closeRewindModal();
+        return;
+      }
+
+      // Update UI based on restored state
+      uiPendingOptions = null;
+      lastShownRoll = null;
+      const round = session.getCurrentRound();
+      view.setRoundHeader(res.header);
+      view.setScores(res.scores.humanScore, res.scores.computerScore);
+      view.setPlayerNames(
+        session.getPlayerDisplayName("HUMAN"),
+        session.getPlayerDisplayName("COMPUTER")
+      );
+      view.renderBoards(round, {
+        humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+        computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+      });
+      setLastPlayFromAction(res.lastAction);
+      view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
+      view.setDiceText({ d1: null, d2: null, sum: null });
+      view.setTurnStatus("Awaiting roll…");
+      updateRollButtonsFromSession();
+      view.appendLog(
+        `Rewound to: ${sel} (${res.lastAction ? res.lastAction.action : "state"})`
+      );
+      view.closeRewindModal();
+    });
+  }
+
+  function buildPreviewText(snap) {
+    const coveredFromArray = (arr) =>
+      arr
+        .map((v, idx) => (v === 0 ? idx + 1 : null))
+        .filter((v) => v != null);
+    const uncoveredFromArray = (arr) =>
+      arr
+        .map((v, idx) => (v !== 0 ? v : null))
+        .filter((v) => v != null);
+
+    const humanCovered = coveredFromArray(snap.round.humanBoard);
+    const compCovered = coveredFromArray(snap.round.computerBoard);
+
+    const lines = [];
+    lines.push(`Current: ${session.getPlayerDisplayName(snap.currentPlayerId)}`);
+    lines.push(`Phase: ${snap.phase}`);
+    lines.push(
+      `Scores H/C: ${snap.tournament.humanScore} / ${snap.tournament.computerScore}`
+    );
+    lines.push(
+      `Human covered: ${humanCovered.length ? humanCovered.join(", ") : "(none)"}`
+    );
+    lines.push(
+      `Computer covered: ${compCovered.length ? compCovered.join(", ") : "(none)"}`
+    );
+    // Render board previews
+    view.renderRewindBoards(snap.round.humanBoard, snap.round.computerBoard);
+    return lines.join(" | ");
   }
 }
 

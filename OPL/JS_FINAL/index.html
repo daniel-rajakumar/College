@@ -116,14 +116,17 @@
                 Roll 1 Die
               </button>
                 <button id="btn-roll-2" class="primary">Roll 2 Dice</button>
-                <button id="btn-roll-manual" class="secondary">
-                  Input Dice
-                </button>
-              </div>
-              <p id="lbl-turn-status">Awaiting roll…</p>
-
+              <button id="btn-roll-manual" class="secondary">
+                Input Dice
+              </button>
+              <button id="btn-rewind" class="secondary">
+                Rewind Move
+              </button>
             </div>
-          </section>
+            <p id="lbl-turn-status">Awaiting roll…</p>
+
+          </div>
+        </section>
 
           <!-- Log -->
           <section class="log-section">
@@ -263,6 +266,35 @@
   </div>
 </div>
 
+<!-- REWIND MODAL -->
+<div id="rewind-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <h3>Rewind Move</h3>
+    <p class="hint">Choose a previous log entry to rewind to. (Rewind action not yet wired.)</p>
+    <div class="modal-options">
+      <label for="rewind-select">Move history:</label>
+      <div id="rewind-list" class="rewind-list"></div>
+      <div id="rewind-preview" class="panel small">
+        <div class="preview-boards">
+          <div class="board-wrapper">
+            <h4>Human (preview)</h4>
+            <div id="rewind-preview-human" class="board-row"></div>
+          </div>
+          <div class="board-wrapper">
+            <h4>Computer (preview)</h4>
+            <div id="rewind-preview-computer" class="board-row"></div>
+          </div>
+        </div>
+        <div id="rewind-preview-text" class="hint">Hover a history entry to preview.</div>
+      </div>
+    </div>
+    <div class="btn-group modal-buttons">
+      <button id="rewind-cancel">Cancel</button>
+      <button id="rewind-confirm" class="primary">Rewind Here</button>
+    </div>
+  </div>
+</div>
 
     <script type="module" src="js/main.js"></script>
   </body>
