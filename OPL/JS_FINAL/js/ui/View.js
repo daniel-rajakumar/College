@@ -34,6 +34,20 @@ export class View {
 
     this.logEl = document.getElementById("log");
 
+    this.btnRollManual = document.getElementById("btn-roll-manual");
+
+// Manual dice modal
+this.manualDiceModal = document.getElementById("manual-dice-modal");
+this.manualDiceHelp = document.getElementById("manual-dice-help");
+this.manualDiceConfirm = document.getElementById("manual-dice-confirm");
+this.manualDiceCancel = document.getElementById("manual-dice-cancel");
+this.manualDiceCountRadios = document.querySelectorAll(
+  'input[name="manual-dice-count"]'
+);
+this.manualDiceRows = document.querySelectorAll(".manual-dice-row");
+this.manualDieButtons = document.querySelectorAll(".manual-die");
+
+
     this.btnRoll1 = document.getElementById("btn-roll-1");
     this.btnRoll2 = document.getElementById("btn-roll-2");
 
@@ -110,10 +124,18 @@ export class View {
    * Roll 2 button remains visible for human turns.
    */
   setRollButtonsVisibility({ canRoll1, enableRollButtons }) {
-    this.btnRoll1.style.display = canRoll1 ? "inline-block" : "none";
-    this.btnRoll1.disabled = !enableRollButtons;
-    this.btnRoll2.disabled = !enableRollButtons;
+  // 1-die button visible only when allowed
+  this.btnRoll1.style.display = canRoll1 ? "inline-block" : "none";
+  this.btnRoll1.disabled = !enableRollButtons;
+
+  // 2-dice always visible when it's a human-controlled turn, but disabled when not allowed
+  this.btnRoll2.disabled = !enableRollButtons;
+
+  // Manual button uses same enable flag; always visible
+  if (this.btnRollManual) {
+    this.btnRollManual.disabled = !enableRollButtons;
   }
+}
 
   clearLog() {
     this.logEl.innerHTML = "";
@@ -223,6 +245,134 @@ export class View {
   setMoveHelpText(text) {
     this.modalHelpText.textContent = text || "";
   }
+
+    // ----- MANUAL DICE MODAL -----
+
+  initManualDiceListeners() {
+    // Called once by controller to wire basic behavior (hide/show 2nd row & select buttons)
+    if (!this.manualDieButtons || this.manualDieButtons.length === 0) return;
+
+    // Toggle selected state when clicking a die
+    this.manualDieButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const dieIndex = btn.getAttribute("data-die");
+        // Clear previous selection for this die
+        this.manualDieButtons.forEach((b) => {
+          if (b.getAttribute("data-die") === dieIndex) {
+            b.classList.remove("selected");
+          }
+        });
+        btn.classList.add("selected");
+      });
+    });
+
+    // Handle 1 vs 2 dice (show/hide die 2 row)
+    if (this.manualDiceCountRadios && this.manualDiceRows) {
+      this.manualDiceCountRadios.forEach((radio) => {
+        radio.addEventListener("change", () => {
+          const count = Number(
+            document.querySelector('input[name="manual-dice-count"]:checked')
+              ?.value || 1
+          );
+          this.manualDiceRows.forEach((row) => {
+            const dieIndex = row.getAttribute("data-die");
+            if (dieIndex === "2") {
+              row.style.display = count === 2 ? "flex" : "none";
+            }
+          });
+        });
+      });
+    }
+  }
+
+  openManualDiceModal() {
+    if (!this.manualDiceModal) return;
+
+    // Default to 1 die
+    if (this.manualDiceCountRadios && this.manualDiceCountRadios.length > 0) {
+      this.manualDiceCountRadios.forEach((r) => {
+        r.checked = r.value === "1";
+      });
+    }
+
+    // Clear previous selections
+    if (this.manualDieButtons) {
+      this.manualDieButtons.forEach((btn) => btn.classList.remove("selected"));
+    }
+
+    // Hide die2 row by default
+    if (this.manualDiceRows) {
+      this.manualDiceRows.forEach((row) => {
+        const dieIndex = row.getAttribute("data-die");
+        if (dieIndex === "2") {
+          row.style.display = "none";
+        } else {
+          row.style.display = "flex";
+        }
+      });
+    }
+
+    this.setManualDiceHelp("");
+    this.manualDiceModal.classList.remove("hidden");
+  }
+
+  closeManualDiceModal() {
+    if (!this.manualDiceModal) return;
+    this.manualDiceModal.classList.add("hidden");
+  }
+
+  setManualDiceHelp(text) {
+    if (this.manualDiceHelp) {
+      this.manualDiceHelp.textContent = text || "";
+    }
+  }
+
+  /**
+   * @returns {{ numDice: 1|2, values: number[] } | null}
+   */
+  getManualDiceSelection() {
+    if (!this.manualDiceCountRadios) return null;
+
+    const count = Number(
+      document.querySelector('input[name="manual-dice-count"]:checked')?.value ||
+        1
+    );
+
+    const values = [];
+
+    const readDie = (dieIndex) => {
+      let selectedValue = null;
+      this.manualDieButtons.forEach((btn) => {
+        if (
+          btn.getAttribute("data-die") === String(dieIndex) &&
+          btn.classList.contains("selected")
+        ) {
+          selectedValue = Number(btn.getAttribute("data-value"));
+        }
+      });
+      return selectedValue;
+    };
+
+    const v1 = readDie(1);
+    if (!Number.isInteger(v1)) {
+      return null;
+    }
+    values.push(v1);
+
+    if (count === 2) {
+      const v2 = readDie(2);
+      if (!Number.isInteger(v2)) {
+        return null;
+      }
+      values.push(v2);
+    }
+
+    return {
+      numDice: count === 2 ? 2 : 1,
+      values,
+    };
+  }
+
 
   // ----- END SCREEN -----
 

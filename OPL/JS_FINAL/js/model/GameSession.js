@@ -549,4 +549,80 @@ export class GameSession {
 
     return summary;
   }
+
+
+    /**
+   * Manual dice input for the current (human-controlled) player.
+   * @param {number} numDice 1 or 2
+   * @param {number[]} values [d1] or [d1, d2]
+   */
+  handleManualRoll(numDice, values) {
+    if (!this.currentRound) {
+      return { error: "No active round." };
+    }
+    if (this.phase !== "awaitingRoll") {
+      return { error: "You cannot roll dice right now." };
+    }
+    // Only allow manual dice for human-controlled players (in HvsH, both sides)
+    if (!this.isPlayerHumanControlled(this.currentPlayerId)) {
+      return { error: "Manual dice input is only allowed for human-controlled players." };
+    }
+    if (numDice !== 1 && numDice !== 2) {
+      return { error: "You must use 1 or 2 dice." };
+    }
+    if (!Array.isArray(values) || values.length < numDice) {
+      return { error: "Please select enough dice values." };
+    }
+
+    const validDie = (v) =>
+      Number.isInteger(v) && v >= 1 && v <= 6;
+
+    const d1 = values[0];
+    const d2 = numDice === 2 ? values[1] : null;
+
+    if (!validDie(d1) || (numDice === 2 && !validDie(d2))) {
+      return { error: "Dice values must be between 1 and 6." };
+    }
+
+    // 1-die rule (7..n covered)
+    const player = this.currentRound.getPlayerById(this.currentPlayerId);
+    const board = player.board;
+    if (numDice === 1 && !board.canUseOneDie()) {
+      return {
+        error: "You may roll ONE die only if squares 7..n are ALL covered.",
+      };
+    }
+
+    const sum = d1 + (d2 ?? 0);
+    this.currentDice = { d1, d2, sum };
+
+    const coverOptions = this.currentRound.getCoverOptions(
+      this.currentPlayerId,
+      sum
+    );
+    const uncoverOptions = this.currentRound.getUncoverOptions(
+      this.currentPlayerId,
+      sum
+    );
+
+    if (coverOptions.length === 0 && uncoverOptions.length === 0) {
+      // No moves -> controller should endTurn() just like random roll
+      return {
+        roll: this.currentDice,
+        coverOptions,
+        uncoverOptions,
+        canMove: false,
+      };
+    }
+
+    this.phase = "awaitingMove";
+
+    return {
+      roll: this.currentDice,
+      coverOptions,
+      uncoverOptions,
+      canMove: true,
+    };
+  }
+
 }

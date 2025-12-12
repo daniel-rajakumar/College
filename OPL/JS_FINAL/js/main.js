@@ -16,6 +16,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // initial roll button state
   updateRollButtonsFromSession();
+    view.initManualDiceListeners();
 });
 
 /* ---------- HELPERS (controller-only) ---------- */
@@ -199,6 +200,7 @@ function wireSetup() {
 function wireGame() {
   const btnRoll1 = document.getElementById("btn-roll-1");
   const btnRoll2 = document.getElementById("btn-roll-2");
+  const btnRollManual = document.getElementById("btn-roll-manual");
   const btnQuitRound = document.getElementById("btn-quit-round");
 
   const modalBtnHelp = document.getElementById("modal-btn-help");
@@ -207,8 +209,24 @@ function wireGame() {
   const modalMoveCover = document.getElementById("modal-move-cover");
   const modalMoveUncover = document.getElementById("modal-move-uncover");
 
+  const manualDiceConfirm = document.getElementById("manual-dice-confirm");
+const manualDiceCancel = document.getElementById("manual-dice-cancel");
+
+
   btnRoll1.addEventListener("click", () => handleHumanRoll(1));
   btnRoll2.addEventListener("click", () => handleHumanRoll(2));
+
+  if (btnRollManual) {
+  btnRollManual.addEventListener("click", () => {
+    // Only allow when we're in a roll phase; GameSession will enforce rules
+    const diceState = session.getRollButtonState();
+    if (!diceState.enableRollButtons) return;
+
+    view.setManualDiceHelp("");
+    view.openManualDiceModal();
+  });
+}
+
 
   function handleHumanRoll(numDice) {
     const res = session.handleHumanRoll(numDice);
@@ -367,6 +385,77 @@ function wireGame() {
     view.setEndScreen(summary);
     view.showScreen("end");
   });
+
+
+
+  // Manual dice modal: Confirm
+if (manualDiceConfirm) {
+  manualDiceConfirm.addEventListener("click", () => {
+    const selection = view.getManualDiceSelection();
+    if (!selection) {
+      view.setManualDiceHelp("Please select the dice values first.");
+      return;
+    }
+
+    const res = session.handleManualRoll(selection.numDice, selection.values);
+    if (res.error) {
+      view.setManualDiceHelp(res.error);
+      return;
+    }
+
+    // Close manual modal, then process result like a normal roll
+    view.closeManualDiceModal();
+
+    // Show dice
+    view.setDiceText(res.roll);
+
+    const playerLabel = session.getCurrentPlayerLabel();
+    const r = res.roll;
+    if (r.d2 == null) {
+      view.appendLog(`${playerLabel} (manual) chose ${r.d1} (sum = ${r.sum})`);
+    } else {
+      view.appendLog(
+        `${playerLabel} (manual) chose ${r.d1} + ${r.d2} (sum = ${r.sum})`
+      );
+    }
+
+    if (!res.canMove) {
+      view.appendLog("No moves available for this roll. Turn ends.");
+      const endRes = session.endTurn();
+      if (endRes.roundOver) {
+        handleRoundFinished(endRes.summary);
+        return;
+      }
+      refreshBoardsAndScores();
+      updateTurnInfoStatus("New turn. Awaiting roll…");
+      updateRollButtonsFromSession();
+      maybeRunComputerFromSession();
+      return;
+    }
+
+    // We have moves – show standard move modal
+    uiPendingOptions = {
+      coverOptions: res.coverOptions,
+      uncoverOptions: res.uncoverOptions,
+    };
+
+    view.setTurnStatus("Choose your move.");
+    view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
+    view.openMoveModal(
+      res.roll.sum,
+      res.coverOptions,
+      res.uncoverOptions
+    );
+  });
+}
+
+// Manual dice modal: Cancel
+if (manualDiceCancel) {
+  manualDiceCancel.addEventListener("click", () => {
+    view.closeManualDiceModal();
+  });
+}
+
 }
 
 /* ---------- END SCREEN ---------- */

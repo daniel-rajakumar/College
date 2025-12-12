@@ -115,8 +115,12 @@
                   Roll 1 Die
                 </button>
                 <button id="btn-roll-2" class="primary">Roll 2 Dice</button>
+                <button id="btn-roll-manual" class="secondary">
+                  Input Dice
+                </button>
               </div>
               <p id="lbl-turn-status">Awaiting roll…</p>
+
             </div>
           </section>
 
@@ -208,6 +212,55 @@
       accept=".txt,text/plain"
       style="display: none;"
     />
+
+    <!-- MANUAL DICE MODAL -->
+<div id="manual-dice-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <h3>Manual Dice Input</h3>
+
+    <div class="manual-dice-mode">
+      <label>
+        <input type="radio" name="manual-dice-count" value="1" checked />
+        1 Die
+      </label>
+      <label>
+        <input type="radio" name="manual-dice-count" value="2" />
+        2 Dice
+      </label>
+    </div>
+
+    <div class="manual-dice-rows">
+      <div class="manual-dice-row" data-die="1">
+        <span>Die 1:</span>
+        <button class="manual-die" data-die="1" data-value="1">I</button>
+        <button class="manual-die" data-die="1" data-value="2">II</button>
+        <button class="manual-die" data-die="1" data-value="3">III</button>
+        <button class="manual-die" data-die="1" data-value="4">IV</button>
+        <button class="manual-die" data-die="1" data-value="5">V</button>
+        <button class="manual-die" data-die="1" data-value="6">VI</button>
+      </div>
+
+      <div class="manual-dice-row" data-die="2">
+        <span>Die 2:</span>
+        <button class="manual-die" data-die="2" data-value="1">I</button>
+        <button class="manual-die" data-die="2" data-value="2">II</button>
+        <button class="manual-die" data-die="2" data-value="3">III</button>
+        <button class="manual-die" data-die="2" data-value="4">IV</button>
+        <button class="manual-die" data-die="2" data-value="5">V</button>
+        <button class="manual-die" data-die="2" data-value="6">VI</button>
+      </div>
+    </div>
+
+    <p id="manual-dice-help" class="hint"></p>
+
+    <div class="btn-group modal-buttons">
+      <button id="manual-dice-cancel">Cancel</button>
+      <button id="manual-dice-confirm" class="primary">Use Dice</button>
+    </div>
+  </div>
+</div>
+
 
     <script type="module" src="js/main.js"></script>
   </body>
