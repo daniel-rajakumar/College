@@ -200,6 +200,9 @@ function wireGame() {
       return;
     }
 
+    // Always sync current player label on any roll handling
+    view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
+
     // Show dice
     if (res.roll) {
       view.setDiceText(res.roll);
@@ -255,17 +258,19 @@ function wireGame() {
     updateRollButtonsFromSession();
   }
 
-  // Roll buttons: open manual dice (user rolls for both players)
+  // Roll buttons: random roll for current player
   if (btnRoll1) {
     btnRoll1.addEventListener("click", () => {
-      view.setManualDiceCount(1);
-      openManualDice();
+      const res = session.handleRandomRoll(1);
+      const playerLabel = session.getCurrentPlayerLabel();
+      processRollOutcome(res, playerLabel, "rolled");
     });
   }
   if (btnRoll2) {
     btnRoll2.addEventListener("click", () => {
-      view.setManualDiceCount(2);
-      openManualDice();
+      const res = session.handleRandomRoll(2);
+      const playerLabel = session.getCurrentPlayerLabel();
+      processRollOutcome(res, playerLabel, "rolled");
     });
   }
   if (btnRollManual) {
@@ -292,6 +297,15 @@ function wireGame() {
         ", "
       )}] – ${suggestion.reason}`
     );
+
+    // Auto-select suggested move type and combo in the modal
+    if (!uiPendingOptions) return;
+    const moveType = suggestion.action === "uncover" ? "uncover" : "cover";
+    const options =
+      moveType === "cover" ? uiPendingOptions.coverOptions : uiPendingOptions.uncoverOptions;
+    if (options && options.length > 0) {
+      view.setMoveSelection(moveType, options, suggestion.squares);
+    }
   });
 
   // Modal: Confirm move (human-selected move)

@@ -50,6 +50,10 @@ export class GameRound {
     this.roundWinnerId = null; // "HUMAN" | "COMPUTER"
     this.winType = null;       // "cover" | "uncover"
     this.roundScore = 0;
+
+    // Track whether a side has ever covered at least one square this round
+    this.humanEverCovered = false;
+    this.computerEverCovered = false;
   }
 
   getPlayerById(id) {
@@ -153,6 +157,8 @@ export class GameRound {
   applyCoverMove(playerId, squares) {
     const player = this.getPlayerById(playerId);
     player.board.coverSquares(squares);
+    if (playerId === "HUMAN") this.humanEverCovered = true;
+    if (playerId === "COMPUTER") this.computerEverCovered = true;
     this._checkForRoundEnd();
   }
 
@@ -182,8 +188,8 @@ export class GameRound {
   _checkForRoundEnd() {
     const humanCoveredAll = this.human.board.areAllCovered();
     const compCoveredAll = this.computer.board.areAllCovered();
-    const humanUncoveredAll = this.human.board.areAllUncovered();
-    const compUncoveredAll = this.computer.board.areAllUncovered();
+    const humanCoveredCount = this.human.board.getCoveredNumbers().length;
+    const compCoveredCount = this.computer.board.getCoveredNumbers().length;
 
     let winnerId = null;
     let winType = null;
@@ -194,13 +200,13 @@ export class GameRound {
     } else if (compCoveredAll) {
       winnerId = "COMPUTER";
       winType = "cover";
-    } else if (humanUncoveredAll) {
-      // Computer has uncovered all human squares
-      winnerId = "COMPUTER";
-      winType = "uncover";
-    } else if (compUncoveredAll) {
-      // Human has uncovered all computer squares
+    } else if (compCoveredCount === 0 && this._hadAnyCovered(this.computer)) {
+      // Human has uncovered all computer squares (and there were some to uncover)
       winnerId = "HUMAN";
+      winType = "uncover";
+    } else if (humanCoveredCount === 0 && this._hadAnyCovered(this.human)) {
+      // Computer has uncovered all human squares (and there were some to uncover)
+      winnerId = "COMPUTER";
       winType = "uncover";
     }
 
@@ -272,5 +278,11 @@ export class GameRound {
         }
       }
     };
+  }
+
+  _hadAnyCovered(player) {
+    if (player.id === "HUMAN") return this.humanEverCovered;
+    if (player.id === "COMPUTER") return this.computerEverCovered;
+    return false;
   }
 }

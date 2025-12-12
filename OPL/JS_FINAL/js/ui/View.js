@@ -215,6 +215,35 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this._fillOptionsSelect(options);
   }
 
+  /**
+   * Programmatically select move type and option in the modal.
+   * @param {"cover"|"uncover"} moveType
+   * @param {number[][]} options
+   * @param {number[]} squares
+   */
+  setMoveSelection(moveType, options, squares) {
+    if (moveType === "cover") {
+      this.modalMoveCover.checked = true;
+      this.modalMoveUncover.checked = false;
+    } else {
+      this.modalMoveCover.checked = false;
+      this.modalMoveUncover.checked = true;
+    }
+
+    this._fillOptionsSelect(options);
+
+    // pick the option matching the suggested squares (order-insensitive)
+    const target = [...(squares || [])].sort((a, b) => a - b);
+    let matchIndex = 0;
+    options.forEach((opt, idx) => {
+      const sorted = [...opt].sort((a, b) => a - b);
+      if (sorted.length === target.length && sorted.every((v, i) => v === target[i])) {
+        matchIndex = idx;
+      }
+    });
+    this.modalMoveOptions.value = String(matchIndex);
+  }
+
   _fillOptionsSelect(options) {
     this.modalMoveOptions.innerHTML = "";
     options.forEach((combo, idx) => {
