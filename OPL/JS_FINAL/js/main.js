@@ -7,6 +7,20 @@ const session = new GameSession();
 
 // purely UI-side pending options (for the move modal)
 let uiPendingOptions = null;
+let lastShownRoll = null;
+
+function setLastPlayFromAction(action) {
+  if (!action) return;
+  const playerName = session.getPlayerDisplayName(action.playerId || "HUMAN");
+  let verb = "made no move";
+  if (action.action === "cover") verb = "covered";
+  else if (action.action === "uncover") verb = "uncovered";
+  const squaresText =
+    action.squares && action.squares.length
+      ? `[${action.squares.join(", ")}]`
+      : "no squares";
+  view.setLastPlay(`${playerName} ${verb} ${squaresText}`);
+}
 
 window.addEventListener("DOMContentLoaded", () => {
   wireWelcome();
@@ -38,9 +52,10 @@ function refreshBoardsAndScores() {
   view.setScores(scores.humanScore, scores.computerScore);
 }
 
-function updateTurnInfoStatus(textIfAny) {
+function updateTurnInfoStatus(textIfAny, diceOverride = null) {
   view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
-  view.setDiceText(session.getCurrentDice());
+  const diceToShow = diceOverride || lastShownRoll || session.getCurrentDice();
+  view.setDiceText(diceToShow);
   if (textIfAny) {
     view.setTurnStatus(textIfAny);
   }
@@ -63,6 +78,7 @@ function wireWelcome() {
   btnStartSetup.addEventListener("click", () => {
     session.resetTournament();
     view.showScreen("setup");
+    view.setLastPlay("–");
   });
 
   // Trigger hidden file input
@@ -103,6 +119,8 @@ function wireWelcome() {
             session.getPlayerDisplayName("HUMAN"),
             session.getPlayerDisplayName("COMPUTER")
           );
+          lastShownRoll = null;
+          view.setLastPlay("–");
           const round = session.getCurrentRound();
           view.renderBoards(round, {
             humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
@@ -130,6 +148,7 @@ function wireSetup() {
   const btnRolloff = document.getElementById("btn-rolloff");
   const btnSetupBack = document.getElementById("btn-setup-back");
   const btnStartRound = document.getElementById("btn-start-round");
+  btnStartRound.style.display = "none";
 
   // Update mode (no logic here, we just forward)
   modeRadios.forEach((radio) => {
@@ -140,6 +159,10 @@ function wireSetup() {
         session.getPlayerDisplayName("HUMAN"),
         session.getPlayerDisplayName("COMPUTER")
       );
+      btnStartRound.style.display = "none";
+      btnStartRound.dataset.firstPlayerId = "";
+      const defaultText = 'Click "Roll Dice" to determine the first player.';
+      view.setRolloffText(defaultText, false);
     });
   });
 
@@ -149,11 +172,10 @@ function wireSetup() {
 
     view.setRolloffText(result.text, result.canStart);
 
-    if (result.canStart && result.firstPlayerId) {
-      btnStartRound.dataset.firstPlayerId = result.firstPlayerId;
-    } else {
-      btnStartRound.dataset.firstPlayerId = "";
-    }
+    btnStartRound.style.display = result.canStart ? "inline-block" : "none";
+    btnStartRound.dataset.firstPlayerId = result.canStart
+      ? result.firstPlayerId
+      : "";
   });
 
   btnSetupBack.addEventListener("click", () => {
@@ -161,6 +183,7 @@ function wireSetup() {
   });
 
   btnStartRound.addEventListener("click", () => {
+    if (btnStartRound.style.display === "none") return;
     const firstPlayerId = btnStartRound.dataset.firstPlayerId;
     if (!firstPlayerId) return;
 
@@ -175,6 +198,8 @@ function wireSetup() {
       session.getPlayerDisplayName("HUMAN"),
       session.getPlayerDisplayName("COMPUTER")
     );
+    lastShownRoll = null;
+    view.setLastPlay("–");
     const round = session.getCurrentRound();
     view.renderBoards(round, {
       humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
@@ -229,6 +254,7 @@ function wireGame() {
     // Show dice
     if (res.roll) {
       view.setDiceText(res.roll);
+      lastShownRoll = res.roll;
       const r = res.roll;
       if (r.d2 == null) {
         view.appendLog(`${playerLabel} ${sourceLabel} ${r.d1} (sum = ${r.sum})`);
@@ -237,6 +263,14 @@ function wireGame() {
           `${playerLabel} ${sourceLabel} ${r.d1} + ${r.d2} (sum = ${r.sum})`
         );
       }
+    }
+
+    if (res.lastAction) {
+      if (res.lastAction.roll) {
+        lastShownRoll = res.lastAction.roll;
+        view.setDiceText(lastShownRoll);
+      }
+      setLastPlayFromAction(res.lastAction);
     }
 
     // No moves available and no auto move
@@ -248,7 +282,7 @@ function wireGame() {
         return;
       }
       refreshBoardsAndScores();
-      updateTurnInfoStatus("New turn. Awaiting roll…");
+      updateTurnInfoStatus("New turn. Awaiting roll…", res.roll);
       updateRollButtonsFromSession();
       return;
     }
@@ -277,7 +311,7 @@ function wireGame() {
       return;
     }
 
-    updateTurnInfoStatus("Move completed. Roll again.");
+    updateTurnInfoStatus("Move completed. Roll again.", res.roll || lastShownRoll);
     updateRollButtonsFromSession();
   }
 
@@ -354,15 +388,19 @@ function wireGame() {
     }
 
     const playerLabel = session.getCurrentPlayerLabel();
-    if (selection.moveType === "cover") {
-      view.appendLog(
-        `${playerLabel} covers squares [${selection.squares.join(", ")}]`
-      );
-    } else {
-      view.appendLog(
-        `${playerLabel} uncovers opponent squares [${selection.squares.join(", ")}]`
-      );
-    }
+    const isCover = selection.moveType === "cover";
+    const targetBoard = isCover ? `${playerLabel} board` : `Opponent board`;
+    view.appendLog(
+      `${playerLabel} ${isCover ? "covers" : "uncovers"} ${targetBoard} squares [${selection.squares.join(
+        ", "
+      )}]`
+    );
+    setLastPlayFromAction({
+      playerId: session.getCurrentPlayerId(),
+      action: selection.moveType,
+      squares: [...selection.squares],
+      roll: lastShownRoll,
+    });
 
     uiPendingOptions = null;
     view.closeMoveModal();
@@ -374,7 +412,7 @@ function wireGame() {
     }
 
     // Same player rolls again
-    updateTurnInfoStatus("Move completed. Roll again.");
+    updateTurnInfoStatus("Move completed. Roll again.", lastShownRoll);
     updateRollButtonsFromSession();
   });
 

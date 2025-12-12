@@ -602,6 +602,12 @@ export class GameSession {
           autoMoveDone: true,
           roundOver: true,
           summary: this._buildRoundSummary(),
+          lastAction: {
+            playerId: this.currentPlayerId,
+            action: "none",
+            squares: [],
+            roll: this.currentDice,
+          },
         };
       }
 
@@ -630,6 +636,13 @@ export class GameSession {
       );
     }
 
+    const lastAction = {
+      playerId: this.currentPlayerId,
+      action: decision.action,
+      squares: [...decision.squares],
+      roll: this.currentDice,
+    };
+
     // After applying AI move, check for round end
     if (this.currentRound.roundOver) {
       // AI's turn is done and the round is over → unlock advantage & finalize
@@ -643,6 +656,7 @@ export class GameSession {
         autoMoveDone: true,
         roundOver: true,
         summary: this._buildRoundSummary(),
+        lastAction,
       };
     }
 
@@ -656,6 +670,7 @@ export class GameSession {
       canMove: false,
       autoMoveDone: true,
       roundOver: false,
+      lastAction,
     };
   }
 

@@ -56,7 +56,7 @@
 
         <div class="setup-actions">
           <button id="btn-setup-back">Back</button>
-          <button id="btn-start-round" class="primary" disabled>Start Round</button>
+          <button id="btn-start-round" class="primary" disabled style="display: none;">Start Round</button>
         </div>
       </section>
 
@@ -72,16 +72,16 @@
             <p id="lbl-advantage"></p>
           </div>
           <div class="scores">
-            <div>
-              <h3>Human</h3>
-              <p>Total: <span id="score-human">0</span></p>
-            </div>
-            <div>
-              <h3>Computer</h3>
-              <p>Total: <span id="score-computer">0</span></p>
-            </div>
+          <div>
+            <h3>Human</h3>
+            <p>Total: <span id="score-human">0</span></p>
           </div>
-        </header>
+          <div>
+            <h3>Computer</h3>
+            <p>Total: <span id="score-computer">0</span></p>
+          </div>
+        </div>
+      </header>
 
         <main class="game-layout">
           <!-- Boards -->
@@ -107,13 +107,14 @@
           <!-- Controls UNDER boards -->
           <section class="controls-under-boards">
             <div id="dice-area" class="panel">
-              <p>Dice: <span id="lbl-dice">–</span></p>
-              <p>Sum: <span id="lbl-dice-sum">–</span></p>
+            <p>Dice: <span id="lbl-dice">–</span></p>
+            <p>Sum: <span id="lbl-dice-sum">–</span></p>
+            <p>Last Play: <span id="lbl-last-play">–</span></p>
 
-              <div id="dice-buttons">
-                <button id="btn-roll-1" class="primary" style="display: none;">
-                  Roll 1 Die
-                </button>
+            <div id="dice-buttons">
+              <button id="btn-roll-1" class="primary" style="display: none;">
+                Roll 1 Die
+              </button>
                 <button id="btn-roll-2" class="primary">Roll 2 Dice</button>
                 <button id="btn-roll-manual" class="secondary">
                   Input Dice

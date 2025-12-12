@@ -67,6 +67,7 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.lblFinalHumanScore = document.getElementById("lbl-final-human-score");
     this.lblFinalComputerScore = document.getElementById("lbl-final-computer-score");
     this.lblFinalAdvantage = document.getElementById("lbl-final-advantage");
+    this.lblLastPlay = document.getElementById("lbl-last-play");
 
     // Headings for players (score + boards)
     const scoreHeadings = document.querySelectorAll(".scores h3");
@@ -103,6 +104,12 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
   setScores(humanScore, computerScore) {
     this.scoreHuman.textContent = humanScore;
     this.scoreComputer.textContent = computerScore;
+  }
+
+  setLastPlay(text) {
+    if (this.lblLastPlay) {
+      this.lblLastPlay.textContent = text || "–";
+    }
   }
 
   setPlayerNames(humanLabel, computerLabel) {
