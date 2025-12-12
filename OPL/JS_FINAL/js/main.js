@@ -29,7 +29,10 @@ function updateRollButtonsFromSession() {
 function refreshBoardsAndScores() {
   const round = session.getCurrentRound();
   if (round) {
-    view.renderBoards(round);
+    view.renderBoards(round, {
+      humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+      computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+    });
   }
   const scores = session.getScores();
   view.setScores(scores.humanScore, scores.computerScore);
@@ -96,7 +99,15 @@ function wireWelcome() {
 
           view.setRoundHeader(state.header);
           view.setScores(state.scores.humanScore, state.scores.computerScore);
-          view.renderBoards(session.getCurrentRound());
+          view.setPlayerNames(
+            session.getPlayerDisplayName("HUMAN"),
+            session.getPlayerDisplayName("COMPUTER")
+          );
+          const round = session.getCurrentRound();
+          view.renderBoards(round, {
+            humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+            computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+          });
           updateTurnInfoStatus(state.turnStatus);
           updateRollButtonsFromSession();
         } catch (err) {
@@ -125,6 +136,10 @@ function wireSetup() {
     radio.addEventListener("change", () => {
       const mode = document.querySelector('input[name="mode"]:checked').value;
       session.setMode(mode);
+      view.setPlayerNames(
+        session.getPlayerDisplayName("HUMAN"),
+        session.getPlayerDisplayName("COMPUTER")
+      );
     });
   });
 
@@ -156,7 +171,15 @@ function wireSetup() {
     view.clearLog();
     view.setRoundHeader(state.header);
     view.setScores(state.scores.humanScore, state.scores.computerScore);
-    view.renderBoards(session.getCurrentRound());
+    view.setPlayerNames(
+      session.getPlayerDisplayName("HUMAN"),
+      session.getPlayerDisplayName("COMPUTER")
+    );
+    const round = session.getCurrentRound();
+    view.renderBoards(round, {
+      humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+      computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+    });
     updateTurnInfoStatus("Awaiting roll…");
     view.appendLog(
       `Round ${state.header.roundNumber} started. First player: ${state.header.firstPlayerLabel}`

@@ -181,6 +181,20 @@ button:active:not(:disabled) {
   color: #022c22;
 }
 
+.square.advantage {
+  background: #facc15;
+  border-color: #f59e0b;
+  color: #1f2937;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.4);
+}
+
+/* Advantage overrides covered coloring */
+.square.advantage.covered {
+  background: #facc15;
+  border-color: #f59e0b;
+  color: #1f2937;
+}
+
 .square.selected {
   outline: 2px solid #eab308;
 }

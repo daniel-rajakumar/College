@@ -51,8 +51,18 @@ export class GameSession {
     return true;
   }
 
+  getPlayerDisplayName(playerId) {
+    if (this.gameMode === "HvsH") {
+      return playerId === "HUMAN" ? "Player 1 (Human)" : "Player 2 (Human)";
+    }
+    if (this.gameMode === "CvsC") {
+      return playerId === "HUMAN" ? "Player 1 (Computer)" : "Player 2 (Computer)";
+    }
+    return playerId === "HUMAN" ? "Human" : "Computer";
+  }
+
   getCurrentPlayerLabel() {
-    return this.currentPlayerId === "HUMAN" ? "Human" : "Computer";
+    return this.getPlayerDisplayName(this.currentPlayerId);
   }
 
   getCurrentDice() {
@@ -145,9 +155,7 @@ export class GameSession {
 
     const advantageText = this.tournament.nextRoundAdvantage
       ? `Advantage: ${
-          this.tournament.nextRoundAdvantage.playerId === "HUMAN"
-            ? "Human"
-            : "Computer"
+          this.getPlayerDisplayName(this.tournament.nextRoundAdvantage.playerId)
         } has square ${this.tournament.nextRoundAdvantage.digitSum} pre-covered.`
       : "";
 
@@ -155,7 +163,7 @@ export class GameSession {
       header: {
         roundNumber: this.tournament.roundNumber,
         modeLabel: this.getModeLabel(),
-        firstPlayerLabel: firstPlayerId === "HUMAN" ? "Human" : "Computer",
+        firstPlayerLabel: this.getPlayerDisplayName(firstPlayerId),
         advantageText,
       },
       scores: this.getScores(),
@@ -463,7 +471,7 @@ export class GameSession {
       roundNumber: this.tournament.roundNumber,
       modeLabel: this.getModeLabel(),
       firstPlayerLabel:
-        snapshot.firstTurnId === "HUMAN" ? "Human" : "Computer",
+        this.getPlayerDisplayName(snapshot.firstTurnId),
       advantageText: "",
     };
 

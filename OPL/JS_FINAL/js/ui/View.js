@@ -67,6 +67,15 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.lblFinalHumanScore = document.getElementById("lbl-final-human-score");
     this.lblFinalComputerScore = document.getElementById("lbl-final-computer-score");
     this.lblFinalAdvantage = document.getElementById("lbl-final-advantage");
+
+    // Headings for players (score + boards)
+    const scoreHeadings = document.querySelectorAll(".scores h3");
+    this.scoreHumanHeading = scoreHeadings[0] || null;
+    this.scoreComputerHeading = scoreHeadings[1] || null;
+
+    const boardHeadings = document.querySelectorAll(".board-wrapper h4");
+    this.boardHumanHeading = boardHeadings[0] || null;
+    this.boardComputerHeading = boardHeadings[1] || null;
   }
 
   showScreen(name) {
@@ -94,6 +103,13 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
   setScores(humanScore, computerScore) {
     this.scoreHuman.textContent = humanScore;
     this.scoreComputer.textContent = computerScore;
+  }
+
+  setPlayerNames(humanLabel, computerLabel) {
+    if (this.scoreHumanHeading) this.scoreHumanHeading.textContent = humanLabel;
+    if (this.scoreComputerHeading) this.scoreComputerHeading.textContent = computerLabel;
+    if (this.boardHumanHeading) this.boardHumanHeading.textContent = humanLabel;
+    if (this.boardComputerHeading) this.boardComputerHeading.textContent = computerLabel;
   }
 
   setCurrentPlayerLabel(text) {
@@ -152,12 +168,12 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
    * Render both boards.
    * Pure display of covered/uncovered numbers.
    */
-  renderBoards(round) {
-    this._renderBoard(round.human.board, this.boardHuman);
-    this._renderBoard(round.computer.board, this.boardComputer);
+  renderBoards(round, { humanAdvantage = null, computerAdvantage = null } = {}) {
+    this._renderBoard(round.human.board, this.boardHuman, humanAdvantage);
+    this._renderBoard(round.computer.board, this.boardComputer, computerAdvantage);
   }
 
-  _renderBoard(board, container) {
+  _renderBoard(board, container, advantageSquare) {
     container.innerHTML = "";
     const size = board.size;
     for (let i = 1; i <= size; i++) {
@@ -166,6 +182,9 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
       btn.textContent = String(i);
       if (board.isCovered(i)) {
         btn.classList.add("covered");
+      }
+      if (advantageSquare && i === advantageSquare) {
+        btn.classList.add("advantage");
       }
       container.appendChild(btn);
     }

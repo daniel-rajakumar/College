@@ -71,6 +71,22 @@ export class GameRound {
   }
 
   /**
+   * Return the currently locked advantage square for the given player (if any), else null.
+   * Locked means the opponent cannot uncover it yet.
+   */
+  getLockedAdvantageSquare(playerId) {
+    if (
+      this.advantageLock &&
+      this.advantageLock.playerId === playerId &&
+      Number.isInteger(this.advantageLock.squareNumber) &&
+      !this.advantageLock.unlocked
+    ) {
+      return this.advantageLock.squareNumber;
+    }
+    return null;
+  }
+
+  /**
    * Internal: apply starting advantage (if any) by pre-covering one square
    * for the player who has the advantage.
    *
