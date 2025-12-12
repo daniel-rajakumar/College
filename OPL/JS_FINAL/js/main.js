@@ -1,106 +1,141 @@
 // js/main.js
 import { View } from "./ui/View.js";
-import { Tournament } from "./model/Tournament.js";
-import { Dice } from "./model/Dice.js";
+import { GameSession } from "./model/GameSession.js";
 
 const view = new View();
+const session = new GameSession();
 
-let tournament = null;
-let dice = null;
-let currentRound = null;
-
-// mode: "HvsC" | "HvsH" | "CvsC"
-let gameMode = "HvsC";
-
-// For current turn
-let currentDice = { d1: null, d2: null, sum: null };
-let currentPlayerId = "HUMAN";
-let phase = "awaitingRoll"; // "awaitingRoll" | "awaitingMove" | "roundOver"
-
-// For human move modal
-let pendingOptions = null; // { sum, coverOptions, uncoverOptions }
+// purely UI-side pending options (for the modal)
+let uiPendingOptions = null;
 
 window.addEventListener("DOMContentLoaded", () => {
   wireWelcome();
   wireSetup();
   wireGame();
   wireEnd();
+
+  // initial roll button state
+  updateRollButtonsFromSession();
 });
 
-/* ---------- HELPERS ---------- */
+/* ---------- HELPERS (controller-only) ---------- */
 
-function resetTournament() {
-  tournament = new Tournament("Human", "Computer");
-  dice = new Dice();
-  currentRound = null;
+function updateRollButtonsFromSession() {
+  const state = session.getRollButtonState();
+  view.setRollButtonsVisibility(state);
 }
 
-function isPlayerHumanControlled(playerId) {
-  if (gameMode === "HvsC") {
-    return playerId === "HUMAN";
+function refreshBoardsAndScores() {
+  const round = session.getCurrentRound();
+  if (round) {
+    view.renderBoards(round);
   }
-  if (gameMode === "HvsH") {
-    return true;
-  }
-  if (gameMode === "CvsC") {
-    return false;
-  }
-  return true;
+  const scores = session.getScores();
+  view.setScores(scores.humanScore, scores.computerScore);
 }
 
-function getModeLabel() {
-  if (gameMode === "HvsC") return "Human vs Computer";
-  if (gameMode === "HvsH") return "Human vs Human";
-  if (gameMode === "CvsC") return "Computer vs Computer";
-  return gameMode;
+function updateTurnInfoStatus(textIfAny) {
+  view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
+  view.setDiceText(session.getCurrentDice());
+  if (textIfAny) {
+    view.setTurnStatus(textIfAny);
+  }
 }
 
-function setPhase(newPhase) {
-  phase = newPhase;
+function handleRoundFinished(summary) {
+  // summary comes from GameSession
+  view.setScores(summary.humanScore, summary.computerScore);
+  view.setEndScreen(summary);
+  view.showScreen("end");
 }
 
 /**
- * Show / hide roll buttons based on:
- *  - phase
- *  - whose turn
- *  - 7..n rule
+ * Ask the session to let the computer play until:
+ *  - it's a human-controlled player's turn, or
+ *  - round ends.
  */
-function updateRollButtonsVisibility() {
-  if (!currentRound || phase !== "awaitingRoll" || !isPlayerHumanControlled(currentPlayerId)) {
-    // Hide "Roll 1" and disable both when it's not human's turn or not time to roll
-    view.setRollButtonsVisibility({
-      canRoll1: false,
-      enableRollButtons: false,
-    });
+function maybeRunComputerFromSession() {
+  const result = session.runComputerUntilHumanOrRoundEnd();
+  if (!result || !result.autoPlayed) return;
+
+  // Show logs from the session
+  result.logs.forEach((line) => view.appendLog(line));
+
+  // Update boards & scores
+  refreshBoardsAndScores();
+
+  if (result.roundOver) {
+    handleRoundFinished(result.summary);
     return;
   }
 
-  const player = currentRound.getPlayerById(currentPlayerId);
-  const board = player.board;
-  const n = board.size;
-
-  let allHighCovered = true;
-  for (let i = 7; i <= n; i++) {
-    if (i >= 1 && i <= n && !board.isCovered(i)) {
-      allHighCovered = false;
-      break;
-    }
-  }
-
-  view.setRollButtonsVisibility({
-    canRoll1: allHighCovered,
-    enableRollButtons: true,
-  });
+  // Round still active, now some player is up (probably human)
+  updateTurnInfoStatus(result.turnStatus);
+  updateRollButtonsFromSession();
 }
 
 /* ---------- WELCOME SCREEN ---------- */
 
 function wireWelcome() {
   const btnStartSetup = document.getElementById("btn-start-setup");
+  const btnUpload = document.getElementById("btn-upload-snapshot");
+  const fileInput = document.getElementById("file-snapshot");
+
   btnStartSetup.addEventListener("click", () => {
-    resetTournament();
+    session.resetTournament();
     view.showScreen("setup");
   });
+
+  // Trigger hidden file input
+  btnUpload.addEventListener("click", () => {
+    if (fileInput) {
+      fileInput.value = "";
+      fileInput.click();
+    }
+  });
+
+  // Handle file selection for loading a saved game
+  if (fileInput) {
+    fileInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const nameLower = file.name.toLowerCase();
+      if (!nameLower.endsWith(".txt")) {
+        alert("Please select a .txt saved game file.");
+        event.target.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = String(reader.result || "");
+          const state = session.loadSnapshotFromText(text);
+
+          // Switch to game screen & render from session state
+          view.showScreen("game");
+          view.clearLog();
+          state.logLines.forEach((line) => view.appendLog(line));
+
+          view.setRoundHeader(state.header);
+          view.setScores(state.scores.humanScore, state.scores.computerScore);
+          view.renderBoards(session.getCurrentRound());
+          updateTurnInfoStatus(state.turnStatus);
+          updateRollButtonsFromSession();
+
+          // If loaded state says it is computer's turn, let session drive it
+          maybeRunComputerFromSession();
+        } catch (err) {
+          console.error(err);
+          alert("Could not load saved game: " + (err.message || err));
+        } finally {
+          event.target.value = "";
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
 }
 
 /* ---------- SETUP SCREEN ---------- */
@@ -112,41 +147,24 @@ function wireSetup() {
   const btnSetupBack = document.getElementById("btn-setup-back");
   const btnStartRound = document.getElementById("btn-start-round");
 
-  // Update mode when user changes radio
+  // Update mode (no logic here, we just forward)
   modeRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
-      gameMode = document.querySelector('input[name="mode"]:checked').value;
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      session.setMode(mode);
     });
   });
 
   btnRolloff.addEventListener("click", () => {
-    if (!tournament) {
-      resetTournament();
-    }
     const boardSize = Number(selectBoardSize.value) || 9;
+    const result = session.rollOff(boardSize);
 
-    // Do roll-off: each side rolls two dice, higher sum goes first.
-    const humanRoll = dice.rollRandom(2);
-    const compRoll = dice.rollRandom(2);
+    view.setRolloffText(result.text, result.canStart);
 
-    const hr = humanRoll.sum;
-    const cr = compRoll.sum;
-
-    let text = `Human rolled ${humanRoll.d1} + ${humanRoll.d2} = ${hr}. `;
-    text += `Computer rolled ${compRoll.d1} + ${compRoll.d2} = ${cr}. `;
-
-    if (hr > cr) {
-      text += "Human goes first.";
-      btnStartRound.dataset.firstPlayerId = "HUMAN";
-      view.setRolloffText(text, true);
-    } else if (cr > hr) {
-      text += "Computer goes first.";
-      btnStartRound.dataset.firstPlayerId = "COMPUTER";
-      view.setRolloffText(text, true);
+    if (result.canStart && result.firstPlayerId) {
+      btnStartRound.dataset.firstPlayerId = result.firstPlayerId;
     } else {
-      text += "It's a tie. Roll again.";
       btnStartRound.dataset.firstPlayerId = "";
-      view.setRolloffText(text, false);
     }
   });
 
@@ -159,95 +177,103 @@ function wireSetup() {
     if (!firstPlayerId) return;
 
     const boardSize = Number(selectBoardSize.value) || 9;
-    startNewRound(boardSize, firstPlayerId);
+    const state = session.startNewRound(boardSize, firstPlayerId);
+
+    view.showScreen("game");
+    view.clearLog();
+    view.setRoundHeader(state.header);
+    view.setScores(state.scores.humanScore, state.scores.computerScore);
+    view.renderBoards(session.getCurrentRound());
+    updateTurnInfoStatus("Awaiting roll…");
+    view.appendLog(
+      `Round ${state.header.roundNumber} started. First player: ${state.header.firstPlayerLabel}`
+    );
+
+    updateRollButtonsFromSession();
+    maybeRunComputerFromSession();
   });
 }
 
-/* ---------- START ROUND ---------- */
-
-function startNewRound(boardSize, firstPlayerId) {
-  if (!tournament) {
-    resetTournament();
-  }
-  currentRound = tournament.startNewRound(boardSize, firstPlayerId);
-  currentPlayerId = currentRound.currentPlayerId;
-  currentDice = { d1: null, d2: null, sum: null };
-  pendingOptions = null;
-  setPhase("awaitingRoll");
-
-  view.showScreen("game");
-  view.clearLog();
-
-  const advantageText = tournament.nextRoundAdvantage
-    ? `Advantage: ${
-        tournament.nextRoundAdvantage.playerId === "HUMAN" ? "Human" : "Computer"
-      } has square ${tournament.nextRoundAdvantage.digitSum} pre-covered.`
-    : "";
-
-  view.setRoundHeader({
-    roundNumber: tournament.roundNumber,
-    modeLabel: getModeLabel(),
-    firstPlayerLabel: firstPlayerId === "HUMAN" ? "Human" : "Computer",
-    advantageText,
-  });
-
-  view.setScores(tournament.human.totalScore, tournament.computer.totalScore);
-  view.setCurrentPlayerLabel(
-    currentPlayerId === "HUMAN" ? "Human" : "Computer"
-  );
-  view.setDiceText({ d1: null, d2: null, sum: null });
-  view.setTurnStatus("Awaiting roll…");
-
-  view.renderBoards(currentRound);
-
-  view.appendLog(
-    `Round ${tournament.roundNumber} started. First player: ${
-      currentPlayerId === "HUMAN" ? "Human" : "Computer"
-    }`
-  );
-
-  updateRollButtonsVisibility();
-
-  // If current player is computer-controlled, auto-play their turn
-  maybePlayComputerTurn();
-}
-
-/* ---------- GAME SCREEN + MODAL ---------- */
+/* ---------- GAME SCREEN: ROLL / MODAL / QUIT ---------- */
 
 function wireGame() {
   const btnRoll1 = document.getElementById("btn-roll-1");
   const btnRoll2 = document.getElementById("btn-roll-2");
   const btnQuitRound = document.getElementById("btn-quit-round");
 
-  // Modal elements
   const modalBtnHelp = document.getElementById("modal-btn-help");
   const modalBtnCancel = document.getElementById("modal-btn-cancel");
   const modalBtnConfirm = document.getElementById("modal-btn-confirm");
   const modalMoveCover = document.getElementById("modal-move-cover");
   const modalMoveUncover = document.getElementById("modal-move-uncover");
 
-  btnRoll1.addEventListener("click", () => handleRollClick(1));
-  btnRoll2.addEventListener("click", () => handleRollClick(2));
+  btnRoll1.addEventListener("click", () => handleHumanRoll(1));
+  btnRoll2.addEventListener("click", () => handleHumanRoll(2));
 
-  // Modal: switch between Cover / Uncover
-  modalMoveCover.addEventListener("change", () => {
-    if (!pendingOptions || !modalMoveCover.checked) return;
-    view.updateMoveModalOptions("cover", pendingOptions.coverOptions || []);
-  });
-  modalMoveUncover.addEventListener("change", () => {
-    if (!pendingOptions || !modalMoveUncover.checked) return;
-    view.updateMoveModalOptions("uncover", pendingOptions.uncoverOptions || []);
-  });
+  function handleHumanRoll(numDice) {
+    const res = session.handleHumanRoll(numDice);
+    if (res.error) {
+      view.appendLog(res.error);
+      return;
+    }
 
-  // Modal: Help button
-  modalBtnHelp.addEventListener("click", () => {
-    if (!currentRound || !pendingOptions || !currentDice.sum) return;
-    const ai = tournament.computer;
-    const suggestion = ai.getHelpSuggestion(
-      currentRound,
-      currentPlayerId,
-      currentDice.sum
+    // Show dice
+    view.setDiceText(res.roll);
+
+    // Log roll
+    const playerLabel = session.getCurrentPlayerLabel();
+    if (res.roll.d2 == null) {
+      view.appendLog(`${playerLabel} rolled ${res.roll.d1} (sum = ${res.roll.sum})`);
+    } else {
+      view.appendLog(
+        `${playerLabel} rolled ${res.roll.d1} + ${res.roll.d2} (sum = ${res.roll.sum})`
+      );
+    }
+
+    if (!res.canMove) {
+      view.appendLog("No moves available for this roll. Turn ends.");
+      const endRes = session.endTurn();
+      if (endRes.roundOver) {
+        handleRoundFinished(endRes.summary);
+        return;
+      }
+      refreshBoardsAndScores();
+      updateTurnInfoStatus("New turn. Awaiting roll…");
+      updateRollButtonsFromSession();
+      maybeRunComputerFromSession();
+      return;
+    }
+
+    // We have moves → open modal
+    uiPendingOptions = {
+      coverOptions: res.coverOptions,
+      uncoverOptions: res.uncoverOptions,
+    };
+
+    view.setTurnStatus("Choose your move.");
+    view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
+    view.openMoveModal(
+      res.roll.sum,
+      res.coverOptions,
+      res.uncoverOptions
     );
+  }
+
+  // Modal: switch type (cover / uncover)
+  modalMoveCover.addEventListener("change", () => {
+    if (!uiPendingOptions || !modalMoveCover.checked) return;
+    view.updateMoveModalOptions("cover", uiPendingOptions.coverOptions || []);
+  });
+
+  modalMoveUncover.addEventListener("change", () => {
+    if (!uiPendingOptions || !modalMoveUncover.checked) return;
+    view.updateMoveModalOptions("uncover", uiPendingOptions.uncoverOptions || []);
+  });
+
+  // Modal: Help (delegates to model)
+  modalBtnHelp.addEventListener("click", () => {
+    const suggestion = session.getHelpSuggestion();
+    if (!suggestion) return;
     view.setMoveHelpText(
       `Recommended: ${suggestion.action.toUpperCase()} [${suggestion.squares.join(
         ", "
@@ -257,328 +283,106 @@ function wireGame() {
 
   // Modal: Confirm move
   modalBtnConfirm.addEventListener("click", () => {
-    if (!currentRound || !pendingOptions || phase !== "awaitingMove") return;
+    if (!uiPendingOptions) {
+      view.closeMoveModal();
+      return;
+    }
 
     const selection = view.getMoveModalSelection(
-      pendingOptions.coverOptions,
-      pendingOptions.uncoverOptions
+      uiPendingOptions.coverOptions,
+      uiPendingOptions.uncoverOptions
     );
     if (!selection) {
       view.setMoveHelpText("Please choose a combination.");
       return;
     }
 
-    applyHumanMove(selection.moveType, selection.squares);
+    const res = session.applyHumanMove(selection.moveType, selection.squares);
+    if (res.error) {
+      view.appendLog(res.error);
+      return;
+    }
+
+    const playerLabel = session.getCurrentPlayerLabel();
+    if (selection.moveType === "cover") {
+      view.appendLog(
+        `${playerLabel} covers squares [${selection.squares.join(", ")}]`
+      );
+    } else {
+      view.appendLog(
+        `${playerLabel} uncovers opponent squares [${selection.squares.join(", ")}]`
+      );
+    }
+
+    uiPendingOptions = null;
     view.closeMoveModal();
+    refreshBoardsAndScores();
+
+    if (res.roundOver) {
+      handleRoundFinished(res.summary);
+      return;
+    }
+
+    // Same player rolls again
+    updateTurnInfoStatus("Move completed. Roll again.");
+    updateRollButtonsFromSession();
   });
 
-  // Modal: Cancel (treat as "skip turn" – not ideal by rules, but avoids lock)
+  // Modal: Cancel = skip move, end turn
   modalBtnCancel.addEventListener("click", () => {
-    if (!currentRound || !pendingOptions) {
+    if (!uiPendingOptions) {
       view.closeMoveModal();
       return;
     }
+
     view.appendLog("You skipped your move. Turn ends.");
+    uiPendingOptions = null;
     view.closeMoveModal();
-    pendingOptions = null;
-    endTurn();
+
+    const endRes = session.endTurn();
+    if (endRes.roundOver) {
+      handleRoundFinished(endRes.summary);
+      return;
+    }
+
+    refreshBoardsAndScores();
+    updateTurnInfoStatus("New turn. Awaiting roll…");
+    updateRollButtonsFromSession();
+    maybeRunComputerFromSession();
   });
 
+  // Quit tournament mid-round
   btnQuitRound.addEventListener("click", () => {
-    // Just show end screen with tournament result so far
-    const result = tournament.getTournamentResult();
-    tournament.nextRoundAdvantage = null;
-    view.setEndScreen({
+    const result = session.getTournamentResult();
+    const summary = {
       roundWinnerId: result.winnerId,
       winType: "tournament",
       roundScore: 0,
       humanScore: result.humanScore,
       computerScore: result.computerScore,
       advantageForNext: null,
-    });
+      // also used by View.setEndScreen:
+      roundResultText: "",
+    };
+    view.setEndScreen(summary);
     view.showScreen("end");
   });
 }
 
-function handleRollClick(numDice) {
-  if (!currentRound) return;
-  if (phase !== "awaitingRoll") return;
-  if (!isPlayerHumanControlled(currentPlayerId)) return;
-
-  // Check 7..n rule (safety; UI already hides 1-die when illegal)
-  const player = currentRound.getPlayerById(currentPlayerId);
-  const board = player.board;
-  const n = board.size;
-  let allHighCovered = true;
-  for (let i = 7; i <= n; i++) {
-    if (i >= 1 && i <= n && !board.isCovered(i)) {
-      allHighCovered = false;
-      break;
-    }
-  }
-  if (numDice === 1 && !allHighCovered) {
-    view.appendLog("You may roll ONE die only if squares 7..n are ALL covered.");
-    return;
-  }
-  if (numDice !== 1 && numDice !== 2) return;
-
-  // Actually roll
-  const roll = dice.rollRandom(numDice);
-  currentDice = roll;
-  view.setDiceText(roll);
-
-  view.appendLog(
-    `${currentPlayerId === "HUMAN" ? "Human" : "Computer"} rolled ${
-      roll.d2 == null ? roll.d1 : `${roll.d1} + ${roll.d2}`
-    } (sum = ${roll.sum})`
-  );
-
-  const coverOptions = currentRound.getCoverOptions(currentPlayerId, roll.sum);
-  const uncoverOptions = currentRound.getUncoverOptions(currentPlayerId, roll.sum);
-
-  if (coverOptions.length === 0 && uncoverOptions.length === 0) {
-    view.appendLog("No moves available for this roll. Turn ends.");
-    endTurn();
-    return;
-  }
-
-  // Enter move-selection phase via modal
-  pendingOptions = {
-    sum: roll.sum,
-    coverOptions,
-    uncoverOptions,
-  };
-  setPhase("awaitingMove");
-  view.setTurnStatus("Choose your move.");
-  view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
-  view.openMoveModal(roll.sum, coverOptions, uncoverOptions);
-}
-
-/**
- * Apply a human move selected from the modal.
- * @param {"cover"|"uncover"} moveType
- * @param {number[]} squares
- */
-function applyHumanMove(moveType, squares) {
-  if (!currentRound) return;
-  if (!currentDice.sum) return;
-
-  // For safety, ensure combo is legal according to model
-  const options =
-    moveType === "cover"
-      ? currentRound.getCoverOptions(currentPlayerId, currentDice.sum)
-      : currentRound.getUncoverOptions(currentPlayerId, currentDice.sum);
-
-  const sortedSel = [...squares].sort((a, b) => a - b);
-  const exists = options.some((combo) => {
-    const s = [...combo].sort((a, b) => a - b);
-    if (s.length !== sortedSel.length) return false;
-    return s.every((v, i) => v === sortedSel[i]);
-  });
-
-  if (!exists) {
-    view.appendLog(
-      "Selected combination is no longer valid based on current board. Try again."
-    );
-    return;
-  }
-
-  if (moveType === "cover") {
-    currentRound.applyCoverMove(currentPlayerId, squares);
-    view.appendLog(
-      `${currentPlayerId === "HUMAN" ? "Human" : "Computer"} covers squares [${squares.join(
-        ", "
-      )}]`
-    );
-  } else {
-    currentRound.applyUncoverMove(currentPlayerId, squares);
-    view.appendLog(
-      `${currentPlayerId === "HUMAN" ? "Human" : "Computer"} uncovers opponent squares [${squares.join(
-        ", "
-      )}]`
-    );
-  }
-
-  view.renderBoards(currentRound);
-  pendingOptions = null;
-
-  if (currentRound.roundOver) {
-    handleRoundFinished();
-    return;
-  }
-
-  // Human must roll again
-  setPhase("awaitingRoll");
-  currentDice = { d1: null, d2: null, sum: null };
-  view.setDiceText(currentDice);
-  view.setTurnStatus("Move completed. Roll again.");
-  updateRollButtonsVisibility();
-}
-
-function endTurn() {
-  if (!currentRound) return;
-
-  currentRound.notifyTurnEnded(currentPlayerId);
-
-  if (currentRound.roundOver) {
-    handleRoundFinished();
-    return;
-  }
-
-  // Switch to next player
-  currentRound.switchTurn();
-  currentPlayerId = currentRound.currentPlayerId;
-
-  currentDice = { d1: null, d2: null, sum: null };
-  pendingOptions = null;
-  setPhase("awaitingRoll");
-
-  view.setDiceText(currentDice);
-  view.setCurrentPlayerLabel(
-    currentPlayerId === "HUMAN" ? "Human" : "Computer"
-  );
-  view.setTurnStatus("New turn. Awaiting roll…");
-
-  view.renderBoards(currentRound);
-  updateRollButtonsVisibility();
-
-  maybePlayComputerTurn();
-}
-
-function maybePlayComputerTurn() {
-  if (!currentRound) return;
-  if (!isPlayerHumanControlled(currentPlayerId)) {
-    // Disable roll buttons while AI is thinking
-    view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
-    playComputerFullTurn();
-  }
-}
-
-function playComputerFullTurn() {
-  const ai = tournament.computer;
-  const activeName = currentPlayerId === "HUMAN" ? "Human" : "Computer";
-
-  while (true) {
-    if (currentRound.roundOver) break;
-
-    // Determine number of dice using AI’s rule
-    const player = currentRound.getPlayerById(currentPlayerId);
-    const numDice = ai.chooseNumDice(player.board);
-    const roll = dice.rollRandom(numDice);
-    currentDice = roll;
-    view.setDiceText(roll);
-
-    view.appendLog(
-      `${activeName} (AUTO) rolled ${
-        roll.d2 == null ? roll.d1 : `${roll.d1} + ${roll.d2}`
-      } (sum = ${roll.sum})`
-    );
-
-    const decision = ai.decideMove(currentRound, currentPlayerId, roll.sum);
-
-    view.appendLog(
-      `${activeName} decision: action=${decision.action}, squares=[${decision.squares.join(
-        ", "
-      )}]. Reason: ${decision.reason}`
-    );
-
-    if (decision.action === "none") {
-      view.appendLog("No moves available. Turn ends.");
-      break;
-    }
-
-    if (decision.action === "cover") {
-      currentRound.applyCoverMove(currentPlayerId, decision.squares);
-      view.appendLog(
-        `${activeName} covers squares [${decision.squares.join(", ")}]`
-      );
-    } else if (decision.action === "uncover") {
-      currentRound.applyUncoverMove(currentPlayerId, decision.squares);
-      view.appendLog(
-        `${activeName} uncovers opponent squares [${decision.squares.join(", ")}]`
-      );
-    }
-
-    view.renderBoards(currentRound);
-
-    if (currentRound.roundOver) {
-      break;
-    }
-
-    // AI must continue rolling until no moves available
-  }
-
-  currentRound.notifyTurnEnded(currentPlayerId);
-  if (currentRound.roundOver) {
-    handleRoundFinished();
-  } else {
-    // Switch to next player
-    currentRound.switchTurn();
-    currentPlayerId = currentRound.currentPlayerId;
-    currentDice = { d1: null, d2: null, sum: null };
-    pendingOptions = null;
-    setPhase("awaitingRoll");
-
-    view.setDiceText(currentDice);
-    view.setCurrentPlayerLabel(
-      currentPlayerId === "HUMAN" ? "Human" : "Computer"
-    );
-    view.setTurnStatus("New turn. Awaiting roll…");
-
-    view.renderBoards(currentRound);
-    updateRollButtonsVisibility();
-
-    // If next player is also computer-controlled (CvsC mode), recurse
-    if (!isPlayerHumanControlled(currentPlayerId)) {
-      playComputerFullTurn();
-    }
-  }
-}
-
-/* ---------- ROUND END / END SCREEN ---------- */
-
-function handleRoundFinished() {
-  setPhase("roundOver");
-  view.appendLog("=== ROUND OVER ===");
-  view.appendLog(
-    `Winner: ${currentRound.roundWinnerId}, type=${currentRound.winType}, roundScore=${currentRound.roundScore}`
-  );
-
-  // Update tournament's advantage for next round
-  tournament.updateAdvantageForNextRound();
-
-  // Update cumulative scores already handled in GameRound; just show them.
-  view.setScores(tournament.human.totalScore, tournament.computer.totalScore);
-
-  view.setEndScreen({
-    roundWinnerId: currentRound.roundWinnerId,
-    winType: currentRound.winType,
-    roundScore: currentRound.roundScore,
-    humanScore: tournament.human.totalScore,
-    computerScore: tournament.computer.totalScore,
-    advantageForNext: tournament.nextRoundAdvantage,
-  });
-
-  view.showScreen("end");
-}
-
-/* ---------- END SCREEN BUTTONS ---------- */
+/* ---------- END SCREEN ---------- */
 
 function wireEnd() {
   const btnPlayAgain = document.getElementById("btn-end-play-again");
   const btnEndQuit = document.getElementById("btn-end-quit");
 
   btnPlayAgain.addEventListener("click", () => {
-    // Go back to setup to pick board size / roll-off again,
-    // carrying forward tournament scores and advantage.
     view.showScreen("setup");
-    const defaultText = "Click 'Roll Dice' to determine the first player.";
+    const defaultText = 'Click "Roll Dice" to determine the first player.';
     view.setRolloffText(defaultText, false);
   });
 
   btnEndQuit.addEventListener("click", () => {
-    // Show final tournament result and go to welcome
-    const result = tournament.getTournamentResult();
+    const result = session.getTournamentResult();
     alert(
       `Tournament over!\n` +
         `Winner: ${

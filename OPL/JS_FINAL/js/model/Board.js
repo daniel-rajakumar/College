@@ -159,6 +159,19 @@ export class Board {
     return arr;
   }
 
+    /**
+   * 1-die rule: return true if all squares 7..size are covered.
+   * If board size < 7, this always returns true.
+   */
+  canUseOneDie() {
+    if (this.size < 7) return true;
+    for (let i = 7; i <= this.size; i++) {
+      if (!this._covered[i]) return false;
+    }
+    return true;
+  }
+
+
   /**
    * Restore covered/uncovered from number-array format [1,2,3,0,...].
    */

@@ -11,7 +11,13 @@
       <section id="screen-welcome" class="screen active">
         <h1>Canoga</h1>
         <p class="subtitle">Dice + strategy game – HTML/JS Version</p>
-        <button id="btn-start-setup" class="primary">Start New Tournament</button>
+
+        <div class="btn-group">
+          <button id="btn-start-setup" class="primary">Start New Tournament</button>
+          <button id="btn-upload-snapshot" class="secondary">
+            Upload Saved Game
+          </button>
+        </div>
       </section>
 
       <!-- SETUP SCREEN -->
@@ -194,6 +200,14 @@
         </div>
       </section>
     </div>
+
+    <!-- HIDDEN FILE INPUT FOR SNAPSHOTS -->
+    <input
+      type="file"
+      id="file-snapshot"
+      accept=".txt,text/plain"
+      style="display: none;"
+    />
 
     <script type="module" src="js/main.js"></script>
   </body>
