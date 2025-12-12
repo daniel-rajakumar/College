@@ -74,11 +74,13 @@ export class GameSession {
   }
 
   getTournamentResult() {
-    return this.tournament ? this.tournament.getTournamentResult() : {
-      winnerId: "DRAW",
-      humanScore: 0,
-      computerScore: 0,
-    };
+    return this.tournament
+      ? this.tournament.getTournamentResult()
+      : {
+          winnerId: "DRAW",
+          humanScore: 0,
+          computerScore: 0,
+        };
   }
 
   /* ---------- ROLLOFF / START ROUND ---------- */
@@ -158,83 +160,26 @@ export class GameSession {
    * Pure game-rule info for the controller/View.
    * - canRoll1: whether "Roll 1 Die" should be visible.
    * - enableRollButtons: whether roll buttons should be enabled.
+   *
+   * Now this depends ONLY on: "Is there a round, and are we awaiting a roll?"
+   * It works for both human and computer turns.
    */
   getRollButtonState() {
-    if (
-      !this.currentRound ||
-      this.phase !== "awaitingRoll" ||
-      !this.isPlayerHumanControlled(this.currentPlayerId)
-    ) {
+    if (!this.currentRound || this.phase !== "awaitingRoll") {
       return { canRoll1: false, enableRollButtons: false };
     }
 
     const player = this.currentRound.getPlayerById(this.currentPlayerId);
     const board = player.board;
 
-    const canRoll1 = board.canUseOneDie();
+    const canRoll1 = board.canUseOneDie ? board.canUseOneDie() : false;
     return {
       canRoll1,
       enableRollButtons: true,
     };
   }
 
-  /* ---------- HUMAN ROLL / MOVE ---------- */
-
-  handleHumanRoll(numDice) {
-    if (!this.currentRound) {
-      return { error: "No active round." };
-    }
-    if (this.phase !== "awaitingRoll") {
-      return { error: "You cannot roll dice right now." };
-    }
-    if (!this.isPlayerHumanControlled(this.currentPlayerId)) {
-      return { error: "It is not a human-controlled player's turn." };
-    }
-    if (numDice !== 1 && numDice !== 2) {
-      return { error: "You must roll 1 or 2 dice." };
-    }
-
-    const player = this.currentRound.getPlayerById(this.currentPlayerId);
-    const board = player.board;
-
-    if (numDice === 1 && !board.canUseOneDie()) {
-      return {
-        error: "You may roll ONE die only if squares 7..n are ALL covered.",
-      };
-    }
-
-    const roll = this.dice.rollRandom(numDice);
-    this.currentDice = roll;
-
-    const coverOptions = this.currentRound.getCoverOptions(
-      this.currentPlayerId,
-      roll.sum
-    );
-    const uncoverOptions = this.currentRound.getUncoverOptions(
-      this.currentPlayerId,
-      roll.sum
-    );
-
-    if (coverOptions.length === 0 && uncoverOptions.length === 0) {
-      // No moves → controller will immediately end the turn.
-      return {
-        roll,
-        coverOptions,
-        uncoverOptions,
-        canMove: false,
-      };
-    }
-
-    // We now require a move selection via modal.
-    this.phase = "awaitingMove";
-
-    return {
-      roll,
-      coverOptions,
-      uncoverOptions,
-      canMove: true,
-    };
-  }
+  /* ---------- HUMAN MOVE (after dice are chosen) ---------- */
 
   /**
    * Apply a human-selected move.
@@ -340,15 +285,10 @@ export class GameSession {
     );
   }
 
-  /* ---------- COMPUTER TURNS ---------- */
+  /* ---------- COMPUTER AUTO-TURNS (old auto-roll logic, now unused) ---------- */
+  // Leaving this here in case you ever want to bring back fully automatic AI turns.
+  // main.js doesn't call this anymore.
 
-  /**
-   * Let the computer play until:
-   *  - It's a human-controlled player's turn, or
-   *  - Round ends.
-   *
-   * Returns info for logs + next turn status.
-   */
   runComputerUntilHumanOrRoundEnd() {
     const logs = [];
     let autoPlayed = false;
@@ -383,7 +323,11 @@ export class GameSession {
         );
       }
 
-      const decision = ai.decideMove(this.currentRound, this.currentPlayerId, roll.sum);
+      const decision = ai.decideMove(
+        this.currentRound,
+        this.currentPlayerId,
+        roll.sum
+      );
 
       logs.push(
         `${activeName} decision: action=${decision.action}, squares=[${decision.squares.join(
@@ -550,9 +494,8 @@ export class GameSession {
     return summary;
   }
 
-
-    /**
-   * Manual dice input for the current (human-controlled) player.
+  /**
+   * Manual dice input for the current player (human OR computer).
    * @param {number} numDice 1 or 2
    * @param {number[]} values [d1] or [d1, d2]
    */
@@ -563,10 +506,6 @@ export class GameSession {
     if (this.phase !== "awaitingRoll") {
       return { error: "You cannot roll dice right now." };
     }
-    // Only allow manual dice for human-controlled players (in HvsH, both sides)
-    if (!this.isPlayerHumanControlled(this.currentPlayerId)) {
-      return { error: "Manual dice input is only allowed for human-controlled players." };
-    }
     if (numDice !== 1 && numDice !== 2) {
       return { error: "You must use 1 or 2 dice." };
     }
@@ -574,8 +513,7 @@ export class GameSession {
       return { error: "Please select enough dice values." };
     }
 
-    const validDie = (v) =>
-      Number.isInteger(v) && v >= 1 && v <= 6;
+    const validDie = (v) => Number.isInteger(v) && v >= 1 && v <= 6;
 
     const d1 = values[0];
     const d2 = numDice === 2 ? values[1] : null;
@@ -584,10 +522,11 @@ export class GameSession {
       return { error: "Dice values must be between 1 and 6." };
     }
 
-    // 1-die rule (7..n covered)
     const player = this.currentRound.getPlayerById(this.currentPlayerId);
     const board = player.board;
-    if (numDice === 1 && !board.canUseOneDie()) {
+
+    // 1-die rule (7..n covered)
+    if (numDice === 1 && board.canUseOneDie && !board.canUseOneDie()) {
       return {
         error: "You may roll ONE die only if squares 7..n are ALL covered.",
       };
@@ -605,24 +544,102 @@ export class GameSession {
       sum
     );
 
-    if (coverOptions.length === 0 && uncoverOptions.length === 0) {
-      // No moves -> controller should endTurn() just like random roll
+    const isHumanCtrl = this.isPlayerHumanControlled(this.currentPlayerId);
+
+    // ---------- HUMAN-CONTROLLED PLAYER ----------
+    if (isHumanCtrl) {
+      if (coverOptions.length === 0 && uncoverOptions.length === 0) {
+        // No moves -> controller should endTurn() just like before
+        return {
+          roll: this.currentDice,
+          coverOptions,
+          uncoverOptions,
+          canMove: false,
+          autoMoveDone: false,
+        };
+      }
+
+      this.phase = "awaitingMove";
+
       return {
         roll: this.currentDice,
         coverOptions,
         uncoverOptions,
-        canMove: false,
+        canMove: true,
+        autoMoveDone: false,
       };
     }
 
-    this.phase = "awaitingMove";
+    // ---------- AI-CONTROLLED PLAYER (COMPUTER) ----------
+    const ai = this.tournament.computer;
+
+    // No moves at all -> treat like passing the turn
+    if (coverOptions.length === 0 && uncoverOptions.length === 0) {
+      this.currentRound.notifyTurnEnded(this.currentPlayerId);
+
+      if (this.currentRound.roundOver) {
+        this.phase = "roundOver";
+        this.tournament.updateAdvantageForNextRound();
+        return {
+          roll: this.currentDice,
+          canMove: false,
+          autoMoveDone: true,
+          roundOver: true,
+          summary: this._buildRoundSummary(),
+        };
+      }
+
+      this.currentRound.switchTurn();
+      this.currentPlayerId = this.currentRound.currentPlayerId;
+      this.currentDice = { d1: null, d2: null, sum: null };
+      this.phase = "awaitingRoll";
+
+      return {
+        roll: null,
+        canMove: false,
+        autoMoveDone: true,
+        roundOver: false,
+      };
+    }
+
+    // AI decides best move (should already be "smart" and prefer winning move)
+    const decision = ai.decideMove(this.currentRound, this.currentPlayerId, sum);
+
+    if (decision.action === "cover") {
+      this.currentRound.applyCoverMove(this.currentPlayerId, decision.squares);
+    } else if (decision.action === "uncover") {
+      this.currentRound.applyUncoverMove(
+        this.currentPlayerId,
+        decision.squares
+      );
+    }
+
+    // After applying AI move, check for round end
+    if (this.currentRound.roundOver) {
+      // AI's turn is done and the round is over → unlock advantage & finalize
+      this.currentRound.notifyTurnEnded(this.currentPlayerId);
+      this.phase = "roundOver";
+      this.tournament.updateAdvantageForNextRound();
+
+      return {
+        roll: this.currentDice,
+        canMove: false,
+        autoMoveDone: true,
+        roundOver: true,
+        summary: this._buildRoundSummary(),
+      };
+    }
+
+    // Round still active:
+    // AI's move is done, same player rolls again (manual dice again).
+    this.currentDice = { d1: null, d2: null, sum: null };
+    this.phase = "awaitingRoll";
 
     return {
-      roll: this.currentDice,
-      coverOptions,
-      uncoverOptions,
-      canMove: true,
+      roll: { d1, d2, sum },
+      canMove: false,
+      autoMoveDone: true,
+      roundOver: false,
     };
   }
-
 }

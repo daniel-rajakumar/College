@@ -5,7 +5,7 @@ import { GameSession } from "./model/GameSession.js";
 const view = new View();
 const session = new GameSession();
 
-// purely UI-side pending options (for the modal)
+// purely UI-side pending options (for the move modal)
 let uiPendingOptions = null;
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -16,7 +16,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // initial roll button state
   updateRollButtonsFromSession();
-    view.initManualDiceListeners();
+  view.initManualDiceListeners();
 });
 
 /* ---------- HELPERS (controller-only) ---------- */
@@ -48,31 +48,6 @@ function handleRoundFinished(summary) {
   view.setScores(summary.humanScore, summary.computerScore);
   view.setEndScreen(summary);
   view.showScreen("end");
-}
-
-/**
- * Ask the session to let the computer play until:
- *  - it's a human-controlled player's turn, or
- *  - round ends.
- */
-function maybeRunComputerFromSession() {
-  const result = session.runComputerUntilHumanOrRoundEnd();
-  if (!result || !result.autoPlayed) return;
-
-  // Show logs from the session
-  result.logs.forEach((line) => view.appendLog(line));
-
-  // Update boards & scores
-  refreshBoardsAndScores();
-
-  if (result.roundOver) {
-    handleRoundFinished(result.summary);
-    return;
-  }
-
-  // Round still active, now some player is up (probably human)
-  updateTurnInfoStatus(result.turnStatus);
-  updateRollButtonsFromSession();
 }
 
 /* ---------- WELCOME SCREEN ---------- */
@@ -124,9 +99,6 @@ function wireWelcome() {
           view.renderBoards(session.getCurrentRound());
           updateTurnInfoStatus(state.turnStatus);
           updateRollButtonsFromSession();
-
-          // If loaded state says it is computer's turn, let session drive it
-          maybeRunComputerFromSession();
         } catch (err) {
           console.error(err);
           alert("Could not load saved game: " + (err.message || err));
@@ -191,7 +163,7 @@ function wireSetup() {
     );
 
     updateRollButtonsFromSession();
-    maybeRunComputerFromSession();
+    // No auto-computer here — dice are always manual now
   });
 }
 
@@ -210,71 +182,26 @@ function wireGame() {
   const modalMoveUncover = document.getElementById("modal-move-uncover");
 
   const manualDiceConfirm = document.getElementById("manual-dice-confirm");
-const manualDiceCancel = document.getElementById("manual-dice-cancel");
+  const manualDiceCancel = document.getElementById("manual-dice-cancel");
 
-
-  btnRoll1.addEventListener("click", () => handleHumanRoll(1));
-  btnRoll2.addEventListener("click", () => handleHumanRoll(2));
-
-  if (btnRollManual) {
-  btnRollManual.addEventListener("click", () => {
-    // Only allow when we're in a roll phase; GameSession will enforce rules
+  // Helper: open manual dice modal if rolling is allowed for the *current* player
+  function openManualDice() {
     const diceState = session.getRollButtonState();
     if (!diceState.enableRollButtons) return;
 
     view.setManualDiceHelp("");
     view.openManualDiceModal();
-  });
-}
+  }
 
-
-  function handleHumanRoll(numDice) {
-    const res = session.handleHumanRoll(numDice);
-    if (res.error) {
-      view.appendLog(res.error);
-      return;
-    }
-
-    // Show dice
-    view.setDiceText(res.roll);
-
-    // Log roll
-    const playerLabel = session.getCurrentPlayerLabel();
-    if (res.roll.d2 == null) {
-      view.appendLog(`${playerLabel} rolled ${res.roll.d1} (sum = ${res.roll.sum})`);
-    } else {
-      view.appendLog(
-        `${playerLabel} rolled ${res.roll.d1} + ${res.roll.d2} (sum = ${res.roll.sum})`
-      );
-    }
-
-    if (!res.canMove) {
-      view.appendLog("No moves available for this roll. Turn ends.");
-      const endRes = session.endTurn();
-      if (endRes.roundOver) {
-        handleRoundFinished(endRes.summary);
-        return;
-      }
-      refreshBoardsAndScores();
-      updateTurnInfoStatus("New turn. Awaiting roll…");
-      updateRollButtonsFromSession();
-      maybeRunComputerFromSession();
-      return;
-    }
-
-    // We have moves → open modal
-    uiPendingOptions = {
-      coverOptions: res.coverOptions,
-      uncoverOptions: res.uncoverOptions,
-    };
-
-    view.setTurnStatus("Choose your move.");
-    view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
-    view.openMoveModal(
-      res.roll.sum,
-      res.coverOptions,
-      res.uncoverOptions
-    );
+  // All three roll buttons now open the MANUAL dice input
+  if (btnRoll1) {
+    btnRoll1.addEventListener("click", openManualDice);
+  }
+  if (btnRoll2) {
+    btnRoll2.addEventListener("click", openManualDice);
+  }
+  if (btnRollManual) {
+    btnRollManual.addEventListener("click", openManualDice);
   }
 
   // Modal: switch type (cover / uncover)
@@ -299,7 +226,7 @@ const manualDiceCancel = document.getElementById("manual-dice-cancel");
     );
   });
 
-  // Modal: Confirm move
+  // Modal: Confirm move (human-selected move)
   modalBtnConfirm.addEventListener("click", () => {
     if (!uiPendingOptions) {
       view.closeMoveModal();
@@ -366,7 +293,6 @@ const manualDiceCancel = document.getElementById("manual-dice-cancel");
     refreshBoardsAndScores();
     updateTurnInfoStatus("New turn. Awaiting roll…");
     updateRollButtonsFromSession();
-    maybeRunComputerFromSession();
   });
 
   // Quit tournament mid-round
@@ -386,76 +312,91 @@ const manualDiceCancel = document.getElementById("manual-dice-cancel");
     view.showScreen("end");
   });
 
-
-
   // Manual dice modal: Confirm
-if (manualDiceConfirm) {
-  manualDiceConfirm.addEventListener("click", () => {
-    const selection = view.getManualDiceSelection();
-    if (!selection) {
-      view.setManualDiceHelp("Please select the dice values first.");
-      return;
-    }
-
-    const res = session.handleManualRoll(selection.numDice, selection.values);
-    if (res.error) {
-      view.setManualDiceHelp(res.error);
-      return;
-    }
-
-    // Close manual modal, then process result like a normal roll
-    view.closeManualDiceModal();
-
-    // Show dice
-    view.setDiceText(res.roll);
-
-    const playerLabel = session.getCurrentPlayerLabel();
-    const r = res.roll;
-    if (r.d2 == null) {
-      view.appendLog(`${playerLabel} (manual) chose ${r.d1} (sum = ${r.sum})`);
-    } else {
-      view.appendLog(
-        `${playerLabel} (manual) chose ${r.d1} + ${r.d2} (sum = ${r.sum})`
-      );
-    }
-
-    if (!res.canMove) {
-      view.appendLog("No moves available for this roll. Turn ends.");
-      const endRes = session.endTurn();
-      if (endRes.roundOver) {
-        handleRoundFinished(endRes.summary);
+  if (manualDiceConfirm) {
+    manualDiceConfirm.addEventListener("click", () => {
+      const selection = view.getManualDiceSelection();
+      if (!selection) {
+        view.setManualDiceHelp("Please select the dice values first.");
         return;
       }
+
+      // This now handles the CURRENT player (human or computer)
+      const res = session.handleManualRoll(selection.numDice, selection.values);
+      if (res.error) {
+        view.setManualDiceHelp(res.error);
+        return;
+      }
+
+      // Close manual modal, then process result
+      view.closeManualDiceModal();
+
+      // Show dice
+      view.setDiceText(res.roll);
+
+      const playerLabel = session.getCurrentPlayerLabel();
+      const r = res.roll;
+      if (r.d2 == null) {
+        view.appendLog(`${playerLabel} (manual) chose ${r.d1} (sum = ${r.sum})`);
+      } else {
+        view.appendLog(
+          `${playerLabel} (manual) chose ${r.d1} + ${r.d2} (sum = ${r.sum})`
+        );
+      }
+
+      // Case 1: no moves available and no auto-move done (human with no options)
+      if (!res.canMove && !res.autoMoveDone) {
+        view.appendLog("No moves available for this roll. Turn ends.");
+        const endRes = session.endTurn();
+        if (endRes.roundOver) {
+          handleRoundFinished(endRes.summary);
+          return;
+        }
+        refreshBoardsAndScores();
+        updateTurnInfoStatus("New turn. Awaiting roll…");
+        updateRollButtonsFromSession();
+        return;
+      }
+
+      // Case 2: human needs to pick a move (cover/uncover)
+      if (res.coverOptions && res.uncoverOptions && res.canMove) {
+        uiPendingOptions = {
+          coverOptions: res.coverOptions,
+          uncoverOptions: res.uncoverOptions,
+        };
+
+        view.setTurnStatus("Choose your move.");
+        view.setRollButtonsVisibility({
+          canRoll1: false,
+          enableRollButtons: false,
+        });
+        view.openMoveModal(
+          res.roll.sum,
+          res.coverOptions,
+          res.uncoverOptions
+        );
+        return;
+      }
+
+      // Case 3: AI-controlled player auto-moved in GameSession
       refreshBoardsAndScores();
-      updateTurnInfoStatus("New turn. Awaiting roll…");
+
+      if (res.roundOver) {
+        handleRoundFinished(res.summary);
+        return;
+      }
+
+      updateTurnInfoStatus("Move completed. Roll again.");
       updateRollButtonsFromSession();
-      maybeRunComputerFromSession();
-      return;
-    }
+    });
+  }
 
-    // We have moves – show standard move modal
-    uiPendingOptions = {
-      coverOptions: res.coverOptions,
-      uncoverOptions: res.uncoverOptions,
-    };
-
-    view.setTurnStatus("Choose your move.");
-    view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
-    view.openMoveModal(
-      res.roll.sum,
-      res.coverOptions,
-      res.uncoverOptions
-    );
-  });
-}
-
-// Manual dice modal: Cancel
-if (manualDiceCancel) {
-  manualDiceCancel.addEventListener("click", () => {
-    view.closeManualDiceModal();
-  });
-}
-
+  // Manual dice modal: Cancel
+  if (manualDiceCancel) {
+    manualDiceCancel.addEventListener("click", () => {
+      view.closeManualDiceModal();
+    });
+  }
 }
 
 /* ---------- END SCREEN ---------- */

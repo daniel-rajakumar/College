@@ -18,6 +18,16 @@ export class ComputerPlayer extends Player {
    * Decide best move for given player (usually the computer itself).
    * We keep this generic so it can also be used to give help to human.
    *
+   * SMART STRATEGY:
+   *  1. Check ALL legal moves (cover + uncover) for an IMMEDIATE WIN.
+   *     - Cover: move covers ALL your remaining uncovered squares.
+   *     - Uncover: move uncovers ALL of opponent's remaining covered squares.
+   *  2. If no winning move:
+   *     - Prefer covering over uncovering (rubric rule).
+   *     - Within cover/uncover moves, choose combo with:
+   *         a) more squares,
+   *         b) if tie, larger sum.
+   *
    * @param {GameRound} round
    * @param {string} playerId "HUMAN" | "COMPUTER"
    * @param {number} diceSum
@@ -43,19 +53,61 @@ export class ComputerPlayer extends Player {
       };
     }
 
-    // Strategy from rubric:
-    // 1. Prefer covering if possible.
-    // 2. Otherwise uncover.
-    // Within each, prefer:
-    //   - combos with more squares
-    //   - if tie, higher total value (larger numbers).
+    const self = round.getPlayerById(playerId);
+    const opp = round.getOpponent(playerId);
+
+    const selfUncovered = self.board.getUncoveredNumbers();
+    const oppCovered = opp.board.getCoveredNumbers();
+
+    // ------------------------------------------------------
+    // 1. LOOK FOR AN IMMEDIATE WIN (COVER OR UNCOVER)
+    // ------------------------------------------------------
+
+    // Win by COVER: if this combo covers ALL remaining uncovered squares
+    // => combo length == #uncovered (combos are subsets of uncovered).
+    for (const combo of coverOptions) {
+      if (combo.length === selfUncovered.length) {
+        return {
+          action: "cover",
+          squares: combo,
+          reason:
+            "This move COVERS all your remaining squares and wins the round immediately.",
+          allCoverOptions: coverOptions,
+          allUncoverOptions: uncoverOptions
+        };
+      }
+    }
+
+    // Win by UNCOVER: if this combo uncovers ALL of opponent's covered squares
+    // => combo length == #covered (combos are subsets of covered).
+    for (const combo of uncoverOptions) {
+      if (combo.length === oppCovered.length) {
+        return {
+          action: "uncover",
+          squares: combo,
+          reason:
+            "This move UNCOVERS all opponent squares and wins the round immediately.",
+          allCoverOptions: coverOptions,
+          allUncoverOptions: uncoverOptions
+        };
+      }
+    }
+
+    // ------------------------------------------------------
+    // 2. NO FORCED WIN: USE HEURISTIC
+    //    - Prefer covering if possible.
+    //    - Otherwise uncover.
+    //    - Within each, prefer:
+    //        * more squares
+    //        * if tie, larger sum
+    // ------------------------------------------------------
     if (coverOptions.length > 0) {
       const best = this._pickBestCombo(coverOptions);
       return {
         action: "cover",
         squares: best,
         reason:
-          "Chose to COVER own squares first to move closer to winning and make it harder for opponent to score.",
+          "No immediate win available. Chose to COVER own squares using the combination that makes the most progress (more / larger squares).",
         allCoverOptions: coverOptions,
         allUncoverOptions: uncoverOptions
       };
@@ -65,7 +117,7 @@ export class ComputerPlayer extends Player {
         action: "uncover",
         squares: best,
         reason:
-          "No cover move available, so chose to UNCOVER opponent's squares to disrupt their progress.",
+          "No immediate win available and no cover move. Chose to UNCOVER opponent's squares using the strongest combination (more / larger squares).",
         allCoverOptions: coverOptions,
         allUncoverOptions: uncoverOptions
       };
@@ -76,6 +128,7 @@ export class ComputerPlayer extends Player {
    * Helper for help-mode: same logic as decideMove, but explicitly labelled.
    */
   getHelpSuggestion(round, playerId, diceSum) {
+    // Help is literally "what would the AI do in your shoes?"
     return this.decideMove(round, playerId, diceSum);
   }
 

@@ -405,4 +405,138 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
       this.lblFinalAdvantage.textContent = `${who} gets advantage square ${advantageForNext.digitSum}`;
     }
   }
+
+
+  // ui/View.js (inside export class View { ... })
+
+  /* ---------- MANUAL DICE MODAL ---------- */
+
+  initManualDiceListeners() {
+    this.manualDiceModal = document.getElementById("manual-dice-modal");
+    this.manualDiceHelp = document.getElementById("manual-dice-help");
+
+    // radio buttons for 1 vs 2 dice
+    this.manualDiceRadios = Array.from(
+      document.querySelectorAll('input[name="manual-dice-count"]')
+    );
+
+    // rows for each die
+    this.manualDiceRows = {
+      1: document.querySelector('.manual-dice-row[data-die="1"]'),
+      2: document.querySelector('.manual-dice-row[data-die="2"]'),
+    };
+
+    // buttons for each die face
+    this.manualDieButtons = Array.from(
+      document.querySelectorAll(".manual-die")
+    );
+
+    // track selected values
+    this.manualSelectedValues = { 1: null, 2: null };
+
+    // when you click a die face, highlight it and store its value
+    this.manualDieButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const die = Number(btn.dataset.die);
+        const value = Number(btn.dataset.value);
+
+        // clear previous selection for this die
+        this.manualDieButtons
+          .filter((b) => Number(b.dataset.die) === die)
+          .forEach((b) => b.classList.remove("selected"));
+
+        btn.classList.add("selected");
+        this.manualSelectedValues[die] = value;
+      });
+    });
+
+    // show/hide second die row based on 1-die / 2-dice choice
+    const updateRows = () => {
+      const count = this.getManualDiceCount();
+      if (count === 1) {
+        if (this.manualDiceRows[2]) {
+          this.manualDiceRows[2].style.display = "none";
+        }
+      } else {
+        if (this.manualDiceRows[2]) {
+          this.manualDiceRows[2].style.display = "";
+        }
+      }
+    };
+
+    this.manualDiceRadios.forEach((r) => {
+      r.addEventListener("change", updateRows);
+    });
+
+    // initial state
+    updateRows();
+  }
+
+  getManualDiceCount() {
+    if (!this.manualDiceRadios) return 2;
+    const checked = this.manualDiceRadios.find((r) => r.checked);
+    return checked ? Number(checked.value) : 2;
+  }
+
+  openManualDiceModal() {
+    if (!this.manualDiceModal) return;
+
+    // reset help text
+    this.setManualDiceHelp("");
+
+    // reset selection
+    this.manualSelectedValues = { 1: null, 2: null };
+    if (this.manualDieButtons) {
+      this.manualDieButtons.forEach((b) => b.classList.remove("selected"));
+    }
+
+    // make sure the radio state shows/hides die 2
+    if (this.manualDiceRadios && this.manualDiceRadios.length > 0) {
+      // default to 2 dice (or keep whatever is checked)
+      if (!this.manualDiceRadios.some((r) => r.checked)) {
+        this.manualDiceRadios[0].checked = true;
+      }
+      const event = new Event("change");
+      this.manualDiceRadios
+        .find((r) => r.checked)
+        ?.dispatchEvent(event);
+    }
+
+    this.manualDiceModal.classList.remove("hidden");
+  }
+
+  closeManualDiceModal() {
+    if (!this.manualDiceModal) return;
+    this.manualDiceModal.classList.add("hidden");
+  }
+
+  setManualDiceHelp(text) {
+    if (!this.manualDiceHelp) return;
+    this.manualDiceHelp.textContent = text || "";
+  }
+
+  /**
+   * Returns { numDice, values } or null if incomplete
+   */
+  getManualDiceSelection() {
+    const numDice = this.getManualDiceCount();
+    const values = [];
+
+    const v1 = this.manualSelectedValues[1];
+    if (!v1) {
+      return null; // die 1 not chosen
+    }
+    values.push(v1);
+
+    if (numDice === 2) {
+      const v2 = this.manualSelectedValues[2];
+      if (!v2) {
+        return null; // die 2 not chosen
+      }
+      values.push(v2);
+    }
+
+    return { numDice, values };
+  }
+
 }
