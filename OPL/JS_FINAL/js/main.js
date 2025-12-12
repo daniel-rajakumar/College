@@ -163,7 +163,6 @@ function wireSetup() {
     );
 
     updateRollButtonsFromSession();
-    // No auto-computer here — dice are always manual now
   });
 }
 
@@ -183,6 +182,7 @@ function wireGame() {
 
   const manualDiceConfirm = document.getElementById("manual-dice-confirm");
   const manualDiceCancel = document.getElementById("manual-dice-cancel");
+  const btnSaveSnapshot = document.getElementById("btn-save-snapshot");
 
   // Helper: open manual dice modal if rolling is allowed for the *current* player
   function openManualDice() {
@@ -193,12 +193,80 @@ function wireGame() {
     view.openManualDiceModal();
   }
 
-  // All three roll buttons now open the MANUAL dice input
+  // Helper: process roll outcome (manual or random)
+  function processRollOutcome(res, playerLabel, sourceLabel) {
+    if (res.error) {
+      view.appendLog(res.error);
+      return;
+    }
+
+    // Show dice
+    if (res.roll) {
+      view.setDiceText(res.roll);
+      const r = res.roll;
+      if (r.d2 == null) {
+        view.appendLog(`${playerLabel} ${sourceLabel} ${r.d1} (sum = ${r.sum})`);
+      } else {
+        view.appendLog(
+          `${playerLabel} ${sourceLabel} ${r.d1} + ${r.d2} (sum = ${r.sum})`
+        );
+      }
+    }
+
+    // No moves available and no auto move
+    if (!res.canMove && !res.autoMoveDone) {
+      view.appendLog("No moves available for this roll. Turn ends.");
+      const endRes = session.endTurn();
+      if (endRes.roundOver) {
+        handleRoundFinished(endRes.summary);
+        return;
+      }
+      refreshBoardsAndScores();
+      updateTurnInfoStatus("New turn. Awaiting roll…");
+      updateRollButtonsFromSession();
+      return;
+    }
+
+    // Human needs to pick a move
+    if (res.coverOptions && res.uncoverOptions && res.canMove) {
+      uiPendingOptions = {
+        coverOptions: res.coverOptions,
+        uncoverOptions: res.uncoverOptions,
+      };
+
+      view.setTurnStatus("Choose your move.");
+      view.setRollButtonsVisibility({
+        canRoll1: false,
+        enableRollButtons: false,
+      });
+      view.openMoveModal(res.roll.sum, res.coverOptions, res.uncoverOptions);
+      return;
+    }
+
+    // AI already moved
+    refreshBoardsAndScores();
+
+    if (res.roundOver) {
+      handleRoundFinished(res.summary);
+      return;
+    }
+
+    updateTurnInfoStatus("Move completed. Roll again.");
+    updateRollButtonsFromSession();
+  }
+
+  // Roll buttons: open manual dice (user rolls for both players)
   if (btnRoll1) {
-    btnRoll1.addEventListener("click", openManualDice);
+    btnRoll1.addEventListener("click", () => {
+      view.setManualDiceCount(1);
+      openManualDice();
+    });
   }
   if (btnRoll2) {
-    btnRoll2.addEventListener("click", openManualDice);
+    btnRoll2.addEventListener("click", () => {
+      view.setManualDiceCount(2);
+      openManualDice();
+    });
   }
   if (btnRollManual) {
     btnRollManual.addEventListener("click", openManualDice);
@@ -280,19 +348,17 @@ function wireGame() {
       return;
     }
 
-    view.appendLog("You skipped your move. Turn ends.");
-    uiPendingOptions = null;
-    view.closeMoveModal();
-
-    const endRes = session.endTurn();
-    if (endRes.roundOver) {
-      handleRoundFinished(endRes.summary);
+    // If options exist, player must pick one (cannot skip)
+    if (
+      (uiPendingOptions.coverOptions && uiPendingOptions.coverOptions.length) ||
+      (uiPendingOptions.uncoverOptions && uiPendingOptions.uncoverOptions.length)
+    ) {
+      view.setMoveHelpText("You must choose a valid move; skipping is not allowed when moves exist.");
       return;
     }
 
-    refreshBoardsAndScores();
-    updateTurnInfoStatus("New turn. Awaiting roll…");
-    updateRollButtonsFromSession();
+    uiPendingOptions = null;
+    view.closeMoveModal();
   });
 
   // Quit tournament mid-round
@@ -330,64 +396,8 @@ function wireGame() {
 
       // Close manual modal, then process result
       view.closeManualDiceModal();
-
-      // Show dice
-      view.setDiceText(res.roll);
-
       const playerLabel = session.getCurrentPlayerLabel();
-      const r = res.roll;
-      if (r.d2 == null) {
-        view.appendLog(`${playerLabel} (manual) chose ${r.d1} (sum = ${r.sum})`);
-      } else {
-        view.appendLog(
-          `${playerLabel} (manual) chose ${r.d1} + ${r.d2} (sum = ${r.sum})`
-        );
-      }
-
-      // Case 1: no moves available and no auto-move done (human with no options)
-      if (!res.canMove && !res.autoMoveDone) {
-        view.appendLog("No moves available for this roll. Turn ends.");
-        const endRes = session.endTurn();
-        if (endRes.roundOver) {
-          handleRoundFinished(endRes.summary);
-          return;
-        }
-        refreshBoardsAndScores();
-        updateTurnInfoStatus("New turn. Awaiting roll…");
-        updateRollButtonsFromSession();
-        return;
-      }
-
-      // Case 2: human needs to pick a move (cover/uncover)
-      if (res.coverOptions && res.uncoverOptions && res.canMove) {
-        uiPendingOptions = {
-          coverOptions: res.coverOptions,
-          uncoverOptions: res.uncoverOptions,
-        };
-
-        view.setTurnStatus("Choose your move.");
-        view.setRollButtonsVisibility({
-          canRoll1: false,
-          enableRollButtons: false,
-        });
-        view.openMoveModal(
-          res.roll.sum,
-          res.coverOptions,
-          res.uncoverOptions
-        );
-        return;
-      }
-
-      // Case 3: AI-controlled player auto-moved in GameSession
-      refreshBoardsAndScores();
-
-      if (res.roundOver) {
-        handleRoundFinished(res.summary);
-        return;
-      }
-
-      updateTurnInfoStatus("Move completed. Roll again.");
-      updateRollButtonsFromSession();
+      processRollOutcome(res, playerLabel, "(manual) chose");
     });
   }
 
@@ -395,6 +405,29 @@ function wireGame() {
   if (manualDiceCancel) {
     manualDiceCancel.addEventListener("click", () => {
       view.closeManualDiceModal();
+    });
+  }
+
+  // Save snapshot to .txt
+  if (btnSaveSnapshot) {
+    btnSaveSnapshot.addEventListener("click", () => {
+      try {
+        const text = session.getSnapshotText();
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const round = session.getCurrentRound();
+        const roundNum = round ? round.boardSize : "state";
+        a.href = url;
+        a.download = `canoga_snapshot_${roundNum}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        view.appendLog("Game snapshot saved.");
+      } catch (err) {
+        alert("Could not save snapshot: " + (err.message || err));
+      }
     });
   }
 }

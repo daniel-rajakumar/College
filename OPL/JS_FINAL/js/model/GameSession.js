@@ -63,6 +63,14 @@ export class GameSession {
     return this.currentRound;
   }
 
+  getCurrentPlayerId() {
+    return this.currentPlayerId;
+  }
+
+  getPhase() {
+    return this.phase;
+  }
+
   getScores() {
     if (!this.tournament) {
       return { humanScore: 0, computerScore: 0 };
@@ -641,5 +649,134 @@ export class GameSession {
       autoMoveDone: true,
       roundOver: false,
     };
+  }
+
+  /**
+   * Random dice roll wrapper with same return shape as handleManualRoll.
+   * @param {number} numDice
+   */
+  handleRandomRoll(numDice) {
+    if (!this.dice) this.dice = new Dice();
+    const roll = this.dice.rollRandom(numDice);
+    const res = this.handleManualRoll(
+      numDice,
+      roll.d2 == null ? [roll.d1] : [roll.d1, roll.d2]
+    );
+    if (!res.roll) {
+      res.roll = roll;
+    }
+    return res;
+  }
+
+  /**
+   * Fully automatic computer turn: roll, pick move, repeat until
+   * no moves are possible or the round ends.
+   * Returns logs for UI and status flags.
+   */
+  autoPlayComputerTurn() {
+    const logs = [];
+    if (!this.currentRound || this.phase !== "awaitingRoll") {
+      return { logs, switchedToHuman: false, roundOver: false };
+    }
+    if (this.isPlayerHumanControlled(this.currentPlayerId)) {
+      return { logs, switchedToHuman: false, roundOver: false };
+    }
+    if (!this.dice) {
+      this.dice = new Dice();
+    }
+
+    while (
+      this.currentRound &&
+      !this.currentRound.roundOver &&
+      !this.isPlayerHumanControlled(this.currentPlayerId) &&
+      this.phase === "awaitingRoll"
+    ) {
+      // choose dice count per AI rule
+      const ai = this.tournament.computer;
+      const player = this.currentRound.getPlayerById(this.currentPlayerId);
+      const board = player.board;
+      const numDice = ai.chooseNumDice(board);
+      const roll = this.dice.rollRandom(numDice);
+      this.currentDice = roll;
+
+      logs.push(
+        `Computer rolled ${roll.d1}${roll.d2 == null ? "" : " + " + roll.d2} (sum = ${roll.sum})`
+      );
+
+      const coverOptions = this.currentRound.getCoverOptions(this.currentPlayerId, roll.sum);
+      const uncoverOptions = this.currentRound.getUncoverOptions(this.currentPlayerId, roll.sum);
+
+      if (coverOptions.length === 0 && uncoverOptions.length === 0) {
+        logs.push("No moves available. Turn ends.");
+        this.currentRound.notifyTurnEnded(this.currentPlayerId);
+        if (this.currentRound.roundOver) {
+          this.phase = "roundOver";
+          this.tournament.updateAdvantageForNextRound();
+          const summary = this._buildRoundSummary();
+          logs.push("=== ROUND OVER ===");
+          return { logs, switchedToHuman: false, roundOver: true, summary };
+        }
+        this.currentRound.switchTurn();
+        this.currentPlayerId = this.currentRound.currentPlayerId;
+        this.currentDice = { d1: null, d2: null, sum: null };
+        this.phase = "awaitingRoll";
+        return { logs, switchedToHuman: true, roundOver: false };
+      }
+
+      const decision = ai.decideMove(this.currentRound, this.currentPlayerId, roll.sum);
+      logs.push(
+        `Computer decision: ${decision.action.toUpperCase()} [${decision.squares.join(
+          ", "
+        )}] – ${decision.reason}`
+      );
+
+      if (decision.action === "cover") {
+        this.currentRound.applyCoverMove(this.currentPlayerId, decision.squares);
+        logs.push(`Computer covers squares [${decision.squares.join(", ")}]`);
+      } else if (decision.action === "uncover") {
+        this.currentRound.applyUncoverMove(this.currentPlayerId, decision.squares);
+        logs.push(`Computer uncovers opponent squares [${decision.squares.join(", ")}]`);
+      } else {
+        // should not hit because handled above
+        this.currentRound.notifyTurnEnded(this.currentPlayerId);
+        this.currentRound.switchTurn();
+        this.currentPlayerId = this.currentRound.currentPlayerId;
+        this.currentDice = { d1: null, d2: null, sum: null };
+        this.phase = "awaitingRoll";
+        return { logs, switchedToHuman: true, roundOver: false };
+      }
+
+      if (this.currentRound.roundOver) {
+        this.currentRound.notifyTurnEnded(this.currentPlayerId);
+        this.phase = "roundOver";
+        this.tournament.updateAdvantageForNextRound();
+        const summary = this._buildRoundSummary();
+        logs.push("=== ROUND OVER ===");
+        return { logs, switchedToHuman: false, roundOver: true, summary };
+      }
+
+      // Same player continues rolling
+      this.currentDice = { d1: null, d2: null, sum: null };
+      this.phase = "awaitingRoll";
+    }
+
+    return { logs, switchedToHuman: false, roundOver: false };
+  }
+
+  /**
+   * Export a snapshot string of the current round for saving.
+   */
+  getSnapshotText() {
+    if (!this.currentRound) {
+      throw new Error("No active round to save.");
+    }
+    return Serializer.serializeSnapshot({
+      computerBoard: this.currentRound.computer.board,
+      humanBoard: this.currentRound.human.board,
+      computerScore: this.tournament.computer.totalScore,
+      humanScore: this.tournament.human.totalScore,
+      firstTurnId: this.currentRound.firstPlayerId,
+      nextTurnId: this.currentPlayerId,
+    });
   }
 }
