@@ -9,6 +9,11 @@ const session = new GameSession();
 let uiPendingOptions = null;
 let lastShownRoll = null;
 
+function log(message) {
+  const ts = new Date().toLocaleTimeString();
+  view.appendLog(`[${ts}] ${message}`);
+}
+
 function setLastPlayFromAction(action) {
   if (!action) return;
   const playerName = session.getPlayerDisplayName(action.playerId || "HUMAN");
@@ -27,6 +32,7 @@ window.addEventListener("DOMContentLoaded", () => {
   wireSetup();
   wireGame();
   wireEnd();
+  session.setMode("HvsC");
 
   // initial roll button state
   updateRollButtonsFromSession();
@@ -66,6 +72,9 @@ function handleRoundFinished(summary) {
   view.setScores(summary.humanScore, summary.computerScore);
   view.setEndScreen(summary);
   view.showScreen("end");
+  log(
+    `Round over. Winner: ${summary.roundWinnerId} | Type: ${summary.winType} | Round score: ${summary.roundScore}`
+  );
 }
 
 /* ---------- WELCOME SCREEN ---------- */
@@ -77,8 +86,10 @@ function wireWelcome() {
 
   btnStartSetup.addEventListener("click", () => {
     session.resetTournament();
+    session.setMode("HvsC");
     view.showScreen("setup");
     view.setLastPlay("–");
+    log("Tournament reset.");
   });
 
   // Trigger hidden file input
@@ -111,7 +122,7 @@ function wireWelcome() {
           // Switch to game screen & render from session state
           view.showScreen("game");
           view.clearLog();
-          state.logLines.forEach((line) => view.appendLog(line));
+          state.logLines.forEach((line) => log(line));
 
           view.setRoundHeader(state.header);
           view.setScores(state.scores.humanScore, state.scores.computerScore);
@@ -131,6 +142,7 @@ function wireWelcome() {
         } catch (err) {
           console.error(err);
           alert("Could not load saved game: " + (err.message || err));
+          log("Failed to load saved game.");
         } finally {
           event.target.value = "";
         }
@@ -165,6 +177,9 @@ function wireSetup() {
       view.setRolloffText(defaultText, false);
     });
   });
+  // ensure default selection is Human vs Computer
+  const defaultMode = document.querySelector('input[name="mode"][value="HvsC"]');
+  if (defaultMode) defaultMode.checked = true;
 
   btnRolloff.addEventListener("click", () => {
     const boardSize = Number(selectBoardSize.value) || 9;
@@ -209,6 +224,7 @@ function wireSetup() {
     view.appendLog(
       `Round ${state.header.roundNumber} started. First player: ${state.header.firstPlayerLabel}`
     );
+    log(`Mode: ${state.header.modeLabel}`);
 
     updateRollButtonsFromSession();
   });
@@ -221,6 +237,7 @@ function wireGame() {
   const btnRoll2 = document.getElementById("btn-roll-2");
   const btnRollManual = document.getElementById("btn-roll-manual");
   const btnRewind = document.getElementById("btn-rewind");
+  const btnQueueDice = document.getElementById("btn-queue-dice");
   const btnQuitRound = document.getElementById("btn-quit-round");
 
   const modalBtnHelp = document.getElementById("modal-btn-help");
@@ -235,6 +252,8 @@ function wireGame() {
   const rewindConfirm = document.getElementById("rewind-confirm");
   const rewindCancel = document.getElementById("rewind-cancel");
   const rewindListEl = document.getElementById("rewind-list");
+  const queueDiceConfirm = document.getElementById("queue-dice-confirm");
+  const queueDiceCancel = document.getElementById("queue-dice-cancel");
 
   // Helper: open manual dice modal if rolling is allowed for the *current* player
   function openManualDice() {
@@ -248,7 +267,7 @@ function wireGame() {
   // Helper: process roll outcome (manual or random)
   function processRollOutcome(res, playerLabel, sourceLabel) {
     if (res.error) {
-      view.appendLog(res.error);
+      log(res.error);
       return;
     }
 
@@ -261,11 +280,9 @@ function wireGame() {
       lastShownRoll = res.roll;
       const r = res.roll;
       if (r.d2 == null) {
-        view.appendLog(`${playerLabel} ${sourceLabel} ${r.d1} (sum = ${r.sum})`);
+        log(`${playerLabel} ${sourceLabel} ${r.d1} (sum = ${r.sum})`);
       } else {
-        view.appendLog(
-          `${playerLabel} ${sourceLabel} ${r.d1} + ${r.d2} (sum = ${r.sum})`
-        );
+        log(`${playerLabel} ${sourceLabel} ${r.d1} + ${r.d2} (sum = ${r.sum})`);
       }
     }
 
@@ -279,7 +296,7 @@ function wireGame() {
 
     // No moves available and no auto move
     if (!res.canMove && !res.autoMoveDone) {
-      view.appendLog("No moves available for this roll. Turn ends.");
+      log(`${playerLabel}: no moves available for this roll. Turn ends.`);
       const endRes = session.endTurn();
       if (endRes.roundOver) {
         handleRoundFinished(endRes.summary);
@@ -336,6 +353,11 @@ function wireGame() {
   }
   if (btnRollManual) {
     btnRollManual.addEventListener("click", openManualDice);
+  }
+
+  // Queue dice sequence
+  if (btnQueueDice) {
+    btnQueueDice.addEventListener("click", () => view.openQueueDiceModal());
   }
 
   // Rewind (UI only, placeholder)
@@ -415,7 +437,7 @@ function wireGame() {
 
     const res = session.applyHumanMove(selection.moveType, selection.squares);
     if (res.error) {
-      view.appendLog(res.error);
+      log(res.error);
       return;
     }
 
@@ -531,7 +553,16 @@ function wireGame() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        view.appendLog("Game snapshot saved.");
+        log("Game snapshot saved. Quitting game.");
+        // Reset/quit after saving
+        session.resetTournament();
+        uiPendingOptions = null;
+        lastShownRoll = null;
+        view.clearLog();
+        view.setLastPlay("–");
+        view.setDiceText({ d1: null, d2: null, sum: null });
+        view.setTurnStatus("Awaiting roll…");
+        view.showScreen("welcome");
       } catch (err) {
         alert("Could not save snapshot: " + (err.message || err));
       }
@@ -572,13 +603,71 @@ function wireGame() {
       });
       setLastPlayFromAction(res.lastAction);
       view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
-      view.setDiceText({ d1: null, d2: null, sum: null });
-      view.setTurnStatus("Awaiting roll…");
+      // If rewound into awaitingMove and human-controlled, reopen modal
+      if (
+        res.phase === "awaitingMove" &&
+        session.isPlayerHumanControlled(session.getCurrentPlayerId())
+      ) {
+        const sum = (lastShownRoll || session.getCurrentDice()).sum;
+        const coverOptions = round.getCoverOptions(session.getCurrentPlayerId(), sum);
+        const uncoverOptions = round.getUncoverOptions(session.getCurrentPlayerId(), sum);
+        uiPendingOptions = { coverOptions, uncoverOptions };
+        view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
+        view.openMoveModal(sum, coverOptions, uncoverOptions);
+        view.setTurnStatus("Choose your move.");
+      } else {
+        view.setDiceText({ d1: null, d2: null, sum: null });
+        view.setTurnStatus("Awaiting roll…");
+      }
       updateRollButtonsFromSession();
-      view.appendLog(
-        `Rewound to: ${sel} (${res.lastAction ? res.lastAction.action : "state"})`
-      );
+      const entryLabel =
+        session.getHistoryEntries().find((e) => e.index === sel)?.label ||
+        `entry ${sel}`;
+      view.appendLog(`Rewound to: ${entryLabel}`);
       view.closeRewindModal();
+    });
+  }
+
+  // Queue dice modal buttons
+  if (queueDiceCancel) {
+    queueDiceCancel.addEventListener("click", () => view.closeQueueDiceModal());
+  }
+  if (queueDiceConfirm) {
+    queueDiceConfirm.addEventListener("click", () => {
+      const lines = view.getQueuedDiceLines();
+      if (!lines.length) {
+        view.appendLog("No dice sequence provided.");
+        view.closeQueueDiceModal();
+        return;
+      }
+      const entries = [];
+      for (const line of lines) {
+        const parts = line.split(/[\s,]+/).map((p) => p.trim()).filter(Boolean);
+        if (parts.length === 1) {
+          const d1 = Number(parts[0]);
+          if (!Number.isInteger(d1) || d1 < 1 || d1 > 6) continue;
+          entries.push({ d1, d2: null });
+        } else if (parts.length >= 2) {
+          const d1 = Number(parts[0]);
+          const d2 = Number(parts[1]);
+          if (
+            !Number.isInteger(d1) ||
+            !Number.isInteger(d2) ||
+            d1 < 1 ||
+            d1 > 6 ||
+            d2 < 1 ||
+            d2 > 6
+          )
+            continue;
+          entries.push({ d1, d2 });
+        }
+      }
+      session.queuedRolls = entries;
+      if (session.dice) session.dice.setQueue(entries);
+      view.appendLog(
+        `Queued ${entries.length} manual roll${entries.length === 1 ? "" : "s"} for upcoming turns.`
+      );
+      view.closeQueueDiceModal();
     });
   }
 

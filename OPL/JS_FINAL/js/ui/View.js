@@ -51,6 +51,7 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
 
     this.btnRoll1 = document.getElementById("btn-roll-1");
     this.btnRoll2 = document.getElementById("btn-roll-2");
+    this.btnQueueDice = document.getElementById("btn-queue-dice");
 
     // Move modal elements
     this.moveModal = document.getElementById("move-modal");
@@ -77,6 +78,11 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.rewindPreviewText = document.getElementById("rewind-preview-text");
     this.rewindConfirm = document.getElementById("rewind-confirm");
     this.rewindCancel = document.getElementById("rewind-cancel");
+    // Queue dice modal
+    this.queueDiceModal = document.getElementById("queue-dice-modal");
+    this.queueDiceInput = document.getElementById("queue-dice-input");
+    this.queueDiceConfirm = document.getElementById("queue-dice-confirm");
+    this.queueDiceCancel = document.getElementById("queue-dice-cancel");
 
     // Headings for players (score + boards)
     const scoreHeadings = document.querySelectorAll(".scores h3");
@@ -180,6 +186,26 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     render(computerBoardArr, this.rewindPreviewComputer);
   }
 
+  /* ---------- QUEUE DICE MODAL ---------- */
+
+  openQueueDiceModal() {
+    if (!this.queueDiceModal) return;
+    if (this.queueDiceInput) this.queueDiceInput.value = "";
+    this.queueDiceModal.classList.remove("hidden");
+  }
+
+  closeQueueDiceModal() {
+    if (this.queueDiceModal) this.queueDiceModal.classList.add("hidden");
+  }
+
+  getQueuedDiceLines() {
+    if (!this.queueDiceInput) return [];
+    return this.queueDiceInput.value
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+  }
+
   setCurrentPlayerLabel(text) {
     this.lblCurrentPlayer.textContent = text;
   }
@@ -227,7 +253,25 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
 
   appendLog(line) {
     const p = document.createElement("p");
-    p.textContent = line;
+    if (line.startsWith("[")) {
+      const closing = line.indexOf("]");
+      if (closing > 0) {
+        const tsText = line.slice(1, closing);
+        const msgText = line.slice(closing + 1).trim();
+        const tsSpan = document.createElement("span");
+        tsSpan.classList.add("log-ts");
+        tsSpan.textContent = tsText;
+        const msgSpan = document.createElement("span");
+        msgSpan.classList.add("log-msg");
+        msgSpan.textContent = msgText ? ` ${msgText}` : "";
+        p.appendChild(tsSpan);
+        p.appendChild(msgSpan);
+      } else {
+        p.textContent = line;
+      }
+    } else {
+      p.textContent = line;
+    }
     this.logEl.appendChild(p);
     this.logEl.scrollTop = this.logEl.scrollHeight;
   }

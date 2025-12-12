@@ -154,6 +154,15 @@ button:active:not(:disabled) {
   margin: 0.1rem 0;
 }
 
+.log .log-ts {
+  color: #93c5fd;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.log .log-msg {
+  color: #e5e7eb;
+}
+
 .board-wrapper {
   margin-bottom: 0.75rem;
 }

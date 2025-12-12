@@ -10,6 +10,7 @@ export class GameSession {
     this.dice = null;
     this.currentRound = null;
     this.history = [];
+    this.queuedRolls = [];
 
     this.gameMode = "HvsC"; // "HvsC" | "HvsH" | "CvsC"
     this.currentPlayerId = "HUMAN"; // "HUMAN" | "COMPUTER"
@@ -28,6 +29,7 @@ export class GameSession {
     this.phase = "idle";
     this.currentDice = { d1: null, d2: null, sum: null };
     this.history = [];
+    this.queuedRolls = [];
   }
 
   setMode(mode) {
@@ -117,18 +119,21 @@ export class GameSession {
     const hr = humanRoll.sum;
     const cr = compRoll.sum;
 
-    let text = `Human rolled ${humanRoll.d1} + ${humanRoll.d2} = ${hr}. `;
-    text += `Computer rolled ${compRoll.d1} + ${compRoll.d2} = ${cr}. `;
+    const humanName = this.getPlayerDisplayName("HUMAN");
+    const compName = this.getPlayerDisplayName("COMPUTER");
+
+    let text = `${humanName} rolled ${humanRoll.d1} + ${humanRoll.d2} = ${hr}. `;
+    text += `${compName} rolled ${compRoll.d1} + ${compRoll.d2} = ${cr}. `;
 
     let firstPlayerId = "";
     let canStart = false;
 
     if (hr > cr) {
-      text += "Human goes first.";
+      text += `${humanName} goes first.`;
       firstPlayerId = "HUMAN";
       canStart = true;
     } else if (cr > hr) {
-      text += "Computer goes first.";
+      text += `${compName} goes first.`;
       firstPlayerId = "COMPUTER";
       canStart = true;
     } else {
@@ -156,6 +161,7 @@ export class GameSession {
     this.phase = "awaitingRoll";
     this.currentDice = { d1: null, d2: null, sum: null };
     this.history = [];
+    this.queuedRolls = [];
 
     const advantageText = this.tournament.nextRoundAdvantage
       ? `Advantage: ${
@@ -365,14 +371,13 @@ export class GameSession {
     this.currentRound.currentPlayerId = snapshot.nextTurnId;
     this.currentPlayerId = snapshot.nextTurnId;
 
-    // Reset round flags
-    this.currentRound.roundOver = false;
-    this.currentRound.roundWinnerId = null;
-    this.currentRound.winType = null;
-    this.currentRound.roundScore = 0;
-
-    this.currentDice = { d1: null, d2: null, sum: null };
-    this.phase = "awaitingRoll";
+    // Restore optional state
+    this.phase = snapshot.phase || "awaitingRoll";
+    this.currentDice = snapshot.currentDice || { d1: null, d2: null, sum: null };
+    if (snapshot.advantageLock) {
+      this.currentRound.advantageLock = { ...snapshot.advantageLock };
+    }
+    this.queuedRolls = snapshot.queuedRolls || [];
 
     this._pushHistory(
       `Loaded snapshot (first: ${this.getPlayerDisplayName(snapshot.firstTurnId)})`
@@ -602,7 +607,13 @@ export class GameSession {
    */
   handleRandomRoll(numDice) {
     if (!this.dice) this.dice = new Dice();
+    // prime dice with queued rolls if any
+    if (this.queuedRolls && this.queuedRolls.length) {
+      this.dice.setQueue(this.queuedRolls);
+    }
     const roll = this.dice.rollRandom(numDice);
+    // persist remaining queue
+    this.queuedRolls = this.dice.queue ? [...this.dice.queue] : [];
     const res = this.handleManualRoll(
       numDice,
       roll.d2 == null ? [roll.d1] : [roll.d1, roll.d2]
@@ -857,6 +868,10 @@ export class GameSession {
       humanScore: this.tournament.human.totalScore,
       firstTurnId: this.currentRound.firstPlayerId,
       nextTurnId: this.currentPlayerId,
+      phase: this.phase,
+      currentDice: this.currentDice,
+      advantageLock: this.currentRound.advantageLock,
+      queuedRolls: this.queuedRolls,
     });
   }
 }

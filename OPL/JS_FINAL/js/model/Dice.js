@@ -7,6 +7,24 @@
 export class Dice {
   constructor(rng = Math.random) {
     this.rng = rng;
+    this.queue = [];
+  }
+
+  setQueue(entries) {
+    this.queue = Array.isArray(entries) ? [...entries] : [];
+  }
+
+  _dequeue(numDice) {
+    if (!this.queue || this.queue.length === 0) return null;
+    for (let i = 0; i < this.queue.length; i++) {
+      const q = this.queue[i];
+      const hasTwo = q.d2 != null;
+      if ((numDice === 1 && !hasTwo) || (numDice === 2 && hasTwo)) {
+        this.queue.splice(i, 1);
+        return q;
+      }
+    }
+    return null;
   }
 
   /**
@@ -15,6 +33,12 @@ export class Dice {
    * @returns {{ d1: number, d2: number|null, sum: number }}
    */
   rollRandom(numDice) {
+    // Use queued value if available
+    const queued = this._dequeue(numDice);
+    if (queued) {
+      const sumQ = queued.d1 + (queued.d2 ?? 0);
+      return { d1: queued.d1, d2: queued.d2 ?? null, sum: sumQ };
+    }
     if (numDice !== 1 && numDice !== 2) {
       throw new Error("numDice must be 1 or 2");
     }

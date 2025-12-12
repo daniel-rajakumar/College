@@ -39,7 +39,11 @@ export class Serializer {
     computerScore,
     humanScore,
     firstTurnId,
-    nextTurnId
+    nextTurnId,
+    phase = "awaitingRoll",
+    currentDice = { d1: null, d2: null, sum: null },
+    advantageLock = null,
+    queuedRolls = []
   }) {
     const compArr = computerBoard.toNumberArrayFormat();
     const humanArr = humanBoard.toNumberArrayFormat();
@@ -50,7 +54,7 @@ export class Serializer {
     const computerLine = compArr.join(" ");
     const humanLine = humanArr.join(" ");
 
-    return (
+    const base =
       "Computer:\n" +
       `   Squares: ${computerLine}\n` +
       `   Score: ${computerScore}\n\n` +
@@ -58,8 +62,26 @@ export class Serializer {
       `   Squares: ${humanLine}\n` +
       `   Score: ${humanScore}\n\n` +
       `First Turn: ${firstTurnLabel}\n` +
-      `Next Turn: ${nextTurnLabel}\n`
+      `Next Turn: ${nextTurnLabel}\n`;
+
+    const meta = [];
+    meta.push(`# Phase: ${phase}`);
+    meta.push(
+      `# CurrentDice: ${currentDice.d1 ?? "-"} ${currentDice.d2 ?? "-"} (sum=${currentDice.sum ?? "-"})`
     );
+    if (advantageLock && advantageLock.squareNumber) {
+      meta.push(
+        `# AdvantageLock: ${advantageLock.playerId} ${advantageLock.squareNumber} unlocked=${advantageLock.unlocked}`
+      );
+    }
+    if (queuedRolls && queuedRolls.length) {
+      const rollsText = queuedRolls
+        .map((r) => (r.d2 != null ? `${r.d1},${r.d2}` : `${r.d1}`))
+        .join(" | ");
+      meta.push(`# QueuedRolls: ${rollsText}`);
+    }
+
+    return base + (meta.length ? "\n" + meta.join("\n") + "\n" : "");
   }
 
   /**
@@ -140,13 +162,63 @@ export class Serializer {
     const firstTurnId = mapLabel(firstTurnLabel);
     const nextTurnId = mapLabel(nextTurnLabel);
 
+    // Optional metadata (lines starting with #)
+    let phase = "awaitingRoll";
+    let currentDice = { d1: null, d2: null, sum: null };
+    let advantageLock = null;
+    let queuedRolls = [];
+
+    lines
+      .filter((l) => l.startsWith("#"))
+      .forEach((metaLine) => {
+        const body = metaLine.slice(1).trim();
+        if (body.startsWith("Phase:")) {
+          phase = body.split(":")[1].trim();
+        } else if (body.startsWith("CurrentDice:")) {
+          const parts = body.replace("CurrentDice:", "").trim().split(/\s+/);
+          const d1 = parts[0] === "-" ? null : Number(parts[0]);
+          const d2 = parts[1] === "-" ? null : Number(parts[1]);
+          const sumMatch = body.match(/sum=([0-9\-]+)/i);
+          let sum = null;
+          if (sumMatch) {
+            const raw = sumMatch[1];
+            sum = raw === "-" ? null : Number(raw);
+          }
+          currentDice = { d1, d2, sum };
+        } else if (body.startsWith("AdvantageLock:")) {
+          const parts = body.replace("AdvantageLock:", "").trim().split(/\s+/);
+          if (parts.length >= 3) {
+            advantageLock = {
+              playerId: parts[0],
+              squareNumber: Number(parts[1]),
+              unlocked: /true/i.test(parts[2]),
+            };
+          }
+        } else if (body.startsWith("QueuedRolls:")) {
+          const payload = body.replace("QueuedRolls:", "").trim();
+          queuedRolls = payload
+            .split("|")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .map((entry) => {
+              const vals = entry.split(",").map((v) => Number(v.trim()));
+              if (vals.length === 1) return { d1: vals[0], d2: null };
+              return { d1: vals[0], d2: vals[1] };
+            });
+        }
+      });
+
     return {
       computerSquares,
       humanSquares,
       computerScore,
       humanScore,
       firstTurnId,
-      nextTurnId
+      nextTurnId,
+      phase,
+      currentDice,
+      advantageLock,
+      queuedRolls,
     };
   }
 }
