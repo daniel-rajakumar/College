@@ -253,6 +253,9 @@ Computer::Computer(Board& b, Board& humanBoard)
 bool Computer::takeTurn() {
     using std::cout; using std::cin; using std::endl;
 
+    // Show the same colored section header as the human turn
+    section("Computer Turn");
+
     cout << "Do you want to enter the die manually for the computer? (y/n): ";
     const char manual = readYN_input();
 
