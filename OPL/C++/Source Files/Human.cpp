@@ -4,6 +4,43 @@
 #include "../Header Files/Tournament.h"
 #include "../Header Files/TextUI.h"
 #include <random>
+#include <limits>
+
+namespace {
+    // ASCII-only helpers (avoid lambdas)
+    char readYN_input_human() {
+        char c;
+        while (true) {
+            if (std::cin >> c) {
+                if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+                if (c == 'y' || c == 'n') return c;
+            }
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Please enter y or n: ";
+        }
+    }
+
+    int readDie_input_human(const char* prompt) {
+        int v;
+        while (true) {
+            std::cout << prompt;
+            if (std::cin >> v && v >= 1 && v <= 6) return v;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Please enter a number 1..6.\n";
+        }
+    }
+
+    void printCombosFunc_human(const std::set<std::set<int>>& combos) {
+        int idx = 1;
+        for (const auto& c : combos) {
+            std::cout << "  [" << idx++ << "] ";
+            for (int v : c) std::cout << v << " ";
+            std::cout << "\n";
+        }
+    }
+}
 
 using namespace std;
 using namespace ui;
@@ -27,46 +64,19 @@ bool Human::takeTurn() {
     using namespace ui;
     using std::cout; using std::cin;
 
-    // Helper to read Yes/No
-    auto readYN = [&]()->char{
-        char c;
-        while (true) {
-            if (cin >> c) {
-                int tmp = std::tolower(static_cast<unsigned char>(c));
-                c = static_cast<char>(tmp);
-                if (c=='y' || c=='n') return c;
-            }
-            cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            cout << "Please enter y or n: ";
-        }
-    };
-
-    // Helper to read dice input
-    auto readDie = [&](const char* prompt)->int{
-        int v;
-        while (true) {
-            cout << prompt;
-            if (cin >> v && v>=1 && v<=6) return v;
-            cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            cout << "Please enter a number 1..6.\n";
-        }
-    };
-
     while (true) {
         section("Human Turn");
 
         // Step 1: Dice configuration
         cout << "Do you want to enter the die manually? (y/n): ";
-        const char manual = readYN();
+        const char manual = readYN_input_human();
 
         const bool oneDieAllowed = board.canThrowOneDie();
         int diceCount = 2;
 
         if (oneDieAllowed) {
             cout << "You may use 1 die (" << Board::ONE_DIE_RULE_START << ".." << board.getSize() << " are covered). Use 1 die? (y/n): ";
-            diceCount = (readYN()=='y') ? 1 : 2;
+            diceCount = (readYN_input_human()=='y') ? 1 : 2;
         } else {
             cout << "1-die is NOT allowed (must use 2 dice).\n";
             diceCount = 2;
@@ -75,8 +85,8 @@ bool Human::takeTurn() {
         // Step 2: Roll dice (manual or random)
         int d1 = 0, d2 = 0, sum = 0;
         if (manual == 'y') {
-            d1 = readDie("Enter die 1 (1-6): ");
-            d2 = (diceCount==2) ? readDie("Enter die 2 (1-6): ") : 0;
+            d1 = readDie_input_human("Enter die 1 (1-6): ");
+            d2 = (diceCount==2) ? readDie_input_human("Enter die 2 (1-6): ") : 0;
         } else {
             static thread_local std::mt19937_64 rng(std::random_device{}());
             std::uniform_int_distribution<int> dieDist(1,6);
@@ -112,7 +122,7 @@ bool Human::takeTurn() {
 
         // Step 5: Offer Help
         cout << "Do you want help from the computer? (y/n): ";
-        if (readYN()=='y') {
+        if (readYN_input_human()=='y') {
             const Computer helper(computerBoard, board);
             helper.provideHelp(sum, board, computerBoard);
             cout << "\n";
@@ -123,8 +133,8 @@ bool Human::takeTurn() {
         while (true) {
             cout << "Cover your squares or uncover the opponent's squares? (c/u): ";
             if (cin >> choice) {
-                int tmp = std::tolower(static_cast<unsigned char>(choice));
-                choice = static_cast<char>(tmp);
+                // ASCII lowercase convert
+                if (choice >= 'A' && choice <= 'Z') choice = static_cast<char>(choice - 'A' + 'a');
                 if ((choice=='c' && canCover) || (choice=='u' && canUncover)) break;
             }
             cin.clear();
@@ -168,15 +178,7 @@ void Human::coverSquares(const int sum) const {
         return;
     }
 
-    auto printCombos = [](const std::set<std::set<int>>& combos) {
-        int idx = 1;
-        for (const auto& c : combos) {
-            std::cout << "  [" << idx++ << "] ";
-            for (int v : c) std::cout << v << " ";
-            std::cout << "\n";
-        }
-    };
-    printCombos(validCombinations);
+    printCombosFunc_human(validCombinations);
 
     // Step 2: Get User Selection
     int choice = 0;

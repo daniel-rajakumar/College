@@ -165,11 +165,11 @@ void Tournament::updateScores(const bool humanWonByCover, const bool humanWonByU
 
 void Tournament::declareTournamentWinner() const {
     if (tournamentScoreHuman > tournamentScoreComputer) {
-        cout << "You win the tournament with a score of " << tournamentScoreHuman << "!" << endl;
+        cout << "You win the tournament with a score of " << tournamentScoreHuman << "! (Computer's score: " << tournamentScoreComputer << ")" << endl;
     } else if (tournamentScoreComputer > tournamentScoreHuman) {
-        cout << "Computer wins the tournament with a score of " << tournamentScoreComputer << "!" << endl;
+        cout << "Computer wins the tournament with a score of " << tournamentScoreComputer << "! (Your Score: " << tournamentScoreHuman << ")" << endl;
     } else {
-        cout << "The tournament is a draw!" << endl;
+        cout << "The tournament is a draw! (With the score of " << tournamentScoreComputer << ")" << endl;
     }
 }
 

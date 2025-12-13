@@ -62,11 +62,9 @@ void Round::play() const {
     else
         currentPlayer = &player2;
 
-    const Player* firstPlayer = nullptr;
     if (isANewGame) {
         cout << "~~~~~~~~[Who Goes First?]~~~~~~~~~\n";
         Player& fp = determineFirstPlayer();        // roll once
-        firstPlayer = &fp;
         currentPlayer = &fp;
         tournament.setFirstPlayerIsHuman(fp.getIsHuman());
         tournament.setIsHumanTurn(currentPlayer->getIsHuman());
@@ -98,10 +96,15 @@ void Round::play() const {
         currentPlayer->takeTurn();
 
         // Step 2: Handle Advantage Protection Expiry
+        // Protection should expire after the OPPONENT of the advantage owner has completed their turn.
+        // That means we clear the protection when the player who just played is the opponent
+        // (i.e. currentPlayer is NOT the advantage owner).
         if (Tournament::getAdvantageApplied()) {
-            if (Tournament::getAdvantageOwner() == Tournament::Side::Human && currentPlayer->getIsHuman()) {
+            if (Tournament::getAdvantageOwner() == Tournament::Side::Human && !currentPlayer->getIsHuman()) {
+                // Human had advantage; opponent (computer) just played -> clear human protection
                 Tournament::clearAdvantageProtectionForHuman();
-            } else if (Tournament::getAdvantageOwner() == Tournament::Side::Computer && !currentPlayer->getIsHuman()) {
+            } else if (Tournament::getAdvantageOwner() == Tournament::Side::Computer && currentPlayer->getIsHuman()) {
+                // Computer had advantage; opponent (human) just played -> clear computer protection
                 Tournament::clearAdvantageProtectionForComputer();
             }
         }
@@ -142,7 +145,11 @@ void Round::play() const {
         }
 
         // Step 6: Final Win Check (Redundant but safe)
-        if (isRoundOver()) {
+        // If this is a freshly started game (isANewGame == true), avoid declaring a winner
+        // until both players have taken at least one turn (i.e., only allow this final
+        // check when movesSinceLastCheck is even). For loaded/serialized games allow the
+        // check immediately.
+        if (((!isANewGame) || (movesSinceLastCheck % 2 == 0)) && isRoundOver()) {
              bool winnerIsHuman = false;
             if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
                 winnerIsHuman = true;
