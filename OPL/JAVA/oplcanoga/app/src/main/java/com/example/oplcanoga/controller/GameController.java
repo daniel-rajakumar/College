@@ -1,5 +1,7 @@
 package com.example.oplcanoga.controller;
 
+import android.os.Bundle;
+
 import com.example.oplcanoga.model.AdvantageInfo;
 import com.example.oplcanoga.model.ComputerPlayer;
 import com.example.oplcanoga.model.GameRound;
@@ -291,7 +293,6 @@ public class GameController {
             StringBuilder reason = new StringBuilder();
 
             if (suggestion.getType() == MoveType.COVER) {
-                // If this move makes the human win instantly
                 int humanUncoveredCount = 0;
                 Player human = tournament.getHuman();
                 for (int i=1; i<=human.getBoardSize(); i++) {
@@ -305,7 +306,6 @@ public class GameController {
                 }
 
             } else if (suggestion.getType() == MoveType.UNCOVER) {
-                // If this move makes the human win instantly
                 int computerCoveredCount = 0;
                 Player comp = tournament.getComputer();
                 for (int i=1; i<=comp.getBoardSize(); i++) {
@@ -319,7 +319,7 @@ public class GameController {
                 }
             }
 
-            if (reason.length() == 0) { // If no special reason added yet
+            if (reason.length() == 0) { 
                 reason.append(" This move uses ").append(suggestion.getSquares().size())
                         .append(" square(s), and I prefer moves that use more squares and higher numbers ")
                         .append("to maximize impact from this roll.");
@@ -360,6 +360,28 @@ public class GameController {
 
     public int getComputerTotalScore() {
         return (tournament != null) ? tournament.getComputer().getTournamentScore() : 0;
+    }
+
+    public Bundle getFinalResultStrings(PlayerId winner) {
+        Bundle bundle = new Bundle();
+        String winnerText;
+        String summary;
+
+        if (winner == null) {
+            winnerText = "Tournament Result: Draw";
+            summary = "Both players ended with the same score.";
+        } else {
+            winnerText = "Tournament Winner: " + winner.name();
+            if (winner == PlayerId.HUMAN) {
+                summary = "You outplayed the computer. Nice job!";
+            } else { 
+                summary = "The computer won this time. Try again!";
+            }
+        }
+
+        bundle.putString("WINNER_TEXT", winnerText);
+        bundle.putString("SUMMARY_TEXT", summary);
+        return bundle;
     }
 
 

@@ -12,8 +12,7 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.view.View;  // add this at the top with other imports
-
+import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -27,9 +26,7 @@ import com.example.oplcanoga.model.PlayerId;
 import com.example.oplcanoga.model.WinType;
 import com.example.oplcanoga.R;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -52,26 +49,17 @@ public class GameActivity extends AppCompatActivity implements GameView {
     private Button btnConfirmMove;
     private Button btnHelp;
 
-    // Controller (middleman between UI and model)
     private GameController controller;
 
-    // Spinner data: labels + backing Move objects (same index)
     private ArrayAdapter<String> movesAdapter;
     private final List<String> moveOptionLabels = new ArrayList<>();
     private final List<Move> moveOptionObjects = new ArrayList<>();
 
     private ActivityResultLauncher<Intent> saveGameLauncher;
-    private ActivityResultLauncher<Intent> importGameLauncher;
     private ActivityResultLauncher<Intent> roundResultLauncher;
     private ActivityResultLauncher<Intent> setupNextRoundLauncher;
 
-    private Button btnRollOneDie; // NEW
-
-
-
-
-
-
+    private Button btnRollOneDie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,11 +98,10 @@ public class GameActivity extends AppCompatActivity implements GameView {
 
                                     Toast.makeText(this, "Game saved.", Toast.LENGTH_SHORT).show();
 
-                                    // 🔹 Quit the game: go back to main menu
                                     Intent home = new Intent(this, MainActivity.class);
                                     home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(home);
-                                    finish();   // close GameActivity
+                                    finish();
                                 }
                             } catch (IOException e) {
                                 Toast.makeText(this, "Failed to save game: " + e.getMessage(),
@@ -131,8 +118,6 @@ public class GameActivity extends AppCompatActivity implements GameView {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         String action = result.getData().getStringExtra("ROUND_ACTION");
                         if ("PLAY_AGAIN".equals(action)) {
-                            // Same Tournament, next round with advantage + alternating first player
-//                            controller.startNextRoundAuto();
                             Intent setupIntent = new Intent(this, SetupActivity.class);
                             setupIntent.putExtra("MODE", "NEXT_ROUND");
                             setupNextRoundLauncher.launch(setupIntent);
@@ -141,13 +126,16 @@ public class GameActivity extends AppCompatActivity implements GameView {
                             int computerTotal = controller.getComputerTotalScore();
                             PlayerId tournamentWinner = controller.getTournamentWinner();
 
+                            // Ask controller for the final presentation strings
+                            Bundle finalStrings = controller.getFinalResultStrings(tournamentWinner);
+
                             Intent finalIntent = new Intent(this, FinalResultActivity.class);
                             finalIntent.putExtra("HUMAN_TOTAL", humanTotal);
                             finalIntent.putExtra("COMPUTER_TOTAL", computerTotal);
-                            finalIntent.putExtra(
-                                    "WINNER",
-                                    (tournamentWinner != null) ? tournamentWinner.name() : "DRAW"
-                            );
+                            // Pass the pre-calculated strings instead of raw enum
+                            finalIntent.putExtra("WINNER_TEXT", finalStrings.getString("WINNER_TEXT"));
+                            finalIntent.putExtra("SUMMARY_TEXT", finalStrings.getString("SUMMARY_TEXT"));
+
                             startActivity(finalIntent);
                             finish();
                         }
@@ -171,45 +159,6 @@ public class GameActivity extends AppCompatActivity implements GameView {
                 }
         );
 
-
-
-
-//        importGameLauncher = registerForActivityResult(
-//                new ActivityResultContracts.StartActivityForResult(),
-//                result -> {
-//                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-//                        Uri uri = result.getData().getData();
-//                        if (uri != null) {
-//                            try (InputStream in = getContentResolver().openInputStream(uri)) {
-//                                if (in != null) {
-//                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//                                    byte[] buffer = new byte[4096];
-//                                    int n;
-//                                    while ((n = in.read(buffer)) != -1) {
-//                                        baos.write(buffer, 0, n);
-//                                    }
-//                                    String data = baos.toString(StandardCharsets.UTF_8.name());
-//
-//                                    // Launch GameActivity with imported state
-//                                    Intent gameIntent = new Intent(this, GameActivity.class);
-//                                    gameIntent.putExtra("IMPORTED_STATE", data);
-//                                    startActivity(gameIntent);
-//                                }
-//                            } catch (IOException e) {
-//                                Toast.makeText(this, "Failed to import game: " + e.getMessage(),
-//                                        Toast.LENGTH_LONG).show();
-//                            }
-//                        }
-//                    }
-//                }
-//        );
-
-
-
-
-
-
-        // Setup spinner adapter
         movesAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
@@ -218,20 +167,15 @@ public class GameActivity extends AppCompatActivity implements GameView {
         movesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMoves.setAdapter(movesAdapter);
 
-        // Initially, disable move selection until dice are rolled
         setMoveSelectionEnabled(false);
-        setDiceButtonsVisible(true);   // visible at start of the round
-
-
+        setDiceButtonsVisible(true);
 
         controller = new GameController(this);
 
         String importedState = getIntent().getStringExtra("IMPORTED_STATE");
         if (importedState != null) {
-            // Start from a saved game
             controller.importState(importedState);
         } else {
-            // Start a fresh game
             int boardSize = getIntent().getIntExtra("BOARD_SIZE", 9);
             String firstPlayerStr = getIntent().getStringExtra("FIRST_PLAYER");
             if (firstPlayerStr == null) firstPlayerStr = "HUMAN";
@@ -239,18 +183,12 @@ public class GameActivity extends AppCompatActivity implements GameView {
             controller.startNewTournament(boardSize, firstPlayer);
         }
 
-
-        // Roll 1 die (when rules allow it)
         btnRollOneDie.setOnClickListener(v ->
                 controller.onRollDiceButtonPressed(1));
 
-// Roll 2 dice
         btnRollDie.setOnClickListener(v ->
                 controller.onRollDiceButtonPressed(2));
 
-
-
-        // "Input Die" => show dialog, then pass chosen dice to controller
         btnInputDie.setOnClickListener(v -> showInputDiceDialog());
 
         btnSaveGame.setOnClickListener(v -> {
@@ -261,28 +199,19 @@ public class GameActivity extends AppCompatActivity implements GameView {
             saveGameLauncher.launch(intent);
         });
 
-
-
-        // Confirm selected move from spinner
         btnConfirmMove.setOnClickListener(v -> onConfirmMove());
 
-        // Ask controller for help (uses computer strategy under the hood)
         btnHelp.setOnClickListener(v -> controller.onHelpRequested());
     }
 
-    // ---------------- GameView implementation ----------------
-
     @Override
     public void updateBoard(BoardState state) {
-        // Update the board drawing
         boardView.setBoardState(state);
 
-        // Update scores
         String scoresText = "Human: " + state.humanScore +
                 "  |  Computer: " + state.computerScore;
         tvScores.setText(scoresText);
 
-        // Update status message
         String statusText;
         if (state.roundOver) {
             if (state.roundWinner != null) {
@@ -310,7 +239,6 @@ public class GameActivity extends AppCompatActivity implements GameView {
         tvDice.setText(text);
         appendLog(text);
 
-        // 🔽 hide dice controls once HUMAN has rolled
         if (player == PlayerId.HUMAN) {
             setDiceButtonsVisible(false);
         }
@@ -322,10 +250,7 @@ public class GameActivity extends AppCompatActivity implements GameView {
         appendLog(message);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
-        // If the human rolled and had no legal moves, we want the dice buttons back.
-        // Also safe if it's the computer's "no legal moves" message – buttons are already visible.
         if (message.startsWith("No legal moves")) {
-            // hide any move UI just in case and show dice buttons for the next player
             setMoveSelectionEnabled(false);
             setDiceButtonsVisible(true);
         }
@@ -339,12 +264,10 @@ public class GameActivity extends AppCompatActivity implements GameView {
         moveOptionLabels.clear();
         moveOptionObjects.clear();
 
-        // Add cover moves
         for (Move m : coverMoves) {
             moveOptionLabels.add(formatMoveLabel(m));
             moveOptionObjects.add(m);
         }
-        // Add uncover moves
         for (Move m : uncoverMoves) {
             moveOptionLabels.add(formatMoveLabel(m));
             moveOptionObjects.add(m);
@@ -361,56 +284,6 @@ public class GameActivity extends AppCompatActivity implements GameView {
             setMoveSelectionEnabled(true);
         }
     }
-
-
-//    @Override
-//    public void onRoundEnded(PlayerId winner,
-//                             WinType winType,
-//                             int winningScore,
-//                             int humanTotalScore,
-//                             int computerTotalScore) {
-//
-//        // Log + status text (you can keep what you already had if you like)
-//        String winnerText;
-//        if (winner == null) {
-//            winnerText = "Round ended in a draw.";
-//        } else {
-//            winnerText = "Round winner: " + winner +
-//                    " by " + winType +
-//                    " (+" + winningScore + " points)";
-//        }
-//        appendLog(winnerText);
-//        appendLog("Totals: Human " + humanTotalScore + " | Computer " + computerTotalScore);
-//        tvGameStatus.setText(winnerText);
-//
-//        // Go to RoundResultActivity, but expect a result back
-//        Intent intent = new Intent(this, RoundResultActivity.class);
-//        intent.putExtra("WINNER", winner != null ? winner.name() : "DRAW");
-//        intent.putExtra("WIN_TYPE", winType != null ? winType.name() : "NONE");
-//        intent.putExtra("ROUND_POINTS", winningScore);
-//        intent.putExtra("HUMAN_TOTAL", humanTotalScore);
-//        intent.putExtra("COMPUTER_TOTAL", computerTotalScore);
-//
-//        roundResultLauncher.launch(intent);
-//    }
-
-//    @Override
-//    public void onRoundEnded(PlayerId winner,
-//                             WinType winType,
-//                             int winningScore,
-//                             int humanTotalScore,
-//                             int computerTotalScore) {
-//
-//        Intent intent = new Intent(this, RoundResultActivity.class);
-//        intent.putExtra("WINNER", winner != null ? winner.name() : "DRAW");
-//        intent.putExtra("WIN_TYPE", winType != null ? winType.name() : "NONE");
-//        intent.putExtra("ROUND_POINTS", winningScore);
-//        intent.putExtra("HUMAN_TOTAL", humanTotalScore);
-//        intent.putExtra("COMPUTER_TOTAL", computerTotalScore);
-//
-//        roundResultLauncher.launch(intent);
-//    }
-
 
     @Override
     public void onRoundEnded(PlayerId winner,
@@ -433,7 +306,6 @@ public class GameActivity extends AppCompatActivity implements GameView {
         appendLog(totals);
         tvGameStatus.setText(winnerText + "\n" + totals);
 
-        // Launch RoundResultActivity
         Intent intent = new Intent(this, RoundResultActivity.class);
         intent.putExtra("ROUND_WINNER", winner == null ? "Draw" : winner.name());
         intent.putExtra("ROUND_WIN_TYPE", winType == null ? "-" : winType.name());
@@ -441,14 +313,10 @@ public class GameActivity extends AppCompatActivity implements GameView {
         intent.putExtra("HUMAN_TOTAL", humanTotalScore);
         intent.putExtra("COMPUTER_TOTAL", computerTotalScore);
 
-        // also pass board size so "Play Again" can reuse it
-        intent.putExtra("BOARD_SIZE", controller.getBoardSize()); // you may need to add getBoardSize() in GameController
-
+        intent.putExtra("BOARD_SIZE", controller.getBoardSize());
 
         roundResultLauncher.launch(intent);
     }
-
-    // ---------------- Dice dialog for "Input Die" ----------------
 
     private void showInputDiceDialog() {
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -478,10 +346,8 @@ public class GameActivity extends AppCompatActivity implements GameView {
             }
 
             if (selectedDie2[0] == 0) {
-                // Only first die selected -> treat as 1-die roll
                 controller.onManualDiceButtonPressed(selectedDie1[0], 0);
             } else {
-                // Both dice selected -> treat as 2-dice roll
                 controller.onManualDiceButtonPressed(selectedDie1[0], selectedDie2[0]);
             }
 
@@ -506,19 +372,16 @@ public class GameActivity extends AppCompatActivity implements GameView {
         Button[] buttons = {b1, b2, b3, b4, b5, b6};
 
         for (int i = 0; i < buttons.length; i++) {
-            final int value = i + 1; // die value 1..6
+            final int value = i + 1;
             Button btn = buttons[i];
             btn.setOnClickListener(v -> {
                 selectedHolder[0] = value;
-                // simple feedback: highlight selected button by changing alpha
                 for (Button other : buttons) {
                     other.setAlpha(other == btn ? 1.0f : 0.5f);
                 }
             });
         }
     }
-
-    // ---------------- Move selection helpers ----------------
 
     private void onConfirmMove() {
         if (moveOptionObjects.isEmpty()) {
@@ -534,12 +397,10 @@ public class GameActivity extends AppCompatActivity implements GameView {
         Move chosen = moveOptionObjects.get(pos);
         appendLog("Confirm move: " + formatMoveLabel(chosen));
 
-        // Tell controller to apply the selected move
         controller.onHumanMoveChosen(chosen.getType(), chosen.getSquares());
 
-        // Disable until next dice roll
         setMoveSelectionEnabled(false);
-        setDiceButtonsVisible(true);   // 🔹 show Roll / Input / Save again
+        setDiceButtonsVisible(true);
     }
 
     private String formatMoveLabel(Move m) {
@@ -565,24 +426,15 @@ public class GameActivity extends AppCompatActivity implements GameView {
     private void setDiceButtonsVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
 
-        // These are always shown/hidden together
         btnRollDie.setVisibility(visibility);
         btnInputDie.setVisibility(visibility);
         btnSaveGame.setVisibility(visibility);
 
-        // "Roll 1 Die" is special: only show when it's allowed
         if (!visible) {
-            // If dice controls are hidden, always hide the 1-die button too
             btnRollOneDie.setVisibility(View.GONE);
             return;
         }
 
-        // At this point, dice controls are visible.
-        // Show 1-die button only if:
-        //  - game has a controller & round
-        //  - it's the human's turn
-        //  - the round is not over
-        //  - canHumanRollOneDie() says yes
         boolean canShowOneDie =
                 controller != null
                         && !controller.isRoundOver()
@@ -592,8 +444,6 @@ public class GameActivity extends AppCompatActivity implements GameView {
         btnRollOneDie.setVisibility(canShowOneDie ? View.VISIBLE : View.GONE);
     }
 
-
-    // ---------------- Helpers ----------------
 
     private String toRoman(int n) {
         switch (n) {
@@ -614,41 +464,5 @@ public class GameActivity extends AppCompatActivity implements GameView {
             scrollLog.post(() -> scrollLog.fullScroll(ScrollView.FOCUS_DOWN));
         }
     }
-
-    /**
-     * Ask the user what board size they want for the next round,
-     * then tell the controller to start that round with the chosen size.
-     */
-    private void showNewRoundSetupDialog() {
-        final String[] labels = {"9 squares", "10 squares", "11 squares"};
-        final int[] sizes = {9, 10, 11};
-
-        // Preselect current board size if possible
-        int currentSize = controller.getBoardSize(); // you already have this in GameController
-        int checkedIndex = 0;
-        for (int i = 0; i < sizes.length; i++) {
-            if (sizes[i] == currentSize) {
-                checkedIndex = i;
-                break;
-            }
-        }
-
-        final int[] selectedIndex = {checkedIndex};
-
-        new AlertDialog.Builder(this)
-                .setTitle("Board size for next round")
-                .setSingleChoiceItems(labels, checkedIndex, (dialog, which) -> {
-                    selectedIndex[0] = which;
-                })
-                .setPositiveButton("OK", (dialog, which) -> {
-                    int chosenSize = sizes[selectedIndex[0]];
-                    controller.startNextRoundWithBoardSize(chosenSize);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-
-
 
 }

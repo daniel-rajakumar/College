@@ -29,24 +29,9 @@ public class FinalResultActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int humanTotal = intent.getIntExtra("HUMAN_TOTAL", 0);
         int computerTotal = intent.getIntExtra("COMPUTER_TOTAL", 0);
-        String winnerStr = intent.getStringExtra("WINNER");
-
-        String winnerText;
-        String summary;
-
-        if ("DRAW".equals(winnerStr) || winnerStr == null) {
-            winnerText = "Tournament Result: Draw";
-            summary = "Both players ended with the same score.";
-        } else {
-            winnerText = "Tournament Winner: " + winnerStr;
-            if ("HUMAN".equals(winnerStr)) {
-                summary = "You outplayed the computer. Nice job!";
-            } else if ("COMPUTER".equals(winnerStr)) {
-                summary = "The computer won this time. Try again!";
-            } else {
-                summary = "Tournament completed.";
-            }
-        }
+        
+        String winnerText = intent.getStringExtra("WINNER_TEXT");
+        String summary = intent.getStringExtra("SUMMARY_TEXT");
 
         tvFinalWinner.setText(winnerText);
         tvFinalScores.setText("Human: " + humanTotal + "  |  Computer: " + computerTotal);
