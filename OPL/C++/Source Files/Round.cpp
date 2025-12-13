@@ -132,25 +132,14 @@ void Round::play() const {
         currentPlayer = (currentPlayer == &player1) ? &player2 : &player1;
         tournament.setIsHumanTurn(currentPlayer->getIsHuman());
 
-        // Step 5: Save Prompt
-        char saveChoice;
-        cout << "Do you want to save the game? (y/n): ";
-        cin >> saveChoice;
-        if (saveChoice == 'y' || saveChoice == 'Y') {
-            string filename;
-            cout << "Enter the filename to save: ";
-            cin >> filename;
-            tournament.saveGame(filename);
-            exit(0);
-        }
-
-        // Step 6: Final Win Check (Redundant but safe)
+        // Step 5: Final Win Check (run BEFORE prompting to save)
         // If this is a freshly started game (isANewGame == true), avoid declaring a winner
         // until both players have taken at least one turn (i.e., only allow this final
         // check when movesSinceLastCheck is even). For loaded/serialized games allow the
-        // check immediately.
+        // check immediately. Doing this now ensures we don't prompt the user to save
+        // after the round is already over.
         if (((!isANewGame) || (movesSinceLastCheck % 2 == 0)) && isRoundOver()) {
-             bool winnerIsHuman = false;
+            bool winnerIsHuman = false;
             if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
                 winnerIsHuman = true;
             } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
@@ -161,6 +150,18 @@ void Round::play() const {
                                                     : static_cast<const Player*>(&player2);
             declareWinner(winnerPtr, winnerWasFirst);
             return;
+        }
+
+        // Step 5: Save Prompt
+        char saveChoice;
+        cout << "Do you want to save the game? (y/n): ";
+        cin >> saveChoice;
+        if (saveChoice == 'y' || saveChoice == 'Y') {
+            string filename;
+            cout << "Enter the filename to save: ";
+            cin >> filename;
+            tournament.saveGame(filename);
+            exit(0);
         }
     }
 }
