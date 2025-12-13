@@ -235,6 +235,22 @@ namespace {
         return res;
     }
 
+    // Helper to check whether applying the combo in 'res' would immediately
+    // win for the acting player (cover all own squares) or for the opponent
+    // (uncover all opponent squares).
+    inline bool isComboWinning(const StrategyResult& res, const Board& myBoard, const Board& oppBoard) {
+        if (res.action == StrategyResult::Action::Cover) {
+            Board sim = myBoard;
+            for (int v : res.combo) sim.coverSquare(v);
+            return sim.allCovered();
+        } else if (res.action == StrategyResult::Action::Uncover) {
+            Board simOpp = oppBoard;
+            for (int v : res.combo) simOpp.uncoverSquare(v);
+            return simOpp.allUncovered();
+        }
+        return false;
+    }
+
 } // anonymous namespace
 
 // =====================================================================
@@ -253,37 +269,39 @@ Computer::Computer(Board& b, Board& humanBoard)
 bool Computer::takeTurn() {
     using std::cout; using std::cin; using std::endl;
 
-    // Show the same colored section header as the human turn
+    // Show the same colored section header as the human turn (once per turn)
+    section("Computer Turn");
 
     // The computer should keep taking rolls until it has no legal moves
     // (same behavior as the human). Loop each roll/decision cycle here.
     while (true) {
-        section("Computer Turn");
-        cout << "Do you want to enter the die manually for the computer? (y/n): ";
-        const char manual = readYN_input();
+         cout << "Do you want to enter the die manually for the computer? (y/n): ";
+         const char manual = readYN_input();
 
-        int sum = 0;
+         int sum = 0;
 
-        // =============================================================
-        // MANUAL MODE (for testing)
-        // =============================================================
-        if (manual == 'y') {
-             const bool oneDieAllowed = board.canThrowOneDie();
-             int diceCount = 2;
+         // =============================================================
+         // MANUAL MODE (for testing)
+         // =============================================================
+         if (manual == 'y') {
+              const bool oneDieAllowed = board.canThrowOneDie();
+// -             int diceCount = 2;
+// +             int diceCount;
+             int diceCount;
 
-             if (oneDieAllowed) {
-                 cout << "1-die is allowed (" << Board::ONE_DIE_RULE_START << ".."
-                      << board.getSize() << " are covered). Use 1 die? (y/n): ";
-                 diceCount = (readYN_input()=='y') ? 1 : 2;
-             } else {
-                 cout << "1-die is NOT allowed (must use 2 dice).\n";
-                 diceCount = 2;
-             }
+              if (oneDieAllowed) {
+                  cout << "1-die is allowed (" << Board::ONE_DIE_RULE_START << ".."
+                       << board.getSize() << " are covered). Use 1 die? (y/n): ";
+                  diceCount = (readYN_input()=='y') ? 1 : 2;
+              } else {
+                  cout << "1-die is NOT allowed (must use 2 dice).\n";
+                  diceCount = 2;
+              }
 
-             const int d1 = readDie_input("Enter die 1 (1-6): ");
-             const int d2 = (diceCount==2) ? readDie_input("Enter die 2 (1-6): ") : 0;
-             sum = d1 + d2;
-             cout << "Computer (manual) rolled: " << d1
+              const int d1 = readDie_input("Enter die 1 (1-6): ");
+              const int d2 = (diceCount==2) ? readDie_input("Enter die 2 (1-6): ") : 0;
+              sum = d1 + d2;
+              cout << "Computer (manual) rolled: " << d1
                   << ((diceCount==2) ? " + " : " = ")
                   << ((diceCount==2) ? std::to_string(d2) + " = " : "")
                   << sum << "\n";
@@ -316,29 +334,54 @@ bool Computer::takeTurn() {
                 cout << "Computer has no legal moves for this roll. Its turn ends.\n";
                 return true;
             }
+            // 'best' will never be NONE here because we already checked that there
+            // is at least one legal combo (coverCombos or uncoverCombos). Proceed.
 
-            cout << c(GREEN) << "Computer: " << c(RESET)
-                 << (best.action == StrategyResult::Action::Cover
-                     ? "Cover own squares"
-                     : "Uncover opponent squares");
-            cout << " (";
+            // Build a human-friendly explanation for the chosen move
+            // Compute whether the chosen move would immediately win
+            bool isWinning = isComboWinning(best, board, humanBoard);
+
+            // Print the chosen squares
+            cout << c(GREEN)
+                 << (best.action == StrategyResult::Action::Cover ? "Computer chooses to COVER: " : "Computer chooses to UNCOVER: ")
+                 << c(RESET);
+            for (int v : best.combo) cout << v << " ";
+            cout << "\n";
+
+            // Explain WHY the AI chose this move in plain language
+            int chosenCount = static_cast<int>(best.combo.size());
+            int chosenSum = sumOf(best.combo);
+            if (isWinning) {
+                cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
+            } else {
+                cout << "Reason: Chosen as the strongest option — affects " << chosenCount << " squares (total value " << chosenSum << ").\n";
+            }
+
+            // Apply the chosen move after explanation
             if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
             else applyUncover(humanBoard, best.combo);
-            cout << ")\n";
-        }
 
-         // =============================================================
-         // AUTOMATIC AI MODE
-         // =============================================================
-        else {
+            // If this move immediately wins, print a short explicit note
+            if (isWinning) {
+                cout << c(YELLOW) << "Note: This move wins the round." << c(RESET) << "\n";
+            }
+
+         }
+
+          // =============================================================
+          // AUTOMATIC AI MODE
+          // =============================================================
+         else {
              const bool oneDieAllowed = board.canThrowOneDie();
 
 
-             int diceCount = 2;
+             int diceCount;
              if (oneDieAllowed &&
                  (highestUncoveredFunc(board) <= 6 || remainingCountFunc(board) <= 3))
               {
                   diceCount = 1;
+              } else {
+                  diceCount = 2;
               }
 
              static thread_local std::mt19937_64 rng(std::random_device{}());
@@ -377,38 +420,41 @@ bool Computer::takeTurn() {
                  Tournament::getAdvantageApplied() &&
                  Tournament::isHumanAdvantageProtected();
 
-             StrategyResult best =
-                 computeBestMove(sum, board, humanBoard, oppProtected);
+             // Compute all legal options so we can explain choices in plain language
+             auto coverCombos = board.findValidCombinations(sum, /*forCovering=*/true);
+             auto uncoverCombos = humanBoard.findValidCombinations(sum, /*forCovering=*/false);
+
+             StrategyResult best = computeBestMove(sum, board, humanBoard, oppProtected);
 
              if (best.action == StrategyResult::Action::None) {
                  cout << "Computer has no legal moves for this roll. Its turn ends.\n";
                  return true;
              }
 
-             cout << c(GREEN) << "Decision: " << c(RESET)
-                  << (best.action == StrategyResult::Action::Cover
-                      ? "Cover own squares"
-                      : "Uncover opponent squares")
-                  << " (manual mode auto-select)\n";
+             // Determine if this move is an immediate win
+             bool isWinningA = isComboWinning(best, board, humanBoard);
 
-             // Preserve the 'winning' messaging, then apply moves using helpers
-             bool isWinning = false;
-             if (best.action == StrategyResult::Action::Cover) {
-                 Board sim = board;
-                 for (int v : best.combo) sim.coverSquare(v);
-                 isWinning = sim.allCovered();
-                 if (isWinning) cout << "Computer chooses a WINNING cover: ";
-                 else cout << "Computer chooses to cover: ";
+             // Friendly decision output
+             cout << c(GREEN)
+                  << (best.action == StrategyResult::Action::Cover ? "Computer decides to COVER: " : "Computer decides to UNCOVER: ")
+                  << c(RESET);
+             for (int v : best.combo) cout << v << " ";
+             cout << "\n";
+
+             int chosenCount = static_cast<int>(best.combo.size());
+             int chosenSum = sumOf(best.combo);
+             if (isWinningA) {
+                 cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
              } else {
-                 Board simOpp = humanBoard;
-                 for (int v : best.combo) simOpp.uncoverSquare(v);
-                 isWinning = simOpp.allUncovered();
-                 if (isWinning) cout << "Computer chooses a WINNING uncover: ";
-                 else cout << "Computer chooses to uncover: ";
+                 cout << "Reason: Chosen as the strongest option — affects " << chosenCount << " squares (total value " << chosenSum << ").\n";
              }
 
+             // Apply the chosen move
              if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
              else applyUncover(humanBoard, best.combo);
+            if (isWinningA) {
+                cout << c(YELLOW) << "Note: This move wins the round." << c(RESET) << "\n";
+            }
              cout << "\n";
         }
 
@@ -447,7 +493,8 @@ bool Computer::shouldCover(const int sum) const {
     StrategyResult res =
         computeBestMove(sum, board, humanBoard, oppProtected);
 
-    return res.action == StrategyResult::Action::Cover;
+    bool result = (res.action == StrategyResult::Action::Cover);
+    return result;
 }
 
 // ---------------------------------------------------------------------
@@ -575,7 +622,7 @@ void Computer::provideHelp(const int diceSum,
                            const Board& computerBoard) const
 {
     banner("Help");
-    std::cout << "Dice sum: " << diceSum << "\n";
+    std::cout << "Dice sum: " << diceSum << "\n\n";
 
     // All legal options BEFORE recommendation
     std::set<std::set<int>> coverCombos =
@@ -597,16 +644,16 @@ void Computer::provideHelp(const int diceSum,
         }
     }
 
-    section("Cover options (your board)");
+    section("Possible moves to COVER (your board)");
     if (coverCombos.empty()) std::cout << "  none\n";
     else printCombosFunc(coverCombos);
 
-    section("Uncover options (opponent board)");
+    section("Possible moves to UNCOVER (opponent board)");
     if (uncoverCombos.empty()) std::cout << "  none\n";
     else printCombosFunc(uncoverCombos);
 
     if (coverCombos.empty() && uncoverCombos.empty()) {
-        std::cout << "\nNo legal moves. You must pass.\n";
+        std::cout << "\nNo legal moves available. You must pass this turn.\n";
         if (Tournament::getAdvantageApplied()) {
             std::cout << "\n" << c(YELLOW) << "Note:" << c(RESET)
                       << " advantage square " << Tournament::getAdvantageSquare()
@@ -616,9 +663,15 @@ void Computer::provideHelp(const int diceSum,
         return;
     }
 
-    // Use the SAME strategy engine as the AI
-    StrategyResult best =
-        computeBestMove(diceSum, humanBoard, computerBoard, oppProtected);
+    // Use the SAME strategy engine as the AI to compute the recommendation
+    StrategyResult best = computeBestMove(diceSum, humanBoard, computerBoard, oppProtected);
+
+    // Compute simple metrics for the recommended move and alternatives
+    auto explainCombo = [](const std::set<int>& combo) {
+        int cnt = static_cast<int>(combo.size());
+        int s = 0; for (int v : combo) s += v;
+        return std::pair<int,int>(cnt, s);
+    };
 
     if (best.action == StrategyResult::Action::None) {
         std::cout << "\nNo legal moves. You must pass.\n";
@@ -626,28 +679,22 @@ void Computer::provideHelp(const int diceSum,
         return;
     }
 
+    // Present the recommendation in human friendly language
+    std::cout << "\n" << c(GREEN) << "RECOMMENDATION: " << c(RESET);
     if (best.action == StrategyResult::Action::Cover) {
-        std::cout << "\n" << c(GREEN) << "Recommended: COVER  " << c(RESET);
-        for (int v : best.combo) std::cout << v << " ";
-        std::cout << "\n" << c(DIM)
-                  << "Reason: This move is evaluated as strongest by the same "
-                     "strategy the computer uses (wins first, then max squares, "
-                     "then highest values).\n"
-                  << c(RESET);
+        std::cout << "Cover these squares: ";
     } else {
-        std::cout << "\n" << c(GREEN) << "Recommended: UNCOVER  " << c(RESET);
-        for (int v : best.combo) std::cout << v << " ";
-        std::cout << "\n" << c(DIM)
-                  << "Reason: This move is evaluated as strongest by the same "
-                     "strategy the computer uses (wins first, then max squares, "
-                     "then highest values).\n"
-                  << c(RESET);
+        std::cout << "Uncover these opponent squares: ";
     }
+    for (int v : best.combo) std::cout << v << " ";
+    std::cout << "\n\n";
 
-    if (Tournament::getAdvantageApplied()) {
-        std::cout << "\n" << c(YELLOW) << "Note:" << c(RESET)
-                  << " advantage square " << Tournament::getAdvantageSquare()
-                  << " is protected for one turn.\n";
+    // Provide a concise human-friendly 'why' (one or two sentences)
+    auto [chosenCount, chosenSum] = explainCombo(best.combo);
+    if (isComboWinning(best, humanBoard, computerBoard)) {
+        std::cout << c(DIM) << "Why: This move immediately wins the round." << c(RESET) << "\n";
+    } else {
+        std::cout << c(DIM) << "Why: Chosen as the strongest option — affects " << chosenCount << " squares (value " << chosenSum << ")." << c(RESET) << "\n";
     }
 
     hr();
