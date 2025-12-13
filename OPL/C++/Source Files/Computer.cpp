@@ -254,175 +254,186 @@ bool Computer::takeTurn() {
     using std::cout; using std::cin; using std::endl;
 
     // Show the same colored section header as the human turn
-    section("Computer Turn");
 
-    cout << "Do you want to enter the die manually for the computer? (y/n): ";
-    const char manual = readYN_input();
+    // The computer should keep taking rolls until it has no legal moves
+    // (same behavior as the human). Loop each roll/decision cycle here.
+    while (true) {
+        section("Computer Turn");
+        cout << "Do you want to enter the die manually for the computer? (y/n): ";
+        const char manual = readYN_input();
 
-    int sum = 0;
+        int sum = 0;
 
-    // =============================================================
-    // MANUAL MODE (for testing)
-    // =============================================================
-    if (manual == 'y') {
-        const bool oneDieAllowed = board.canThrowOneDie();
-        int diceCount = 2;
+        // =============================================================
+        // MANUAL MODE (for testing)
+        // =============================================================
+        if (manual == 'y') {
+             const bool oneDieAllowed = board.canThrowOneDie();
+             int diceCount = 2;
 
-        if (oneDieAllowed) {
-            cout << "1-die is allowed (" << Board::ONE_DIE_RULE_START << ".."
-                 << board.getSize() << " are covered). Use 1 die? (y/n): ";
-            diceCount = (readYN_input()=='y') ? 1 : 2;
-        } else {
-            cout << "1-die is NOT allowed (must use 2 dice).\n";
-            diceCount = 2;
-        }
+             if (oneDieAllowed) {
+                 cout << "1-die is allowed (" << Board::ONE_DIE_RULE_START << ".."
+                      << board.getSize() << " are covered). Use 1 die? (y/n): ";
+                 diceCount = (readYN_input()=='y') ? 1 : 2;
+             } else {
+                 cout << "1-die is NOT allowed (must use 2 dice).\n";
+                 diceCount = 2;
+             }
 
-        const int d1 = readDie_input("Enter die 1 (1-6): ");
-        const int d2 = (diceCount==2) ? readDie_input("Enter die 2 (1-6): ") : 0;
-        sum = d1 + d2;
-        cout << "Computer (manual) rolled: " << d1
-             << ((diceCount==2) ? " + " : " = ")
-             << ((diceCount==2) ? std::to_string(d2) + " = " : "")
-             << sum << "\n";
+             const int d1 = readDie_input("Enter die 1 (1-6): ");
+             const int d2 = (diceCount==2) ? readDie_input("Enter die 2 (1-6): ") : 0;
+             sum = d1 + d2;
+             cout << "Computer (manual) rolled: " << d1
+                  << ((diceCount==2) ? " + " : " = ")
+                  << ((diceCount==2) ? std::to_string(d2) + " = " : "")
+                  << sum << "\n";
 
-        auto coverCombos   = board.findValidCombinations(sum, /*forCovering=*/true);
-        auto uncoverCombos = humanBoard.findValidCombinations(sum, /*forCovering=*/false);
+             auto coverCombos   = board.findValidCombinations(sum, /*forCovering=*/true);
+             auto uncoverCombos = humanBoard.findValidCombinations(sum, /*forCovering=*/false);
 
-        // Respect advantage protection for HUMAN (opponent)
-        if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
-            int adv = Tournament::getAdvantageSquare();
-            for (auto it = uncoverCombos.begin(); it != uncoverCombos.end(); ) {
-                if (it->contains(adv)) it = uncoverCombos.erase(it);
-                else ++it;
+             // Respect advantage protection for HUMAN (opponent)
+             if (Tournament::getAdvantageApplied() && Tournament::isHumanAdvantageProtected()) {
+                 int adv = Tournament::getAdvantageSquare();
+                 for (auto it = uncoverCombos.begin(); it != uncoverCombos.end(); ) {
+                     if (it->contains(adv)) it = uncoverCombos.erase(it);
+                     else ++it;
+                 }
+             }
+
+            if (coverCombos.empty() && uncoverCombos.empty()) {
+                cout << "Computer has no legal moves for this roll. Its turn ends.\n";
+                return true;
             }
+
+            // Use the same automated strategy engine to pick the best action and combo
+            bool oppProtected =
+                Tournament::getAdvantageApplied() &&
+                Tournament::isHumanAdvantageProtected();
+
+            StrategyResult best = computeBestMove(sum, board, humanBoard, oppProtected);
+
+            if (best.action == StrategyResult::Action::None) {
+                cout << "Computer has no legal moves for this roll. Its turn ends.\n";
+                return true;
+            }
+
+            cout << c(GREEN) << "Computer: " << c(RESET)
+                 << (best.action == StrategyResult::Action::Cover
+                     ? "Cover own squares"
+                     : "Uncover opponent squares");
+            cout << " (";
+            if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
+            else applyUncover(humanBoard, best.combo);
+            cout << ")\n";
         }
 
-        if (coverCombos.empty() && uncoverCombos.empty()) {
-            cout << "Computer has no legal moves for this roll. Its turn ends.\n";
-            return true;
+         // =============================================================
+         // AUTOMATIC AI MODE
+         // =============================================================
+        else {
+             const bool oneDieAllowed = board.canThrowOneDie();
+
+
+             int diceCount = 2;
+             if (oneDieAllowed &&
+                 (highestUncoveredFunc(board) <= 6 || remainingCountFunc(board) <= 3))
+              {
+                  diceCount = 1;
+              }
+
+             static thread_local std::mt19937_64 rng(std::random_device{}());
+             std::uniform_int_distribution<int> dieDist(1,6);
+             const int d1 = dieDist(rng);
+             const int d2 = (diceCount==2) ? dieDist(rng) : 0;
+             sum = d1 + d2;
+
+             std::string diceWhy;
+             if (!oneDieAllowed) {
+                 diceWhy = "must use 2 dice (1-die not allowed until 7.."
+                         + std::to_string(board.getSize())
+                         + " are covered)";
+             } else if (diceCount == 1) {
+                 int hi  = highestUncoveredFunc(board);
+                 int rem = remainingCountFunc(board);
+                 if (hi <= 6)
+                     diceWhy = "1 die because highest remaining square <= 6 (aiming small)";
+                 else if (rem <= 3)
+                     diceWhy = "1 die because only " + std::to_string(rem) + " squares remain (lower bust risk)";
+                 else
+                     diceWhy = "1 die (heuristic)";
+             } else {
+                 diceWhy = "2 dice to reach sums > 6 (need higher targets)";
+             }
+
+             cout << "Chooses to roll " << (diceCount==1 ? "1 die" : "2 dice")
+                  << " " << c(DIM) << "(" << diceWhy << ")" << c(RESET) << ".\n";
+             if (diceCount==2)
+                 cout << "Rolled: " << d1 << " + " << d2 << " = " << sum << "\n";
+             else
+                 cout << "Rolled: " << d1 << " = " << sum
+                      << " " << c(DIM) << "(1-die allowed)" << c(RESET) << "\n";
+
+             bool oppProtected =
+                 Tournament::getAdvantageApplied() &&
+                 Tournament::isHumanAdvantageProtected();
+
+             StrategyResult best =
+                 computeBestMove(sum, board, humanBoard, oppProtected);
+
+             if (best.action == StrategyResult::Action::None) {
+                 cout << "Computer has no legal moves for this roll. Its turn ends.\n";
+                 return true;
+             }
+
+             cout << c(GREEN) << "Decision: " << c(RESET)
+                  << (best.action == StrategyResult::Action::Cover
+                      ? "Cover own squares"
+                      : "Uncover opponent squares")
+                  << " (manual mode auto-select)\n";
+
+             // Preserve the 'winning' messaging, then apply moves using helpers
+             bool isWinning = false;
+             if (best.action == StrategyResult::Action::Cover) {
+                 Board sim = board;
+                 for (int v : best.combo) sim.coverSquare(v);
+                 isWinning = sim.allCovered();
+                 if (isWinning) cout << "Computer chooses a WINNING cover: ";
+                 else cout << "Computer chooses to cover: ";
+             } else {
+                 Board simOpp = humanBoard;
+                 for (int v : best.combo) simOpp.uncoverSquare(v);
+                 isWinning = simOpp.allUncovered();
+                 if (isWinning) cout << "Computer chooses a WINNING uncover: ";
+                 else cout << "Computer chooses to uncover: ";
+             }
+
+             if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
+             else applyUncover(humanBoard, best.combo);
+             cout << "\n";
         }
 
-        // Use the same automated strategy engine to pick the best action and combo
-        bool oppProtected =
+        // Show resulting boards after the move
+        boardView.display(
             Tournament::getAdvantageApplied() &&
-            Tournament::isHumanAdvantageProtected();
+            Tournament::getAdvantageOwner() == Tournament::Side::Computer,
+            Tournament::getAdvantageSquare());
 
-        StrategyResult best = computeBestMove(sum, board, humanBoard, oppProtected);
+        humanBoardView.display(
+            Tournament::getAdvantageApplied() &&
+            Tournament::getAdvantageOwner() == Tournament::Side::Human,
+            Tournament::getAdvantageSquare());
 
-        if (best.action == StrategyResult::Action::None) {
-            cout << "Computer has no legal moves for this roll. Its turn ends.\n";
-            return true;
-        }
+        std::cout << "\n";
 
-        cout << c(GREEN) << "Computer: " << c(RESET)
-             << (best.action == StrategyResult::Action::Cover
-                 ? "Cover own squares"
-                 : "Uncover opponent squares");
-        cout << " (";
-        if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
-        else applyUncover(humanBoard, best.combo);
-        cout << ")\n";
+        // If the computer covered all its squares, end turn
+        if (board.allCovered()) return true;
+
+        // Otherwise loop to allow the computer to roll again. The loop's
+        // next iteration will handle the "no legal moves" check on the new roll.
     }
 
-    // =============================================================
-    // AUTOMATIC AI MODE
-    // =============================================================
-    else {
-        const bool oneDieAllowed = board.canThrowOneDie();
-
-
-        int diceCount = 2;
-        if (oneDieAllowed &&
-            (highestUncoveredFunc(board) <= 6 || remainingCountFunc(board) <= 3))
-         {
-             diceCount = 1;
-         }
-
-        static thread_local std::mt19937_64 rng(std::random_device{}());
-        std::uniform_int_distribution<int> dieDist(1,6);
-        const int d1 = dieDist(rng);
-        const int d2 = (diceCount==2) ? dieDist(rng) : 0;
-        sum = d1 + d2;
-
-        std::string diceWhy;
-        if (!oneDieAllowed) {
-            diceWhy = "must use 2 dice (1-die not allowed until 7.."
-                    + std::to_string(board.getSize())
-                    + " are covered)";
-        } else if (diceCount == 1) {
-            int hi  = highestUncoveredFunc(board);
-            int rem = remainingCountFunc(board);
-            if (hi <= 6)
-                diceWhy = "1 die because highest remaining square <= 6 (aiming small)";
-            else if (rem <= 3)
-                diceWhy = "1 die because only " + std::to_string(rem) + " squares remain (lower bust risk)";
-            else
-                diceWhy = "1 die (heuristic)";
-        } else {
-            diceWhy = "2 dice to reach sums > 6 (need higher targets)";
-        }
-
-        cout << "Chooses to roll " << (diceCount==1 ? "1 die" : "2 dice")
-             << " " << c(DIM) << "(" << diceWhy << ")" << c(RESET) << ".\n";
-        if (diceCount==2)
-            cout << "Rolled: " << d1 << " + " << d2 << " = " << sum << "\n";
-        else
-            cout << "Rolled: " << d1 << " = " << sum
-                 << " " << c(DIM) << "(1-die allowed)" << c(RESET) << "\n";
-
-        bool oppProtected =
-            Tournament::getAdvantageApplied() &&
-            Tournament::isHumanAdvantageProtected();
-
-        StrategyResult best =
-            computeBestMove(sum, board, humanBoard, oppProtected);
-
-        if (best.action == StrategyResult::Action::None) {
-            cout << "Computer has no legal moves for this roll. Its turn ends.\n";
-            return true;
-        }
-
-        cout << c(GREEN) << "Decision: " << c(RESET)
-             << (best.action == StrategyResult::Action::Cover
-                 ? "Cover own squares"
-                 : "Uncover opponent squares")
-             << " (manual mode auto-select)\n";
-
-        // Preserve the 'winning' messaging, then apply moves using helpers
-        bool isWinning = false;
-        if (best.action == StrategyResult::Action::Cover) {
-            Board sim = board;
-            for (int v : best.combo) sim.coverSquare(v);
-            isWinning = sim.allCovered();
-            if (isWinning) cout << "Computer chooses a WINNING cover: ";
-            else cout << "Computer chooses to cover: ";
-        } else {
-            Board simOpp = humanBoard;
-            for (int v : best.combo) simOpp.uncoverSquare(v);
-            isWinning = simOpp.allUncovered();
-            if (isWinning) cout << "Computer chooses a WINNING uncover: ";
-            else cout << "Computer chooses to uncover: ";
-        }
-
-        if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
-        else applyUncover(humanBoard, best.combo);
-        cout << "\n";
-    }
-
-    // Show resulting boards
-    boardView.display(
-        Tournament::getAdvantageApplied() &&
-        Tournament::getAdvantageOwner() == Tournament::Side::Computer,
-        Tournament::getAdvantageSquare());
-
-    humanBoardView.display(
-        Tournament::getAdvantageApplied() &&
-        Tournament::getAdvantageOwner() == Tournament::Side::Human,
-        Tournament::getAdvantageSquare());
-
-    std::cout << "\n";
-
-    if (board.allCovered()) return true;
+    // Defensive return (should be unreachable because loop returns on end)
+    return true;
 }
 
 // ---------------------------------------------------------------------
