@@ -10,7 +10,7 @@ public class GameRound {
     private final Dice dice;
     private final int boardSize;
 
-    private PlayerId firstPlayer;
+    private final PlayerId firstPlayer;
     private PlayerId currentPlayer;
 
     private boolean isOver;
@@ -67,6 +67,11 @@ public class GameRound {
 
         humanHasMoved = false;
         computerHasMoved = false;
+    }
+
+    public void markBothPlayersMoved() {
+        this.humanHasMoved = true;
+        this.computerHasMoved = true;
     }
 
     public HumanPlayer getHuman() {
@@ -302,7 +307,6 @@ public class GameRound {
             }
         }
     }
-
 
 
 }

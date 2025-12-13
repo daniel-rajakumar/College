@@ -13,10 +13,6 @@ public class ComputerPlayer extends Player {
         return round.canRollOneDie(PlayerId.COMPUTER);
     }
 
-    /**
-     * Choose the best move.
-     * Takes 'me' and 'opponent' to check for immediate winning conditions.
-     */
     public Move chooseMove(List<Move> coverMoves, List<Move> uncoverMoves, Player me, Player opponent) {
         
         int myUncoveredCount = 0;
@@ -50,25 +46,6 @@ public class ComputerPlayer extends Player {
             return null;
         }
 
-        return candidates.stream()
-                .max(Comparator
-                        .comparingInt(Move::getSquareCount)
-                        .thenComparingInt(Move::getHighestSquare))
-                .orElse(null);
-    }
-
-    // Overload for backward compatibility if needed, though we will update controller.
-    public Move chooseMove(List<Move> coverMoves, List<Move> uncoverMoves) {
-        // Warning: This version assumes 'this' is the player and we don't know opponent perfectly
-        // better to use the 4-arg version.
-        // For safety, we just call heuristic part or return null?
-        // Let's just forward with 'this' and a dummy opponent or fail? 
-        // Better to force compilation error if I forget to update controller.
-        // But for now, to avoid breaking if I miss one call, I'll delegate to the heuristic logic directly.
-        
-        List<Move> candidates = !coverMoves.isEmpty() ? coverMoves : uncoverMoves;
-        if (candidates.isEmpty()) return null;
-        
         return candidates.stream()
                 .max(Comparator
                         .comparingInt(Move::getSquareCount)
