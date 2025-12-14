@@ -85,6 +85,37 @@ button:active:not(:disabled) {
   margin-top: 0.75rem;
 }
 
+.first-player-choices {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.manual-choice,
+.roll-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #111827;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.pill input {
+  accent-color: #2563eb;
+}
+
 .panel {
   background: #111827;
   border: 1px solid #374151;

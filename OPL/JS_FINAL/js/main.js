@@ -5,6 +5,9 @@ import { GameSession } from "./model/GameSession.js";
 const view = new View();
 const session = new GameSession();
 
+const DEFAULT_FIRST_PLAYER_TEXT =
+  'Choose who goes first or click "Roll Dice" to decide randomly.';
+
 // purely UI-side pending options (for the move modal)
 let uiPendingOptions = null;
 let lastShownRoll = null;
@@ -87,8 +90,22 @@ function wireWelcome() {
   btnStartSetup.addEventListener("click", () => {
     session.resetTournament();
     session.setMode("HvsC");
+    const defaultModeRadio = document.querySelector('input[name="mode"][value="HvsC"]');
+    if (defaultModeRadio) defaultModeRadio.checked = true;
     view.showScreen("setup");
     view.setLastPlay("–");
+    view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+    const btnStartRound = document.getElementById("btn-start-round");
+    const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
+    if (btnStartRound) {
+      btnStartRound.style.display = "none";
+      btnStartRound.dataset.firstPlayerId = "";
+    }
+    firstPlayerRadios.forEach((r) => (r.checked = false));
+    view.setPlayerNames(
+      session.getPlayerDisplayName("HUMAN"),
+      session.getPlayerDisplayName("COMPUTER")
+    );
     log("Tournament reset.");
   });
 
@@ -160,7 +177,23 @@ function wireSetup() {
   const btnRolloff = document.getElementById("btn-rolloff");
   const btnSetupBack = document.getElementById("btn-setup-back");
   const btnStartRound = document.getElementById("btn-start-round");
+  const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
   btnStartRound.style.display = "none";
+
+  const clearFirstPlayerSelection = () => {
+    firstPlayerRadios.forEach((r) => {
+      r.checked = false;
+    });
+    btnStartRound.style.display = "none";
+    btnStartRound.dataset.firstPlayerId = "";
+    view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+  };
+
+  const applyFirstPlayerSelection = (playerId, reasonText) => {
+    btnStartRound.style.display = "inline-block";
+    btnStartRound.dataset.firstPlayerId = playerId;
+    view.setRolloffText(reasonText, true);
+  };
 
   // Update mode (no logic here, we just forward)
   modeRadios.forEach((radio) => {
@@ -171,17 +204,29 @@ function wireSetup() {
         session.getPlayerDisplayName("HUMAN"),
         session.getPlayerDisplayName("COMPUTER")
       );
-      btnStartRound.style.display = "none";
-      btnStartRound.dataset.firstPlayerId = "";
-      const defaultText = 'Click "Roll Dice" to determine the first player.';
-      view.setRolloffText(defaultText, false);
+      clearFirstPlayerSelection();
     });
   });
   // ensure default selection is Human vs Computer
   const defaultMode = document.querySelector('input[name="mode"][value="HvsC"]');
   if (defaultMode) defaultMode.checked = true;
+  // sync player labels for first-player chooser
+  view.setPlayerNames(
+    session.getPlayerDisplayName("HUMAN"),
+    session.getPlayerDisplayName("COMPUTER")
+  );
+  view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+  firstPlayerRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return;
+      const playerId = radio.value;
+      const playerName = session.getPlayerDisplayName(playerId);
+      applyFirstPlayerSelection(playerId, `Manual choice: ${playerName} will go first.`);
+    });
+  });
 
   btnRolloff.addEventListener("click", () => {
+    firstPlayerRadios.forEach((r) => (r.checked = false));
     const boardSize = Number(selectBoardSize.value) || 9;
     const result = session.rollOff(boardSize);
 
@@ -710,8 +755,14 @@ function wireEnd() {
 
   btnPlayAgain.addEventListener("click", () => {
     view.showScreen("setup");
-    const defaultText = 'Click "Roll Dice" to determine the first player.';
-    view.setRolloffText(defaultText, false);
+    view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+    const btnStartRound = document.getElementById("btn-start-round");
+    const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
+    if (btnStartRound) {
+      btnStartRound.style.display = "none";
+      btnStartRound.dataset.firstPlayerId = "";
+    }
+    firstPlayerRadios.forEach((r) => (r.checked = false));
   });
 
   btnEndQuit.addEventListener("click", () => {

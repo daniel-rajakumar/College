@@ -47,10 +47,26 @@
         </div>
 
         <div class="setup-group rolloff">
-          <h3>Roll-off: Who goes first?</h3>
-          <button id="btn-rolloff" class="primary">Roll Dice</button>
+          <h3>Who goes first?</h3>
+          <div class="first-player-choices">
+            <div class="manual-choice">
+              <p class="hint">Pick directly:</p>
+              <label class="pill">
+                <input type="radio" name="first-player" value="HUMAN" />
+                <span id="label-first-human">Player 1</span>
+              </label>
+              <label class="pill">
+                <input type="radio" name="first-player" value="COMPUTER" />
+                <span id="label-first-computer">Player 2</span>
+              </label>
+            </div>
+            <div class="roll-choice">
+              <p class="hint">Or decide randomly:</p>
+              <button id="btn-rolloff" class="primary">Roll Dice</button>
+            </div>
+          </div>
           <div id="rolloff-result" class="panel">
-            Click "Roll Dice" to determine the first player.
+            Choose who goes first or click "Roll Dice" to decide randomly.
           </div>
         </div>
 

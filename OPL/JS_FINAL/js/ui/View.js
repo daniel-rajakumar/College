@@ -13,6 +13,8 @@ export class View {
     // Setup screen
     this.rolloffResultEl = document.getElementById("rolloff-result");
     this.btnStartRound = document.getElementById("btn-start-round");
+    this.firstPlayerHumanLabel = document.getElementById("label-first-human");
+    this.firstPlayerComputerLabel = document.getElementById("label-first-computer");
 
     // Game header
     this.lblRoundNumber = document.getElementById("lbl-round-number");
@@ -132,6 +134,8 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     if (this.scoreComputerHeading) this.scoreComputerHeading.textContent = computerLabel;
     if (this.boardHumanHeading) this.boardHumanHeading.textContent = humanLabel;
     if (this.boardComputerHeading) this.boardComputerHeading.textContent = computerLabel;
+    if (this.firstPlayerHumanLabel) this.firstPlayerHumanLabel.textContent = humanLabel;
+    if (this.firstPlayerComputerLabel) this.firstPlayerComputerLabel.textContent = computerLabel;
   }
 
   /* ---------- REWIND MODAL ---------- */
