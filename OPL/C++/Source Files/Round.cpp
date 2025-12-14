@@ -109,6 +109,30 @@ void Round::play() const {
             }
         }
 
+        // Immediate win detection: if the player who just moved caused a win
+        // (they covered all their own squares OR they uncovered all the opponent's squares),
+        // declare the winner immediately. This ensures an uncovering win is handled
+        // the instant it happens.
+        // if (isRoundOver()) {
+        //     // Determine who the winner is (same logic as declareWinner)
+        //     bool winnerIsHuman = false;
+        //     if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
+        //         winnerIsHuman = true;
+        //     } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
+        //         winnerIsHuman = false;
+        //     }
+        //
+        //     // If the winner matches the player who just moved, declare immediately.
+        //     if (winnerIsHuman == currentPlayer->getIsHuman()) {
+        //         const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
+        //                                                 : static_cast<const Player*>(&player2);
+        //         bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
+        //         declareWinner(winnerPtr, winnerWasFirst);
+        //         return;
+        //     }
+        //     // Otherwise, fall through; periodic checks will handle it later.
+        // }
+
         movesSinceLastCheck++;
 
         // Step 3: Check for Win Condition (Optimized check frequency)

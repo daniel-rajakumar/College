@@ -474,6 +474,10 @@ bool Computer::takeTurn() {
         // If the computer covered all its squares, end turn
         if (board.allCovered()) return true;
 
+        // If the computer's move uncovered all human squares, end turn so
+        // the Round can detect and declare the winner immediately.
+        if (humanBoard.allUncovered()) return true;
+
         // Otherwise loop to allow the computer to roll again. The loop's
         // next iteration will handle the "no legal moves" check on the new roll.
     }

@@ -156,6 +156,12 @@ bool Human::takeTurn() {
                             Tournament::getAdvantageSquare());
         cout << "\n";
 
+        // If the human uncovered all the computer's squares, end turn so the
+        // Round can detect and declare the winner immediately.
+        if (computerBoard.allUncovered()) {
+            return true;
+        }
+
         if (board.allCovered()) return true;
     }
 }
