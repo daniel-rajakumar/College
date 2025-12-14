@@ -52,8 +52,8 @@ export class GameRound {
     this.roundScore = 0;
 
     // Track whether a side has ever covered at least one square this round
-    this.humanEverCovered = false;
-    this.computerEverCovered = false;
+    this.humanEverCovered = this.human.board.getCoveredNumbers().length > 0;
+    this.computerEverCovered = this.computer.board.getCoveredNumbers().length > 0;
   }
 
   getPlayerById(id) {

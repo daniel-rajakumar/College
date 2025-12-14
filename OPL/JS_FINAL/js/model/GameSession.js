@@ -367,6 +367,12 @@ export class GameSession {
       snapshot.computerSquares
     );
 
+    // Ensure uncover win detection works after loading covered squares
+    this.currentRound.humanEverCovered =
+      this.currentRound.human.board.getCoveredNumbers().length > 0;
+    this.currentRound.computerEverCovered =
+      this.currentRound.computer.board.getCoveredNumbers().length > 0;
+
     // Next turn
     this.currentRound.currentPlayerId = snapshot.nextTurnId;
     this.currentPlayerId = snapshot.nextTurnId;
