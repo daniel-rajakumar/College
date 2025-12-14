@@ -1,6 +1,8 @@
 #include "../Header Files/Round.h"
 #include <iostream>
 #include <stdlib.h>
+#include <limits>
+#include <cctype>
 #include "../Header Files/Player.h"
 #include "../Header Files/Tournament.h"
 #include "../Header Files/BoardView.h"
@@ -64,9 +66,47 @@ void Round::play() const {
 
     if (isANewGame) {
         cout << "~~~~~~~~[Who Goes First?]~~~~~~~~~\n";
-        Player& fp = determineFirstPlayer();        // roll once
-        currentPlayer = &fp;
-        tournament.setFirstPlayerIsHuman(fp.getIsHuman());
+
+        // Offer the user a choice: roll dice or explicitly pick human/computer
+        cout << "Options:\n";
+        cout << "  r) Roll dice to decide\n";
+        cout << "  h) Human goes first\n";
+        cout << "  c) Computer goes first\n";
+        cout << "Enter choice (r/h/c): ";
+
+        char choice = '\0';
+        char lc = '\0';
+        while (true) {
+            if (!(cin >> choice)) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid input. Enter r, h or c: ";
+                continue;
+            }
+            lc = static_cast<char>(std::tolower(static_cast<unsigned char>(choice)));
+            if (lc == 'r' || lc == 'h' || lc == 'c') {
+                break;
+            }
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Enter r, h or c: ";
+        }
+
+        Player* fp = nullptr;
+        if (lc == 'r') {
+            // Roll to decide (existing behavior)
+            Player& winner = determineFirstPlayer();
+            fp = &winner;
+        } else if (lc == 'h') {
+            cout << "Human will go first!" << endl;
+            fp = &player1;
+        } else { // lc == 'c'
+            cout << "Computer will go first!" << endl;
+            fp = &player2;
+        }
+
+        currentPlayer = fp;
+        tournament.setFirstPlayerIsHuman(currentPlayer->getIsHuman());
         tournament.setIsHumanTurn(currentPlayer->getIsHuman());
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n";
     }
