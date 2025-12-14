@@ -284,8 +284,9 @@ public class GameController {
             return;
         }
 
-        ComputerPlayer pseudoComputer = new ComputerPlayer(currentRound.getBoardSize());
-        Move suggestion = pseudoComputer.chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
+//        ComputerPlayer pseudoComputer = new ComputerPlayer(currentRound.getBoardSize());
+//        Move suggestion = pseudoComputer.chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
+        Move suggestion =  new ComputerPlayer(currentRound.getBoardSize()).chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
 
         if (suggestion == null) {
             view.showMessage("No good move available.");
