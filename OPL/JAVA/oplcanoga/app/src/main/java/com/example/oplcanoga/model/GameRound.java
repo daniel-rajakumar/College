@@ -282,31 +282,4 @@ public class GameRound {
         humanHasMoved = true;
         computerHasMoved = true;
     }
-
-    // Called by Tournament.deserialize so round-end logic works after loading
-    public void initMoveFlagsFromPlayers(PlayerId firstPlayer, PlayerId nextPlayer) {
-        // Default: no one has moved
-        humanHasMoved = false;
-        computerHasMoved = false;
-
-        if (firstPlayer == null || nextPlayer == null) {
-            return;
-        }
-
-        if (nextPlayer == firstPlayer) {
-            // Example: First Turn: Computer, Next Turn: Computer
-            // => both have completed at least one turn
-            humanHasMoved = true;
-            computerHasMoved = true;
-        } else {
-            // Only the first player has completed a turn so far
-            if (firstPlayer == PlayerId.HUMAN) {
-                humanHasMoved = true;
-            } else if (firstPlayer == PlayerId.COMPUTER) {
-                computerHasMoved = true;
-            }
-        }
-    }
-
-
 }

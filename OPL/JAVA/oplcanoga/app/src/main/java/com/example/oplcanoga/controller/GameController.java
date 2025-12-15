@@ -284,8 +284,6 @@ public class GameController {
             return;
         }
 
-//        ComputerPlayer pseudoComputer = new ComputerPlayer(currentRound.getBoardSize());
-//        Move suggestion = pseudoComputer.chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
         Move suggestion =  new ComputerPlayer(currentRound.getBoardSize()).chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
 
         if (suggestion == null) {
@@ -529,9 +527,6 @@ public class GameController {
         waitingForHumanMove = false;
         lastHumanCoverMoves.clear();
         lastHumanUncoverMoves.clear();
-
-        // this will not be humans first turn
-
 
         updateBoardInView();
     }

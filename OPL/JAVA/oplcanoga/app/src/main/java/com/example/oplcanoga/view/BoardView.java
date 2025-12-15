@@ -40,14 +40,13 @@ public class BoardView extends View {
 
     private void init() {
         uncoveredPaint.setStyle(Paint.Style.FILL);
-        uncoveredPaint.setColor(0xFFE0F7FA);        // light teal
+        uncoveredPaint.setColor(0xFFE0F7FA);
 
         coveredPaint.setStyle(Paint.Style.FILL);
-        coveredPaint.setColor(0xFF00796B);          // dark teal
+        coveredPaint.setColor(0xFF00796B);
 
-        // NEW: yellow fill for locked advantage square
         lockedPaint.setStyle(Paint.Style.FILL);
-        lockedPaint.setColor(0xFFFFFF00);           // bright yellow
+        lockedPaint.setColor(0xFFFFFF00);
 
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(3f);
@@ -86,19 +85,16 @@ public class BoardView extends View {
 
         float padding = 24f;
 
-        // Horizontal layout
         float availableWidth = w - 2 * padding;
         float cellWidth = availableWidth / boardSize;
         float radius = cellWidth * 0.4f;
 
-        // Vertical layout: pack rows closer, minimal top/bottom whitespace
         float topRowY = padding + radius + 8f;
         float bottomRowY = h - padding - radius - 8f;
 
-        // ----- COMPUTER row (top) -----
         for (int i = 1; i <= boardSize; i++) {
             float cx = padding + (i - 0.5f) * cellWidth;
-            boolean covered = computerSquares[i] == 0;   // 0 = covered
+            boolean covered = computerSquares[i] == 0;
 
             boolean isLockedSquare =
                     state.advantageLockActive &&
@@ -123,13 +119,11 @@ public class BoardView extends View {
                     textPaint);
         }
 
-        // label for computer
         canvas.drawText("COMPUTER",
                 padding,
                 topRowY - radius - 12f,
                 labelPaint);
 
-        // ----- HUMAN row (bottom) -----
         for (int i = 1; i <= boardSize; i++) {
             float cx = padding + (i - 0.5f) * cellWidth;
             boolean covered = humanSquares[i] == 0;
@@ -157,7 +151,6 @@ public class BoardView extends View {
                     textPaint);
         }
 
-        // label for human
         canvas.drawText("HUMAN",
                 padding,
                 bottomRowY + radius + labelPaint.getTextSize(),
