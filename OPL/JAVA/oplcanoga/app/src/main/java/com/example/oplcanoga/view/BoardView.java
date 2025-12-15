@@ -10,7 +10,11 @@ import android.view.View;
 import com.example.oplcanoga.controller.BoardState;
 import com.example.oplcanoga.model.PlayerId;
 
-
+/**
+ * Custom View responsible for rendering the Canoga game board.
+ * Displays the state of the board for both the human and computer players,
+ * including covered, uncovered, and locked squares.
+ */
 public class BoardView extends View {
 
     private BoardState state;
@@ -22,22 +26,42 @@ public class BoardView extends View {
     private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint lockedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-
+    /**
+     * Constructs a BoardView programmatically.
+     *
+     * @param context The Context the view is running in.
+     */
     public BoardView(Context context) {
         super(context);
         init();
     }
 
+    /**
+     * Constructs a BoardView from XML attributes.
+     *
+     * @param context The Context the view is running in.
+     * @param attrs   The attributes of the XML tag that is inflating the view.
+     */
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
+    /**
+     * Constructs a BoardView from XML attributes with a default style.
+     *
+     * @param context      The Context the view is running in.
+     * @param attrs        The attributes of the XML tag that is inflating the view.
+     * @param defStyleAttr An attribute in the current theme that contains a reference to a style resource.
+     */
     public BoardView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
+    /**
+     * Initializes the Paint objects used for drawing.
+     */
     private void init() {
         uncoveredPaint.setStyle(Paint.Style.FILL);
         uncoveredPaint.setColor(0xFFE0F7FA);
@@ -61,6 +85,11 @@ public class BoardView extends View {
         labelPaint.setTextSize(28f);
     }
 
+    /**
+     * Updates the board state and requests a redraw.
+     *
+     * @param state The new BoardState object containing the game status.
+     */
     public void setBoardState(BoardState state) {
         this.state = state;
         invalidate();

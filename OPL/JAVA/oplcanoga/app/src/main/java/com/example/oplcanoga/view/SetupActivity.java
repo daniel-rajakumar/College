@@ -13,6 +13,10 @@ import com.example.oplcanoga.R;
 
 import java.util.Random;
 
+/**
+ * Activity for setting up a new game or a new round.
+ * Handles the selection of board size and the determination of who goes first via a dice roll-off.
+ */
 public class SetupActivity extends AppCompatActivity {
 
     private RadioGroup rgBoardSize;
@@ -92,8 +96,8 @@ public class SetupActivity extends AppCompatActivity {
 
     /**
      * Perform a 2d6 roll-off for Human vs Computer.
-     * If tie -> ask to roll again and keep Start disabled.
-     * If winner -> set firstPlayerString and mark rollOffDone = true.
+     * Updates the UI with the results and determines who goes first.
+     * If there's a tie, the user must roll again.
      */
     private void doRollOff() {
         int h1 = rng.nextInt(6) + 1;

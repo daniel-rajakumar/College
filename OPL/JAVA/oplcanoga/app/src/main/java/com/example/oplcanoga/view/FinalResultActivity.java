@@ -9,6 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.oplcanoga.R;
 
+/**
+ * Activity for displaying the final results of a tournament.
+ * Shows the overall winner, total scores, and a summary message.
+ * Provides an option to return to the main menu.
+ */
 public class FinalResultActivity extends AppCompatActivity {
 
     private TextView tvFinalWinner;

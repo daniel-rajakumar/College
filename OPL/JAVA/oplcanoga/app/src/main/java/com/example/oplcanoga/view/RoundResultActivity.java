@@ -9,6 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.oplcanoga.R;
 
+/**
+ * Activity for displaying the results of a single round.
+ * Shows the round winner, win type, points awarded, and current total scores.
+ * Offers options to play the next round or quit the tournament.
+ */
 public class RoundResultActivity extends AppCompatActivity {
 
     private TextView tvRoundWinner;

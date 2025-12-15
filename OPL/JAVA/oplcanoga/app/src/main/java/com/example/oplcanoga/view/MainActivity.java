@@ -22,6 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * The entry point of the application.
+ * Provides options to start a new game or import an existing game from a file.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private Button btnImportGame;
@@ -85,6 +89,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Opens the system file picker to allow the user to select a game save file.
+     * The result is handled by the `importFileLauncher`.
+     */
     private void openFilePicker() {
         // Use ACTION_OPEN_DOCUMENT to show the system file picker
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);

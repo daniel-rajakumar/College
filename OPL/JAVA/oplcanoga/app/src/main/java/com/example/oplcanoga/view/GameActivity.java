@@ -32,6 +32,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The main activity for the Canoga game screen.
+ * Handles the UI interactions for playing the game, including dice rolling,
+ * move selection, saving/loading, and transitioning to result screens.
+ * Implements the GameView interface to receive updates from the GameController.
+ */
 public class GameActivity extends AppCompatActivity implements GameView {
 
     private BoardView boardView;
