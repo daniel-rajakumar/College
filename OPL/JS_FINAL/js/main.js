@@ -30,6 +30,32 @@ function setLastPlayFromAction(action) {
   view.setLastPlay(`${playerName} ${verb} ${squaresText}`);
 }
 
+function formatActionLog(action) {
+  if (!action) return null;
+  const playerName = session.getPlayerDisplayName(action.playerId || "HUMAN");
+  const squaresText =
+    action.squares && action.squares.length
+      ? `[${action.squares.join(", ")}]`
+      : "(none)";
+  if (action.action === "cover") {
+    return `${playerName} covered their squares ${squaresText}`;
+  }
+  if (action.action === "uncover") {
+    return `${playerName} uncovered opponent squares ${squaresText}`;
+  }
+  if (action.action === "none") {
+    return `${playerName} made no move`;
+  }
+  return `${playerName} performed ${action.action || "an action"} ${squaresText}`;
+}
+
+function logAction(action) {
+  const msg = formatActionLog(action);
+  if (msg) {
+    log(msg);
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   wireWelcome();
   wireSetup();
@@ -337,6 +363,7 @@ function wireGame() {
         view.setDiceText(lastShownRoll);
       }
       setLastPlayFromAction(res.lastAction);
+      logAction(res.lastAction);
     }
 
     // No moves available and no auto move
@@ -487,13 +514,11 @@ function wireGame() {
     }
 
     const playerLabel = session.getCurrentPlayerLabel();
-    const isCover = selection.moveType === "cover";
-    const targetBoard = isCover ? `${playerLabel} board` : `Opponent board`;
-    view.appendLog(
-      `${playerLabel} ${isCover ? "covers" : "uncovers"} ${targetBoard} squares [${selection.squares.join(
-        ", "
-      )}]`
-    );
+    logAction({
+      playerId: session.getCurrentPlayerId(),
+      action: selection.moveType,
+      squares: [...selection.squares],
+    });
     setLastPlayFromAction({
       playerId: session.getCurrentPlayerId(),
       action: selection.moveType,

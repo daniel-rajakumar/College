@@ -210,15 +210,16 @@ button:active:not(:disabled) {
   text-align: center;
   border-radius: 0.5rem;
   font-size: 0.9rem;
-  border: 1px solid #4b5563;
-  background: #111827;
+  border: 1px solid #34d399;
+  background: #059669;
+  color: #022c22;
   cursor: pointer;
 }
 
 .square.covered {
-  background: #059669;
-  border-color: #34d399;
-  color: #022c22;
+  background: #111827;
+  border-color: #4b5563;
+  color: #e5e7eb;
 }
 
 .square.advantage {
@@ -349,15 +350,16 @@ button:active:not(:disabled) {
   text-align: center;
   border-radius: 0.5rem;
   font-size: 0.9rem;
-  border: 1px solid #4b5563;
-  background: #111827;
+  border: 1px solid #34d399;
+  background: #059669;
+  color: #022c22;
   cursor: default; /* no click selection now */
 }
 
 .square.covered {
-  background: #059669;
-  border-color: #34d399;
-  color: #022c22;
+  background: #111827;
+  border-color: #4b5563;
+  color: #e5e7eb;
 }
 
 /* Controls under boards */

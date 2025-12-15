@@ -182,7 +182,7 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
         const cell = document.createElement("div");
         cell.classList.add("square");
         if (covered) cell.classList.add("covered");
-        cell.textContent = String(squareNum);
+        cell.textContent = covered ? "_" : String(squareNum);
         container.appendChild(cell);
       }
     };
@@ -295,8 +295,9 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     for (let i = 1; i <= size; i++) {
       const btn = document.createElement("div");
       btn.classList.add("square");
-      btn.textContent = String(i);
-      if (board.isCovered(i)) {
+      const covered = board.isCovered(i);
+      btn.textContent = covered ? "_" : String(i);
+      if (covered) {
         btn.classList.add("covered");
       }
       if (advantageSquare && i === advantageSquare) {
