@@ -8,29 +8,22 @@ def clear_screen():
     else:  # macOS, Linux, etc.
         os.system("clear")
 
-def is_text_file(filepath, encoding="utf-8"):
-    """
-    Try to read a small chunk to see if it's a text file.
-    """
-    try:
-        with open(filepath, "r", encoding=encoding) as f:
-            f.read(2048)
-        return True
-    except (UnicodeDecodeError, IsADirectoryError, PermissionError):
-        return False
-
 def collect_all_files_content(root_folder):
     """
-    Recursively collect the content of all text files under root_folder
+    Recursively collect the content of all .cpp and .h files under root_folder
     into one big nicely formatted string.
     """
     output_chunks = []
+    allowed_extensions = {".cpp", ".h"}
 
     for dirpath, dirnames, filenames in os.walk(root_folder):
         for filename in filenames:
             full_path = os.path.join(dirpath, filename)
+            _, ext = os.path.splitext(filename)
+            ext = ext.lower()
 
-            if not is_text_file(full_path):
+            # Only keep .cpp and .h files
+            if ext not in allowed_extensions:
                 continue
 
             header = "\n" + "=" * 80 + "\n"
