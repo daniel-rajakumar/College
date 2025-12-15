@@ -6,12 +6,13 @@
 #include <random>
 #include <limits>
 #include <set>
+#include <utility>
 
 using namespace std;
 using namespace ui;
 
 // =====================================================================
-// Shared Strategy Engine
+// Shared Strategy Engine  (NOW JAVA-LIKE)
 // =====================================================================
 namespace {
 
@@ -27,17 +28,26 @@ namespace {
         return total;
     }
 
-    std::set<int> chooseBestCombo(const std::set<std::set<int>>& combos) {
+    int highestSquareOf(const std::set<int>& s) {
+        int hi = 0;
+        for (int v : s) if (v > hi) hi = v;
+        return hi;
+    }
+
+    // Java-style "best": max (count), then max (highestSquare)
+    std::set<int> chooseBestComboJava(const std::set<std::set<int>>& combos) {
         std::set<int> best;
         int bestCount = -1;
-        int bestSum   = -1;
+        int bestHigh  = -1;
+
         for (const auto& c : combos) {
-            int cnt = static_cast<int>(c.size());
-            int s   = sumOf(c);
-            if (cnt > bestCount || (cnt == bestCount && s > bestSum)) {
+            int cnt  = static_cast<int>(c.size());
+            int high = highestSquareOf(c);
+
+            if (cnt > bestCount || (cnt == bestCount && high > bestHigh)) {
                 best      = c;
                 bestCount = cnt;
-                bestSum   = s;
+                bestHigh  = high;
             }
         }
         return best;
@@ -105,16 +115,13 @@ namespace {
     }
 
     // -----------------------------------------------------------------
-    // computeBestMove
-    //  - sum: dice sum
-    //  - myBoard: board of the player making the move
-    //  - oppBoard: opponent's board
-    //  - oppProtected: true if opponent's advantage square is protected
+    // computeBestMove (JAVA-LIKE VERSION)
     //
-    // Returns:
-    //   StrategyResult::Action::None  -> no legal moves
-    //   StrategyResult::Action::Cover -> cover 'combo' on myBoard
-    //   StrategyResult::Action::Uncover -> uncover 'combo' on oppBoard
+    // Matches your Java chooseMove() logic:
+    //  1) If any cover combo size == myUncoveredCount => cover it
+    //  2) Else if any uncover combo size == oppCoveredCount => uncover it
+    //  3) Else candidates = cover if any cover exists else uncover
+    //  4) Choose best by: max(count), then max(highestSquare)
     // -----------------------------------------------------------------
     StrategyResult computeBestMove(int sum,
                                    const Board& myBoard,
@@ -140,98 +147,51 @@ namespace {
             return res;
         }
 
-        // --- Step 1: Look for immediate wins (cover or uncover) ----------------
-        std::set<std::set<int>> winningCover;
-        std::set<std::set<int>> winningUncover;
-
+        // Java Step 1: winning cover by "count == myUncoveredCount"
+        int myUncoveredCount = 0;
+        for (int i = 1; i <= myBoard.getSize(); i++) {
+            if (!myBoard.isSquareCovered(i)) myUncoveredCount++;
+        }
         for (const auto& combo : coverCombos) {
-            Board sim = myBoard;
-            for (int v : combo) sim.coverSquare(v);
-            if (sim.allCovered()) winningCover.insert(combo);
+            if (static_cast<int>(combo.size()) == myUncoveredCount) {
+                res.action = StrategyResult::Action::Cover;
+                res.combo  = combo; // closest to "first match" behavior
+                return res;
+            }
         }
 
+        // Java Step 2: winning uncover by "count == oppCoveredCount"
+        int oppCoveredCount = 0;
+        for (int i = 1; i <= oppBoard.getSize(); i++) {
+            if (oppBoard.isSquareCovered(i)) oppCoveredCount++;
+        }
         for (const auto& combo : uncoverCombos) {
-            Board simOpp = oppBoard;
-            for (int v : combo) simOpp.uncoverSquare(v);
-            if (simOpp.allUncovered()) winningUncover.insert(combo);
-        }
-
-        if (!winningCover.empty() || !winningUncover.empty()) {
-            // If only one type of winning move exists, use it
-            if (!winningCover.empty() && winningUncover.empty()) {
-                res.action = StrategyResult::Action::Cover;
-                res.combo  = chooseBestCombo(winningCover);
+            if (static_cast<int>(combo.size()) == oppCoveredCount) {
+                res.action = StrategyResult::Action::Uncover;
+                res.combo  = combo;
                 return res;
             }
-            if (winningCover.empty() && !winningUncover.empty()) {
-                res.action = StrategyResult::Action::Uncover;
-                res.combo  = chooseBestCombo(winningUncover);
-                return res;
-            }
-
-            // Both types can win: choose by same heuristic (count -> sum)
-            std::set<int> bestWinCover   = chooseBestCombo(winningCover);
-            std::set<int> bestWinUncover = chooseBestCombo(winningUncover);
-
-            int countCover   = static_cast<int>(bestWinCover.size());
-            int countUncover = static_cast<int>(bestWinUncover.size());
-
-            if (countCover > countUncover) {
-                res.action = StrategyResult::Action::Cover;
-                res.combo  = bestWinCover;
-            } else if (countUncover > countCover) {
-                res.action = StrategyResult::Action::Uncover;
-                res.combo  = bestWinUncover;
-            } else {
-                int sumCover   = sumOf(bestWinCover);
-                int sumUncover = sumOf(bestWinUncover);
-                if (sumCover >= sumUncover) {
-                    res.action = StrategyResult::Action::Cover;
-                    res.combo  = bestWinCover;
-                } else {
-                    res.action = StrategyResult::Action::Uncover;
-                    res.combo  = bestWinUncover;
-                }
-            }
-            return res;
         }
 
-        // --- Step 2: No immediate win: heuristic best move ---------------------
-        if (coverCombos.empty()) {
-            res.action = StrategyResult::Action::Uncover;
-            res.combo  = chooseBestCombo(uncoverCombos);
-            return res;
-        }
-        if (uncoverCombos.empty()) {
-            res.action = StrategyResult::Action::Cover;
-            res.combo  = chooseBestCombo(coverCombos);
-            return res;
-        }
+        // Java Step 3: prefer cover if available
+        const std::set<std::set<int>>* candidates = nullptr;
+        StrategyResult::Action chosenAction = StrategyResult::Action::None;
 
-        std::set<int> bestCover   = chooseBestCombo(coverCombos);
-        std::set<int> bestUncover = chooseBestCombo(uncoverCombos);
-
-        int countCover   = static_cast<int>(bestCover.size());
-        int countUncover = static_cast<int>(bestUncover.size());
-
-        if (countCover > countUncover) {
-            res.action = StrategyResult::Action::Cover;
-            res.combo  = bestCover;
-        } else if (countUncover > countCover) {
-            res.action = StrategyResult::Action::Uncover;
-            res.combo  = bestUncover;
+        if (!coverCombos.empty()) {
+            candidates = &coverCombos;
+            chosenAction = StrategyResult::Action::Cover;
         } else {
-            int sumCover   = sumOf(bestCover);
-            int sumUncover = sumOf(bestUncover);
-            if (sumCover >= sumUncover) {
-                res.action = StrategyResult::Action::Cover;
-                res.combo  = bestCover;
-            } else {
-                res.action = StrategyResult::Action::Uncover;
-                res.combo  = bestUncover;
-            }
+            candidates = &uncoverCombos;
+            chosenAction = StrategyResult::Action::Uncover;
         }
 
+        if (!candidates || candidates->empty()) {
+            return res;
+        }
+
+        // Java Step 4: best candidate by (count, then highestSquare)
+        res.action = chosenAction;
+        res.combo  = chooseBestComboJava(*candidates);
         return res;
     }
 
@@ -285,9 +245,7 @@ bool Computer::takeTurn() {
          // =============================================================
          if (manual == 'y') {
               const bool oneDieAllowed = board.canThrowOneDie();
-// -             int diceCount = 2;
-// +             int diceCount;
-             int diceCount;
+              int diceCount;
 
               if (oneDieAllowed) {
                   cout << "1-die is allowed (" << Board::ONE_DIE_RULE_START << ".."
@@ -323,7 +281,7 @@ bool Computer::takeTurn() {
                 return true;
             }
 
-            // Use the same automated strategy engine to pick the best action and combo
+            // Java-like strategy engine
             bool oppProtected =
                 Tournament::getAdvantageApplied() &&
                 Tournament::isHumanAdvantageProtected();
@@ -334,38 +292,31 @@ bool Computer::takeTurn() {
                 cout << "Computer has no legal moves for this roll. Its turn ends.\n";
                 return true;
             }
-            // 'best' will never be NONE here because we already checked that there
-            // is at least one legal combo (coverCombos or uncoverCombos). Proceed.
 
             // Build a human-friendly explanation for the chosen move
-            // Compute whether the chosen move would immediately win
             bool isWinning = isComboWinning(best, board, humanBoard);
 
-            // Print the chosen squares
             cout << c(GREEN)
                  << (best.action == StrategyResult::Action::Cover ? "Computer chooses to COVER: " : "Computer chooses to UNCOVER: ")
                  << c(RESET);
             for (int v : best.combo) cout << v << " ";
             cout << "\n";
 
-            // Explain WHY the AI chose this move in plain language
             int chosenCount = static_cast<int>(best.combo.size());
             int chosenSum = sumOf(best.combo);
             if (isWinning) {
                 cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
             } else {
-                cout << "Reason: Chosen as the strongest option — affects " << chosenCount << " squares (total value " << chosenSum << ").\n";
+                cout << "Reason: Chosen as the strongest option — affects " << chosenCount
+                     << " squares (total value " << chosenSum << ").\n";
             }
 
-            // Apply the chosen move after explanation
             if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
             else applyUncover(humanBoard, best.combo);
 
-            // If this move immediately wins, print a short explicit note
             if (isWinning) {
                 cout << c(YELLOW) << "Note: This move wins the round." << c(RESET) << "\n";
             }
-
          }
 
           // =============================================================
@@ -373,7 +324,6 @@ bool Computer::takeTurn() {
           // =============================================================
          else {
              const bool oneDieAllowed = board.canThrowOneDie();
-
 
              int diceCount;
              if (oneDieAllowed &&
@@ -420,10 +370,6 @@ bool Computer::takeTurn() {
                  Tournament::getAdvantageApplied() &&
                  Tournament::isHumanAdvantageProtected();
 
-             // Compute all legal options so we can explain choices in plain language
-             auto coverCombos = board.findValidCombinations(sum, /*forCovering=*/true);
-             auto uncoverCombos = humanBoard.findValidCombinations(sum, /*forCovering=*/false);
-
              StrategyResult best = computeBestMove(sum, board, humanBoard, oppProtected);
 
              if (best.action == StrategyResult::Action::None) {
@@ -431,10 +377,8 @@ bool Computer::takeTurn() {
                  return true;
              }
 
-             // Determine if this move is an immediate win
              bool isWinningA = isComboWinning(best, board, humanBoard);
 
-             // Friendly decision output
              cout << c(GREEN)
                   << (best.action == StrategyResult::Action::Cover ? "Computer decides to COVER: " : "Computer decides to UNCOVER: ")
                   << c(RESET);
@@ -446,15 +390,16 @@ bool Computer::takeTurn() {
              if (isWinningA) {
                  cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
              } else {
-                 cout << "Reason: Chosen as the strongest option — affects " << chosenCount << " squares (total value " << chosenSum << ").\n";
+                 cout << "Reason: Chosen as the strongest option — affects " << chosenCount
+                      << " squares (total value " << chosenSum << ").\n";
              }
 
-             // Apply the chosen move
              if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
              else applyUncover(humanBoard, best.combo);
-            if (isWinningA) {
-                cout << c(YELLOW) << "Note: This move wins the round." << c(RESET) << "\n";
-            }
+
+             if (isWinningA) {
+                 cout << c(YELLOW) << "Note: This move wins the round." << c(RESET) << "\n";
+             }
              cout << "\n";
         }
 
@@ -478,16 +423,14 @@ bool Computer::takeTurn() {
         // the Round can detect and declare the winner immediately.
         if (humanBoard.allUncovered()) return true;
 
-        // Otherwise loop to allow the computer to roll again. The loop's
-        // next iteration will handle the "no legal moves" check on the new roll.
+        // Otherwise loop to allow the computer to roll again.
     }
 
-    // Defensive return (should be unreachable because loop returns on end)
     return true;
 }
 
 // ---------------------------------------------------------------------
-// shouldCover: kept for compatibility, uses shared brain
+// shouldCover: kept for compatibility, uses shared brain (NOW JAVA-LIKE)
 // ---------------------------------------------------------------------
 bool Computer::shouldCover(const int sum) const {
     bool oppProtected =
@@ -667,7 +610,7 @@ void Computer::provideHelp(const int diceSum,
         return;
     }
 
-    // Use the SAME strategy engine as the AI to compute the recommendation
+    // Use the SAME (java-like) strategy engine as the AI to compute the recommendation
     StrategyResult best = computeBestMove(diceSum, humanBoard, computerBoard, oppProtected);
 
     // Compute simple metrics for the recommended move and alternatives
@@ -698,7 +641,8 @@ void Computer::provideHelp(const int diceSum,
     if (isComboWinning(best, humanBoard, computerBoard)) {
         std::cout << c(DIM) << "Why: This move immediately wins the round." << c(RESET) << "\n";
     } else {
-        std::cout << c(DIM) << "Why: Chosen as the strongest option — affects " << chosenCount << " squares (value " << chosenSum << ")." << c(RESET) << "\n";
+        std::cout << c(DIM) << "Why: Chosen as the strongest option — affects " << chosenCount
+                  << " squares (value " << chosenSum << ")." << c(RESET) << "\n";
     }
 
     hr();
