@@ -274,6 +274,32 @@ button:active:not(:disabled) {
   margin: 0.25rem 0;
 }
 
+.computer-reason {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.65rem;
+  border: 1px dashed #60a5fa;
+  background: #0b1224;
+}
+
+.computer-reason.hidden {
+  display: none;
+}
+
+.computer-reason .reason-label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #93c5fd;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+#lbl-computer-reason {
+  margin: 0.3rem 0 0 0;
+  color: #e0f2fe;
+  line-height: 1.35;
+}
+
 #turn-info {
   margin-top: 0.5rem;
 }

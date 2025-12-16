@@ -432,6 +432,28 @@ export class GameSession {
     return summary;
   }
 
+  _formatComputerReason(decision, diceSum, coverOptions = [], uncoverOptions = []) {
+    const baseReason = decision?.reason || "Computer applied its move.";
+    const choiceSquares =
+      decision && decision.squares && decision.squares.length
+        ? `[${decision.squares.join(", ")}]`
+        : "(no squares)";
+    const choiceText = decision?.action
+      ? `${decision.action.toUpperCase()} ${choiceSquares}`
+      : "No move";
+    const coverCount = coverOptions?.length || 0;
+    const uncoverCount = uncoverOptions?.length || 0;
+    const optionParts = [];
+    if (coverCount > 0) {
+      optionParts.push(`${coverCount} cover option${coverCount === 1 ? "" : "s"}`);
+    }
+    if (uncoverCount > 0) {
+      optionParts.push(`${uncoverCount} uncover option${uncoverCount === 1 ? "" : "s"}`);
+    }
+    const optionsText = optionParts.length ? ` Options seen: ${optionParts.join(" | ")}.` : "";
+    return `Rolled ${diceSum}. ${baseReason} Chosen: ${choiceText}.${optionsText}`;
+  }
+
   /**
    * Manual dice input for the current player (human OR computer).
    * @param {number} numDice 1 or 2
@@ -471,7 +493,8 @@ export class GameSession {
     }
 
     const sum = d1 + (d2 ?? 0);
-    this.currentDice = { d1, d2, sum };
+    const rollInfo = { d1, d2, sum };
+    this.currentDice = rollInfo;
 
     const coverOptions = this.currentRound.getCoverOptions(
       this.currentPlayerId,
@@ -513,23 +536,36 @@ export class GameSession {
 
     // No moves at all -> treat like passing the turn
     if (coverOptions.length === 0 && uncoverOptions.length === 0) {
+      const reason = this._formatComputerReason(
+        {
+          action: "none",
+          squares: [],
+          reason: "No valid cover or uncover moves available.",
+        },
+        sum,
+        coverOptions,
+        uncoverOptions
+      );
+      const lastAction = {
+        playerId: this.currentPlayerId,
+        action: "none",
+        squares: [],
+        roll: rollInfo,
+        reason,
+      };
+
       this.currentRound.notifyTurnEnded(this.currentPlayerId);
 
       if (this.currentRound.roundOver) {
         this.phase = "roundOver";
         this.tournament.updateAdvantageForNextRound();
-        const lastAction = {
-          playerId: this.currentPlayerId,
-          action: "none",
-          squares: [],
-          roll: this.currentDice,
-        };
+
         this._pushHistory(
           `${this.getPlayerDisplayName(this.currentPlayerId)} had no moves`,
           lastAction
         );
         return {
-          roll: this.currentDice,
+          roll: rollInfo,
           canMove: false,
           autoMoveDone: true,
           roundOver: true,
@@ -544,15 +580,22 @@ export class GameSession {
       this.phase = "awaitingRoll";
 
       return {
-        roll: null,
+        roll: rollInfo,
         canMove: false,
         autoMoveDone: true,
         roundOver: false,
+        lastAction,
       };
     }
 
     // AI decides best move (should already be "smart" and prefer winning move)
     const decision = ai.decideMove(this.currentRound, this.currentPlayerId, sum);
+    const decisionReason = this._formatComputerReason(
+      decision,
+      sum,
+      coverOptions,
+      uncoverOptions
+    );
 
     if (decision.action === "cover") {
       this.currentRound.applyCoverMove(this.currentPlayerId, decision.squares);
@@ -567,7 +610,8 @@ export class GameSession {
       playerId: this.currentPlayerId,
       action: decision.action,
       squares: [...decision.squares],
-      roll: this.currentDice,
+      roll: rollInfo,
+      reason: decisionReason,
     };
     this._pushHistory(
       `${this.getPlayerDisplayName(this.currentPlayerId)} ${decision.action}s [${decision.squares.join(
@@ -584,7 +628,7 @@ export class GameSession {
       this.tournament.updateAdvantageForNextRound();
 
       return {
-        roll: this.currentDice,
+        roll: rollInfo,
         canMove: false,
         autoMoveDone: true,
         roundOver: true,
@@ -599,7 +643,7 @@ export class GameSession {
     this.phase = "awaitingRoll";
 
     return {
-      roll: { d1, d2, sum },
+      roll: rollInfo,
       canMove: false,
       autoMoveDone: true,
       roundOver: false,

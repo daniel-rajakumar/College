@@ -30,6 +30,29 @@ function setLastPlayFromAction(action) {
   view.setLastPlay(`${playerName} ${verb} ${squaresText}`);
 }
 
+function resetComputerReason() {
+  view.setComputerReason(null);
+}
+
+function updateComputerReasonFromAction(action) {
+  if (!action) {
+    resetComputerReason();
+    return;
+  }
+  const isAiMove = !session.isPlayerHumanControlled(action.playerId);
+  if (!isAiMove) {
+    resetComputerReason();
+    return;
+  }
+  const fallback = action.action
+    ? `Computer chose to ${action.action} ${
+        action.squares && action.squares.length ? `[${action.squares.join(", ")}]` : ""
+      }.`
+    : "Computer made a move.";
+  const reason = action.reason || fallback;
+  view.setComputerReason(reason);
+}
+
 function formatActionLog(action) {
   if (!action) return null;
   const playerName = session.getPlayerDisplayName(action.playerId || "HUMAN");
@@ -53,6 +76,9 @@ function logAction(action) {
   const msg = formatActionLog(action);
   if (msg) {
     log(msg);
+    if (action.playerId === "COMPUTER" && action.reason) {
+      log(`Computer reasoning: ${action.reason}`);
+    }
   }
 }
 
@@ -62,6 +88,8 @@ window.addEventListener("DOMContentLoaded", () => {
   wireGame();
   wireEnd();
   session.setMode("HvsC");
+
+  resetComputerReason();
 
   // initial roll button state
   updateRollButtonsFromSession();
@@ -100,6 +128,7 @@ function handleRoundFinished(summary) {
   // summary comes from GameSession
   view.setScores(summary.humanScore, summary.computerScore);
   view.setEndScreen(summary);
+  resetComputerReason();
   view.showScreen("end");
   log(
     `Round over. Winner: ${summary.roundWinnerId} | Type: ${summary.winType} | Round score: ${summary.roundScore}`
@@ -120,6 +149,7 @@ function wireWelcome() {
     if (defaultModeRadio) defaultModeRadio.checked = true;
     view.showScreen("setup");
     view.setLastPlay("–");
+    resetComputerReason();
     view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
     const btnStartRound = document.getElementById("btn-start-round");
     const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
@@ -175,6 +205,7 @@ function wireWelcome() {
           );
           lastShownRoll = null;
           view.setLastPlay("–");
+          resetComputerReason();
           const round = session.getCurrentRound();
           view.renderBoards(round, {
             humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
@@ -286,6 +317,7 @@ function wireSetup() {
     );
     lastShownRoll = null;
     view.setLastPlay("–");
+    resetComputerReason();
     const round = session.getCurrentRound();
     view.renderBoards(round, {
       humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
@@ -364,6 +396,9 @@ function wireGame() {
       }
       setLastPlayFromAction(res.lastAction);
       logAction(res.lastAction);
+      updateComputerReasonFromAction(res.lastAction);
+    } else {
+      resetComputerReason();
     }
 
     // No moves available and no auto move
@@ -519,12 +554,14 @@ function wireGame() {
       action: selection.moveType,
       squares: [...selection.squares],
     });
-    setLastPlayFromAction({
+    const humanAction = {
       playerId: session.getCurrentPlayerId(),
       action: selection.moveType,
       squares: [...selection.squares],
       roll: lastShownRoll,
-    });
+    };
+    setLastPlayFromAction(humanAction);
+    updateComputerReasonFromAction(humanAction);
 
     uiPendingOptions = null;
     view.closeMoveModal();
@@ -630,6 +667,7 @@ function wireGame() {
         lastShownRoll = null;
         view.clearLog();
         view.setLastPlay("–");
+        resetComputerReason();
         view.setDiceText({ d1: null, d2: null, sum: null });
         view.setTurnStatus("Awaiting roll…");
         view.showScreen("welcome");
@@ -672,6 +710,7 @@ function wireGame() {
         computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
       });
       setLastPlayFromAction(res.lastAction);
+      updateComputerReasonFromAction(res.lastAction);
       view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
       // If rewound into awaitingMove and human-controlled, reopen modal
       if (
@@ -781,6 +820,7 @@ function wireEnd() {
   btnPlayAgain.addEventListener("click", () => {
     view.showScreen("setup");
     view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+    resetComputerReason();
     const btnStartRound = document.getElementById("btn-start-round");
     const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
     if (btnStartRound) {

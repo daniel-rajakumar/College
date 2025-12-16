@@ -33,6 +33,8 @@ export class View {
     this.lblDice = document.getElementById("lbl-dice");
     this.lblDiceSum = document.getElementById("lbl-dice-sum");
     this.lblTurnStatus = document.getElementById("lbl-turn-status");
+    this.computerReasonBox = document.querySelector(".computer-reason");
+    this.lblComputerReason = document.getElementById("lbl-computer-reason");
 
     this.logEl = document.getElementById("log");
 
@@ -127,6 +129,13 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     if (this.lblLastPlay) {
       this.lblLastPlay.textContent = text || "–";
     }
+  }
+
+  setComputerReason(text) {
+    if (!this.computerReasonBox || !this.lblComputerReason) return;
+    const hasText = Boolean(text);
+    this.computerReasonBox.classList.toggle("hidden", !hasText);
+    this.lblComputerReason.textContent = hasText ? text : "";
   }
 
   setPlayerNames(humanLabel, computerLabel) {
