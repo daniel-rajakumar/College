@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Canoga (JS Version)</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+
+      <section id="screen-welcome" class="screen active">
+        <h1>Canoga</h1>
+        <p class="subtitle">Dice + strategy game – HTML/JS Version</p>
+
+        <div class="btn-group">
+          <button id="btn-start-setup" class="primary">Start New Tournament</button>
+          <button id="btn-upload-snapshot" class="secondary">
+            Upload Saved Game
+          </button>
+        </div>
+      </section>
+
+
+      <section id="screen-setup" class="screen">
+        <h2>Round Setup</h2>
+
+        <div class="setup-group">
+          <label for="select-board-size">Board size (squares):</label>
+          <select id="select-board-size">
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+          </select>
+        </div>
+
+        <div class="setup-group">
+          <span>Game Mode:</span>
+          <label
+            ><input type="radio" name="mode" value="HvsC" checked />
+            Human vs Computer</label
+          >
+          <label><input type="radio" name="mode" value="HvsH" /> Human vs Human</label>
+          <label
+            ><input type="radio" name="mode" value="CvsC" /> Computer vs
+            Computer</label
+          >
+        </div>
+
+        <div class="setup-group rolloff">
+          <h3>Who goes first?</h3>
+          <div class="first-player-choices">
+            <div class="manual-choice">
+              <p class="hint">Pick directly:</p>
+              <label class="pill">
+                <input type="radio" name="first-player" value="HUMAN" />
+                <span id="label-first-human">Player 1</span>
+              </label>
+              <label class="pill">
+                <input type="radio" name="first-player" value="COMPUTER" />
+                <span id="label-first-computer">Player 2</span>
+              </label>
+            </div>
+            <div class="roll-choice">
+              <p class="hint">Or decide randomly:</p>
+              <button id="btn-rolloff" class="primary">Roll Dice</button>
+            </div>
+          </div>
+          <div id="rolloff-result" class="panel">
+            Choose who goes first or click "Roll Dice" to decide randomly.
+          </div>
+        </div>
+
+        <div class="setup-actions">
+          <button id="btn-setup-back">Back</button>
+          <button id="btn-start-round" class="primary" disabled style="display: none;">Start Round</button>
+        </div>
+      </section>
+
+
+      <section id="screen-game" class="screen">
+        <header class="top-bar">
+          <div>
+            <h2>Canoga – Round <span id="lbl-round-number">1</span></h2>
+            <p>
+              Mode: <span id="lbl-mode"></span> |
+              First player: <span id="lbl-first-player"></span>
+            </p>
+            <p id="lbl-advantage"></p>
+          </div>
+          <div class="scores">
+          <div>
+            <h3>Human</h3>
+            <p>Total: <span id="score-human">0</span></p>
+          </div>
+          <div>
+            <h3>Computer</h3>
+            <p>Total: <span id="score-computer">0</span></p>
+          </div>
+        </div>
+      </header>
+
+        <main class="game-layout">
+
+          <section class="board-section">
+            <h3>Boards</h3>
+            <p>
+              Current player:
+              <span id="lbl-current-player"></span>
+            </p>
+
+            <div class="boards-wrapper">
+              <div class="board-wrapper">
+                <h4>Human</h4>
+                <div id="board-human" class="board-row"></div>
+              </div>
+              <div class="board-wrapper">
+                <h4>Computer</h4>
+                <div id="board-computer" class="board-row"></div>
+              </div>
+            </div>
+          </section>
+
+
+          <section class="controls-under-boards">
+            <div id="dice-area" class="panel">
+            <p>Dice: <span id="lbl-dice">–</span></p>
+            <p>Sum: <span id="lbl-dice-sum">–</span></p>
+            <p>Last Play: <span id="lbl-last-play">–</span></p>
+            <div class="computer-reason">
+              <p class="reason-label">Computer move explanation</p>
+              <p id="lbl-computer-reason">Waiting for the computer to make a move.</p>
+            </div>
+
+            <div id="dice-buttons">
+              <button id="btn-roll-1" class="primary" style="display: none;">
+                Roll 1 Die
+              </button>
+                <button id="btn-roll-2" class="primary">Roll 2 Dice</button>
+              <button id="btn-roll-manual" class="secondary">
+                Input Dice
+              </button>
+              <button id="btn-queue-dice" class="secondary" style="display: none;">
+                Queue Dice Sequence
+              </button>
+              <button id="btn-rewind" class="secondary">
+                Rewind Move
+              </button>
+            </div>
+            <p id="lbl-turn-status">Awaiting roll…</p>
+
+          </div>
+        </section>
+
+
+          <section class="log-section">
+            <h3>Log</h3>
+            <div id="log" class="log"></div>
+          </section>
+        </main>
+
+        <footer class="bottom-bar">
+          <button id="btn-save-snapshot" class="secondary">Save Game</button>
+          <button id="btn-quit-round">Quit Tournament</button>
+        </footer>
+
+
+        <div id="move-modal" class="modal hidden">
+          <div class="modal-backdrop"></div>
+          <div class="modal-content">
+            <h3>Choose Your Move</h3>
+            <p>Dice sum: <span id="modal-dice-sum">0</span></p>
+
+            <div class="modal-move-type">
+              <label>
+                <input
+                  type="radio"
+                  id="modal-move-cover"
+                  name="modal-move-type"
+                  value="cover"
+                  checked
+                />
+                Cover own squares
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  id="modal-move-uncover"
+                  name="modal-move-type"
+                  value="uncover"
+                />
+                Uncover opponent squares
+              </label>
+            </div>
+
+            <div class="modal-options">
+              <label for="modal-move-options">Options:</label>
+              <select id="modal-move-options"></select>
+            </div>
+
+            <p id="modal-help-text" class="hint"></p>
+
+            <div class="btn-group modal-buttons">
+              <button id="modal-btn-help" class="secondary">Help</button>
+              <button id="modal-btn-cancel">Cancel</button>
+              <button id="modal-btn-confirm" class="primary">Confirm Move</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="screen-end" class="screen">
+        <h2>Round Summary</h2>
+        <p id="lbl-round-result"></p>
+
+        <div class="panel">
+          <p>Round winner: <span id="lbl-round-winner"></span></p>
+          <p>Win type: <span id="lbl-round-win-type"></span></p>
+          <p>Round score: <span id="lbl-round-score"></span></p>
+        </div>
+
+        <div class="panel">
+          <h3>Tournament Scores</h3>
+          <p>Human total: <span id="lbl-final-human-score">0</span></p>
+          <p>Computer total: <span id="lbl-final-computer-score">0</span></p>
+          <p>Next round advantage: <span id="lbl-final-advantage"></span></p>
+        </div>
+
+        <div class="actions">
+          <button id="btn-end-play-again" class="primary">Play Next Round</button>
+          <button id="btn-end-quit">Quit Tournament</button>
+        </div>
+      </section>
+    </div>
+
+
+    <input
+      type="file"
+      id="file-snapshot"
+      accept=".txt,text/plain"
+      style="display: none;"
+    />
+
+
+<div id="manual-dice-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <h3>Manual Dice Input</h3>
+
+    <div class="manual-dice-mode">
+      <label>
+        <input type="radio" name="manual-dice-count" value="1" checked />
+        1 Die
+      </label>
+      <label>
+        <input type="radio" name="manual-dice-count" value="2" />
+        2 Dice
+      </label>
+    </div>
+
+    <div class="manual-dice-rows">
+      <div class="manual-dice-row" data-die="1">
+        <span>Die 1:</span>
+        <button class="manual-die" data-die="1" data-value="1">I</button>
+        <button class="manual-die" data-die="1" data-value="2">II</button>
+        <button class="manual-die" data-die="1" data-value="3">III</button>
+        <button class="manual-die" data-die="1" data-value="4">IV</button>
+        <button class="manual-die" data-die="1" data-value="5">V</button>
+        <button class="manual-die" data-die="1" data-value="6">VI</button>
+      </div>
+
+      <div class="manual-dice-row" data-die="2">
+        <span>Die 2:</span>
+        <button class="manual-die" data-die="2" data-value="1">I</button>
+        <button class="manual-die" data-die="2" data-value="2">II</button>
+        <button class="manual-die" data-die="2" data-value="3">III</button>
+        <button class="manual-die" data-die="2" data-value="4">IV</button>
+        <button class="manual-die" data-die="2" data-value="5">V</button>
+        <button class="manual-die" data-die="2" data-value="6">VI</button>
+      </div>
+    </div>
+
+    <p id="manual-dice-help" class="hint"></p>
+
+    <div class="btn-group modal-buttons">
+      <button id="manual-dice-cancel">Cancel</button>
+      <button id="manual-dice-confirm" class="primary">Use Dice</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="rewind-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <h3>Rewind Move</h3>
+    <p class="hint">Choose a previous log entry to rewind to. (Rewind action not yet wired.)</p>
+    <div class="modal-options">
+      <label for="rewind-select">Move history:</label>
+      <div id="rewind-list" class="rewind-list"></div>
+      <div id="rewind-preview" class="panel small">
+        <div class="preview-boards">
+          <div class="board-wrapper">
+            <h4>Human (preview)</h4>
+            <div id="rewind-preview-human" class="board-row"></div>
+          </div>
+          <div class="board-wrapper">
+            <h4>Computer (preview)</h4>
+            <div id="rewind-preview-computer" class="board-row"></div>
+          </div>
+        </div>
+        <div id="rewind-preview-text" class="hint">Hover a history entry to preview.</div>
+      </div>
+    </div>
+    <div class="btn-group modal-buttons">
+      <button id="rewind-cancel">Cancel</button>
+      <button id="rewind-confirm" class="primary">Rewind Here</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="queue-dice-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <h3>Queue Dice Sequence</h3>
+    <p class="hint">Enter one roll per line. Examples: "6" for one die, "3 4" for two dice.</p>
+    <textarea id="queue-dice-input" rows="6" style="width:100%;"></textarea>
+    <div class="btn-group modal-buttons">
+      <button id="queue-dice-cancel">Cancel</button>
+      <button id="queue-dice-confirm" class="primary">Add Sequence</button>
+    </div>
+  </div>
+</div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

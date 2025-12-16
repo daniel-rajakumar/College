@@ -1,0 +1,831 @@
+/**
+ * Main controller for the Canoga UI: connects DOM events to the game session,
+ * handles turn flow, and renders updates via the View.
+ */
+import { View } from "./ui/View.js";
+import { GameSession } from "./model/GameSession.js";
+
+const view = new View();
+const session = new GameSession();
+
+const DEFAULT_FIRST_PLAYER_TEXT =
+  'Choose who goes first or click "Roll Dice" to decide randomly.';
+
+let uiPendingOptions = null;
+let lastShownRoll = null;
+
+function log(message) {
+  const ts = new Date().toLocaleTimeString();
+  view.appendLog(`[${ts}] ${message}`);
+}
+
+/**
+ * Show a human-readable summary of the last action taken.
+ */
+function setLastPlayFromAction(action) {
+  if (!action) return;
+  const playerName = session.getPlayerDisplayName(action.playerId || "HUMAN");
+  let verb = "made no move";
+  if (action.action === "cover") verb = "covered";
+  else if (action.action === "uncover") verb = "uncovered";
+  const squaresText =
+    action.squares && action.squares.length
+      ? `[${action.squares.join(", ")}]`
+      : "no squares";
+  view.setLastPlay(`${playerName} ${verb} ${squaresText}`);
+}
+
+function resetComputerReason() {
+  view.setComputerReason(null);
+}
+
+/**
+ * Update the computer-move explanation block when the AI acts; hide otherwise.
+ */
+function updateComputerReasonFromAction(action) {
+  if (!action) {
+    resetComputerReason();
+    return;
+  }
+  const isAiMove = !session.isPlayerHumanControlled(action.playerId);
+  if (!isAiMove) {
+    resetComputerReason();
+    return;
+  }
+  const fallback = action.action
+    ? `Computer chose to ${action.action} ${
+        action.squares && action.squares.length ? `[${action.squares.join(", ")}]` : ""
+      }.`
+    : "Computer made a move.";
+  const reason = action.reason || fallback;
+  view.setComputerReason(reason);
+}
+
+function formatActionLog(action) {
+  if (!action) return null;
+  const playerName = session.getPlayerDisplayName(action.playerId || "HUMAN");
+  const squaresText =
+    action.squares && action.squares.length
+      ? `[${action.squares.join(", ")}]`
+      : "(none)";
+  if (action.action === "cover") {
+    return `${playerName} covered their squares ${squaresText}`;
+  }
+  if (action.action === "uncover") {
+    return `${playerName} uncovered opponent squares ${squaresText}`;
+  }
+  if (action.action === "none") {
+    return `${playerName} made no move`;
+  }
+  return `${playerName} performed ${action.action || "an action"} ${squaresText}`;
+}
+
+/**
+ * Append an action to the scrollable log, including AI reasoning when present.
+ */
+function logAction(action) {
+  const msg = formatActionLog(action);
+  if (msg) {
+    log(msg);
+    if (action.playerId === "COMPUTER" && action.reason) {
+      log(`Computer reasoning: ${action.reason}`);
+    }
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  wireWelcome();
+  wireSetup();
+  wireGame();
+  wireEnd();
+  session.setMode("HvsC");
+
+  resetComputerReason();
+
+  updateRollButtonsFromSession();
+  view.initManualDiceListeners();
+});
+
+function updateRollButtonsFromSession() {
+  const state = session.getRollButtonState();
+  view.setRollButtonsVisibility(state);
+}
+
+/**
+ * Refresh board visuals and score labels from the current round.
+ */
+function refreshBoardsAndScores() {
+  const round = session.getCurrentRound();
+  if (round) {
+    view.renderBoards(round, {
+      humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+      computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+    });
+  }
+  const scores = session.getScores();
+  view.setScores(scores.humanScore, scores.computerScore);
+}
+
+/**
+ * Sync current player label, dice, and optional status text in the header area.
+ */
+function updateTurnInfoStatus(textIfAny, diceOverride = null) {
+  view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
+  const diceToShow = diceOverride || lastShownRoll || session.getCurrentDice();
+  view.setDiceText(diceToShow);
+  if (textIfAny) {
+    view.setTurnStatus(textIfAny);
+  }
+}
+
+/**
+ * Wraps end-of-round updates: scores, summary screen, and log entry.
+ */
+function handleRoundFinished(summary) {
+  view.setScores(summary.humanScore, summary.computerScore);
+  view.setEndScreen(summary);
+  resetComputerReason();
+  view.showScreen("end");
+  log(
+    `Round over. Winner: ${summary.roundWinnerId} | Type: ${summary.winType} | Round score: ${summary.roundScore}`
+  );
+}
+
+/**
+ * Welcome screen setup: reset tournament, load saves, and move into setup.
+ */
+function wireWelcome() {
+  const btnStartSetup = document.getElementById("btn-start-setup");
+  const btnUpload = document.getElementById("btn-upload-snapshot");
+  const fileInput = document.getElementById("file-snapshot");
+
+  btnStartSetup.addEventListener("click", () => {
+    session.resetTournament();
+    session.setMode("HvsC");
+    const defaultModeRadio = document.querySelector('input[name="mode"][value="HvsC"]');
+    if (defaultModeRadio) defaultModeRadio.checked = true;
+    view.showScreen("setup");
+    view.setLastPlay("–");
+    resetComputerReason();
+    view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+    const btnStartRound = document.getElementById("btn-start-round");
+    const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
+    if (btnStartRound) {
+      btnStartRound.style.display = "none";
+      btnStartRound.dataset.firstPlayerId = "";
+    }
+    firstPlayerRadios.forEach((r) => (r.checked = false));
+    view.setPlayerNames(
+      session.getPlayerDisplayName("HUMAN"),
+      session.getPlayerDisplayName("COMPUTER")
+    );
+    log("Tournament reset.");
+  });
+
+  btnUpload.addEventListener("click", () => {
+    if (fileInput) {
+      fileInput.value = "";
+      fileInput.click();
+    }
+  });
+
+  if (fileInput) {
+    fileInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const nameLower = file.name.toLowerCase();
+      if (!nameLower.endsWith(".txt")) {
+        alert("Please select a .txt saved game file.");
+        event.target.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = String(reader.result || "");
+          const state = session.loadSnapshotFromText(text);
+
+          view.showScreen("game");
+          view.clearLog();
+          state.logLines.forEach((line) => log(line));
+
+          view.setRoundHeader(state.header);
+          view.setScores(state.scores.humanScore, state.scores.computerScore);
+          view.setPlayerNames(
+            session.getPlayerDisplayName("HUMAN"),
+            session.getPlayerDisplayName("COMPUTER")
+          );
+          lastShownRoll = null;
+          view.setLastPlay("–");
+          resetComputerReason();
+          const round = session.getCurrentRound();
+          view.renderBoards(round, {
+            humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+            computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+          });
+          updateTurnInfoStatus(state.turnStatus);
+          updateRollButtonsFromSession();
+        } catch (err) {
+          console.error(err);
+          alert("Could not load saved game: " + (err.message || err));
+          log("Failed to load saved game.");
+        } finally {
+          event.target.value = "";
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+}
+
+/**
+ * Setup screen wiring for modes, board size, roll-offs, and starting rounds.
+ */
+function wireSetup() {
+  const selectBoardSize = document.getElementById("select-board-size");
+  const modeRadios = document.querySelectorAll('input[name="mode"]');
+  const btnRolloff = document.getElementById("btn-rolloff");
+  const btnSetupBack = document.getElementById("btn-setup-back");
+  const btnStartRound = document.getElementById("btn-start-round");
+  const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
+  btnStartRound.style.display = "none";
+
+  const clearFirstPlayerSelection = () => {
+    firstPlayerRadios.forEach((r) => {
+      r.checked = false;
+    });
+    btnStartRound.style.display = "none";
+    btnStartRound.dataset.firstPlayerId = "";
+    view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+  };
+
+  const applyFirstPlayerSelection = (playerId, reasonText) => {
+    btnStartRound.style.display = "inline-block";
+    btnStartRound.dataset.firstPlayerId = playerId;
+    view.setRolloffText(reasonText, true);
+  };
+
+  modeRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      session.setMode(mode);
+      view.setPlayerNames(
+        session.getPlayerDisplayName("HUMAN"),
+        session.getPlayerDisplayName("COMPUTER")
+      );
+      clearFirstPlayerSelection();
+    });
+  });
+  const defaultMode = document.querySelector('input[name="mode"][value="HvsC"]');
+  if (defaultMode) defaultMode.checked = true;
+  view.setPlayerNames(
+    session.getPlayerDisplayName("HUMAN"),
+    session.getPlayerDisplayName("COMPUTER")
+  );
+  view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+  firstPlayerRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return;
+      const playerId = radio.value;
+      const playerName = session.getPlayerDisplayName(playerId);
+      applyFirstPlayerSelection(playerId, `Manual choice: ${playerName} will go first.`);
+    });
+  });
+
+  btnRolloff.addEventListener("click", () => {
+    firstPlayerRadios.forEach((r) => (r.checked = false));
+    const boardSize = Number(selectBoardSize.value) || 9;
+    const result = session.rollOff(boardSize);
+
+    view.setRolloffText(result.text, result.canStart);
+
+    btnStartRound.style.display = result.canStart ? "inline-block" : "none";
+    btnStartRound.dataset.firstPlayerId = result.canStart
+      ? result.firstPlayerId
+      : "";
+  });
+
+  btnSetupBack.addEventListener("click", () => {
+    view.showScreen("welcome");
+  });
+
+  btnStartRound.addEventListener("click", () => {
+    if (btnStartRound.style.display === "none") return;
+    const firstPlayerId = btnStartRound.dataset.firstPlayerId;
+    if (!firstPlayerId) return;
+
+    const boardSize = Number(selectBoardSize.value) || 9;
+    const state = session.startNewRound(boardSize, firstPlayerId);
+
+    view.showScreen("game");
+    view.clearLog();
+    view.setRoundHeader(state.header);
+    view.setScores(state.scores.humanScore, state.scores.computerScore);
+    view.setPlayerNames(
+      session.getPlayerDisplayName("HUMAN"),
+      session.getPlayerDisplayName("COMPUTER")
+    );
+    lastShownRoll = null;
+    view.setLastPlay("–");
+    resetComputerReason();
+    const round = session.getCurrentRound();
+    view.renderBoards(round, {
+      humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+      computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+    });
+    updateTurnInfoStatus("Awaiting roll…");
+    view.appendLog(
+      `Round ${state.header.roundNumber} started. First player: ${state.header.firstPlayerLabel}`
+    );
+    log(`Mode: ${state.header.modeLabel}`);
+
+    updateRollButtonsFromSession();
+  });
+}
+
+/**
+ * Game screen wiring: dice rolls, move modal, rewind, snapshot, and queueing.
+ */
+function wireGame() {
+  const btnRoll1 = document.getElementById("btn-roll-1");
+  const btnRoll2 = document.getElementById("btn-roll-2");
+  const btnRollManual = document.getElementById("btn-roll-manual");
+  const btnRewind = document.getElementById("btn-rewind");
+  const btnQueueDice = document.getElementById("btn-queue-dice");
+  const btnQuitRound = document.getElementById("btn-quit-round");
+
+  const modalBtnHelp = document.getElementById("modal-btn-help");
+  const modalBtnCancel = document.getElementById("modal-btn-cancel");
+  const modalBtnConfirm = document.getElementById("modal-btn-confirm");
+  const modalMoveCover = document.getElementById("modal-move-cover");
+  const modalMoveUncover = document.getElementById("modal-move-uncover");
+
+  const manualDiceConfirm = document.getElementById("manual-dice-confirm");
+  const manualDiceCancel = document.getElementById("manual-dice-cancel");
+  const btnSaveSnapshot = document.getElementById("btn-save-snapshot");
+  const rewindConfirm = document.getElementById("rewind-confirm");
+  const rewindCancel = document.getElementById("rewind-cancel");
+  const rewindListEl = document.getElementById("rewind-list");
+  const queueDiceConfirm = document.getElementById("queue-dice-confirm");
+  const queueDiceCancel = document.getElementById("queue-dice-cancel");
+
+  function openManualDice() {
+    const diceState = session.getRollButtonState();
+    if (!diceState.enableRollButtons) return;
+
+    view.setManualDiceHelp("");
+    view.openManualDiceModal();
+  }
+
+  function processRollOutcome(res, playerLabel, sourceLabel) {
+    if (res.error) {
+      log(res.error);
+      return;
+    }
+
+    view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
+
+    if (res.roll) {
+      view.setDiceText(res.roll);
+      lastShownRoll = res.roll;
+      const r = res.roll;
+      if (r.d2 == null) {
+        log(`${playerLabel} ${sourceLabel} ${r.d1} (sum = ${r.sum})`);
+      } else {
+        log(`${playerLabel} ${sourceLabel} ${r.d1} + ${r.d2} (sum = ${r.sum})`);
+      }
+    }
+
+    if (res.lastAction) {
+      if (res.lastAction.roll) {
+        lastShownRoll = res.lastAction.roll;
+        view.setDiceText(lastShownRoll);
+      }
+      setLastPlayFromAction(res.lastAction);
+      logAction(res.lastAction);
+      updateComputerReasonFromAction(res.lastAction);
+    } else {
+      resetComputerReason();
+    }
+
+    if (!res.canMove && !res.autoMoveDone) {
+      log(`${playerLabel}: no moves available for this roll. Turn ends.`);
+      const endRes = session.endTurn();
+      if (endRes.roundOver) {
+        handleRoundFinished(endRes.summary);
+        return;
+      }
+      refreshBoardsAndScores();
+      updateTurnInfoStatus("New turn. Awaiting roll…", res.roll);
+      updateRollButtonsFromSession();
+      return;
+    }
+
+    if (res.coverOptions && res.uncoverOptions && res.canMove) {
+      uiPendingOptions = {
+        coverOptions: res.coverOptions,
+        uncoverOptions: res.uncoverOptions,
+      };
+
+      view.setTurnStatus("Choose your move.");
+      view.setRollButtonsVisibility({
+        canRoll1: false,
+        enableRollButtons: false,
+      });
+      view.openMoveModal(res.roll.sum, res.coverOptions, res.uncoverOptions);
+      return;
+    }
+
+    refreshBoardsAndScores();
+
+    if (res.roundOver) {
+      handleRoundFinished(res.summary);
+      return;
+    }
+
+    updateTurnInfoStatus("Move completed. Roll again.", res.roll || lastShownRoll);
+    updateRollButtonsFromSession();
+  }
+
+  if (btnRoll1) {
+    btnRoll1.addEventListener("click", () => {
+      const res = session.handleRandomRoll(1);
+      const playerLabel = session.getCurrentPlayerLabel();
+      processRollOutcome(res, playerLabel, "rolled");
+    });
+  }
+  if (btnRoll2) {
+    btnRoll2.addEventListener("click", () => {
+      const res = session.handleRandomRoll(2);
+      const playerLabel = session.getCurrentPlayerLabel();
+      processRollOutcome(res, playerLabel, "rolled");
+    });
+  }
+  if (btnRollManual) {
+    btnRollManual.addEventListener("click", openManualDice);
+  }
+
+  if (btnQueueDice) {
+    btnQueueDice.addEventListener("click", () => view.openQueueDiceModal());
+  }
+
+  if (btnRewind) {
+    btnRewind.addEventListener("click", () => {
+      const entries = session.getHistoryEntries();
+      if (!entries.length) {
+        view.appendLog("No moves to rewind.");
+        return;
+      }
+      view.openRewindModal(entries.slice().reverse());
+
+      const items = rewindListEl ? rewindListEl.querySelectorAll(".rewind-item") : [];
+      items.forEach((item) => {
+        item.addEventListener("mouseenter", () => {
+          const idx = Number(item.dataset.index);
+          const snap = session.getHistorySnapshot(idx);
+          if (!snap) return;
+          view.setRewindPreview(buildPreviewText(snap));
+        });
+        item.addEventListener("click", () => {
+          items.forEach((el) => el.classList.remove("selected"));
+          item.classList.add("selected");
+        });
+      });
+    });
+  }
+
+  modalMoveCover.addEventListener("change", () => {
+    if (!uiPendingOptions || !modalMoveCover.checked) return;
+    view.updateMoveModalOptions("cover", uiPendingOptions.coverOptions || []);
+  });
+
+  modalMoveUncover.addEventListener("change", () => {
+    if (!uiPendingOptions || !modalMoveUncover.checked) return;
+    view.updateMoveModalOptions("uncover", uiPendingOptions.uncoverOptions || []);
+  });
+
+  modalBtnHelp.addEventListener("click", () => {
+    const suggestion = session.getHelpSuggestion();
+    if (!suggestion) return;
+    view.setMoveHelpText(
+      `Recommended: ${suggestion.action.toUpperCase()} [${suggestion.squares.join(
+        ", "
+      )}] – ${suggestion.reason}`
+    );
+
+    if (!uiPendingOptions) return;
+    const moveType = suggestion.action === "uncover" ? "uncover" : "cover";
+    const options =
+      moveType === "cover" ? uiPendingOptions.coverOptions : uiPendingOptions.uncoverOptions;
+    if (options && options.length > 0) {
+      view.setMoveSelection(moveType, options, suggestion.squares);
+    }
+  });
+
+  modalBtnConfirm.addEventListener("click", () => {
+    if (!uiPendingOptions) {
+      view.closeMoveModal();
+      return;
+    }
+
+    const selection = view.getMoveModalSelection(
+      uiPendingOptions.coverOptions,
+      uiPendingOptions.uncoverOptions
+    );
+    if (!selection) {
+      view.setMoveHelpText("Please choose a combination.");
+      return;
+    }
+
+    const res = session.applyHumanMove(selection.moveType, selection.squares);
+    if (res.error) {
+      log(res.error);
+      return;
+    }
+
+    const playerLabel = session.getCurrentPlayerLabel();
+    logAction({
+      playerId: session.getCurrentPlayerId(),
+      action: selection.moveType,
+      squares: [...selection.squares],
+    });
+    const humanAction = {
+      playerId: session.getCurrentPlayerId(),
+      action: selection.moveType,
+      squares: [...selection.squares],
+      roll: lastShownRoll,
+    };
+    setLastPlayFromAction(humanAction);
+    updateComputerReasonFromAction(humanAction);
+
+    uiPendingOptions = null;
+    view.closeMoveModal();
+    refreshBoardsAndScores();
+
+    if (res.roundOver) {
+      handleRoundFinished(res.summary);
+      return;
+    }
+
+    updateTurnInfoStatus("Move completed. Roll again.", lastShownRoll);
+    updateRollButtonsFromSession();
+  });
+
+  modalBtnCancel.addEventListener("click", () => {
+    if (!uiPendingOptions) {
+      view.closeMoveModal();
+      return;
+    }
+
+    if (
+      (uiPendingOptions.coverOptions && uiPendingOptions.coverOptions.length) ||
+      (uiPendingOptions.uncoverOptions && uiPendingOptions.uncoverOptions.length)
+    ) {
+      view.setMoveHelpText("You must choose a valid move; skipping is not allowed when moves exist.");
+      return;
+    }
+
+    uiPendingOptions = null;
+    view.closeMoveModal();
+  });
+
+  btnQuitRound.addEventListener("click", () => {
+    const result = session.getTournamentResult();
+    const summary = {
+      roundWinnerId: result.winnerId,
+      winType: "tournament",
+      roundScore: 0,
+      humanScore: result.humanScore,
+      computerScore: result.computerScore,
+      advantageForNext: null,
+      roundResultText: "",
+    };
+    view.setEndScreen(summary);
+    view.showScreen("end");
+  });
+
+  if (manualDiceConfirm) {
+    manualDiceConfirm.addEventListener("click", () => {
+      const selection = view.getManualDiceSelection();
+      if (!selection) {
+        view.setManualDiceHelp("Please select the dice values first.");
+        return;
+      }
+
+      const res = session.handleManualRoll(selection.numDice, selection.values);
+      if (res.error) {
+        view.setManualDiceHelp(res.error);
+        return;
+      }
+
+      view.closeManualDiceModal();
+      const playerLabel = session.getCurrentPlayerLabel();
+      processRollOutcome(res, playerLabel, "(manual) chose");
+    });
+  }
+
+  if (manualDiceCancel) {
+    manualDiceCancel.addEventListener("click", () => {
+      view.closeManualDiceModal();
+    });
+  }
+
+  if (btnSaveSnapshot) {
+    btnSaveSnapshot.addEventListener("click", () => {
+      try {
+        const text = session.getSnapshotText();
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const round = session.getCurrentRound();
+        const roundNum = round ? round.boardSize : "state";
+        a.href = url;
+        a.download = `canoga_snapshot_${roundNum}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        log("Game snapshot saved. Quitting game.");
+        session.resetTournament();
+        uiPendingOptions = null;
+        lastShownRoll = null;
+        view.clearLog();
+        view.setLastPlay("–");
+        resetComputerReason();
+        view.setDiceText({ d1: null, d2: null, sum: null });
+        view.setTurnStatus("Awaiting roll…");
+        view.showScreen("welcome");
+      } catch (err) {
+        alert("Could not save snapshot: " + (err.message || err));
+      }
+    });
+  }
+
+  if (rewindCancel) {
+    rewindCancel.addEventListener("click", () => view.closeRewindModal());
+  }
+  if (rewindConfirm) {
+    rewindConfirm.addEventListener("click", () => {
+      const sel = view.getRewindSelection();
+      if (sel == null) {
+        view.appendLog("No rewind selection made.");
+        return;
+      }
+      const res = session.rewindTo(sel);
+      if (res.error) {
+        view.appendLog(res.error);
+        view.closeRewindModal();
+        return;
+      }
+
+      uiPendingOptions = null;
+      lastShownRoll = null;
+      const round = session.getCurrentRound();
+      view.setRoundHeader(res.header);
+      view.setScores(res.scores.humanScore, res.scores.computerScore);
+      view.setPlayerNames(
+        session.getPlayerDisplayName("HUMAN"),
+        session.getPlayerDisplayName("COMPUTER")
+      );
+      view.renderBoards(round, {
+        humanAdvantage: round.getLockedAdvantageSquare("HUMAN"),
+        computerAdvantage: round.getLockedAdvantageSquare("COMPUTER"),
+      });
+      setLastPlayFromAction(res.lastAction);
+      updateComputerReasonFromAction(res.lastAction);
+      view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
+      if (
+        res.phase === "awaitingMove" &&
+        session.isPlayerHumanControlled(session.getCurrentPlayerId())
+      ) {
+        const sum = (lastShownRoll || session.getCurrentDice()).sum;
+        const coverOptions = round.getCoverOptions(session.getCurrentPlayerId(), sum);
+        const uncoverOptions = round.getUncoverOptions(session.getCurrentPlayerId(), sum);
+        uiPendingOptions = { coverOptions, uncoverOptions };
+        view.setRollButtonsVisibility({ canRoll1: false, enableRollButtons: false });
+        view.openMoveModal(sum, coverOptions, uncoverOptions);
+        view.setTurnStatus("Choose your move.");
+      } else {
+        view.setDiceText({ d1: null, d2: null, sum: null });
+        view.setTurnStatus("Awaiting roll…");
+      }
+      updateRollButtonsFromSession();
+      const entryLabel =
+        session.getHistoryEntries().find((e) => e.index === sel)?.label ||
+        `entry ${sel}`;
+      view.appendLog(`Rewound to: ${entryLabel}`);
+      view.closeRewindModal();
+    });
+  }
+
+  if (queueDiceCancel) {
+    queueDiceCancel.addEventListener("click", () => view.closeQueueDiceModal());
+  }
+  if (queueDiceConfirm) {
+    queueDiceConfirm.addEventListener("click", () => {
+      const lines = view.getQueuedDiceLines();
+      if (!lines.length) {
+        view.appendLog("No dice sequence provided.");
+        view.closeQueueDiceModal();
+        return;
+      }
+      const entries = [];
+      for (const line of lines) {
+        const parts = line.split(/[\s,]+/).map((p) => p.trim()).filter(Boolean);
+        if (parts.length === 1) {
+          const d1 = Number(parts[0]);
+          if (!Number.isInteger(d1) || d1 < 1 || d1 > 6) continue;
+          entries.push({ d1, d2: null });
+        } else if (parts.length >= 2) {
+          const d1 = Number(parts[0]);
+          const d2 = Number(parts[1]);
+          if (
+            !Number.isInteger(d1) ||
+            !Number.isInteger(d2) ||
+            d1 < 1 ||
+            d1 > 6 ||
+            d2 < 1 ||
+            d2 > 6
+          )
+            continue;
+          entries.push({ d1, d2 });
+        }
+      }
+      session.queuedRolls = entries;
+      if (session.dice) session.dice.setQueue(entries);
+      view.appendLog(
+        `Queued ${entries.length} manual roll${entries.length === 1 ? "" : "s"} for upcoming turns.`
+      );
+      view.closeQueueDiceModal();
+    });
+  }
+
+  function buildPreviewText(snap) {
+    const coveredFromArray = (arr) =>
+      arr
+        .map((v, idx) => (v === 0 ? idx + 1 : null))
+        .filter((v) => v != null);
+    const uncoveredFromArray = (arr) =>
+      arr
+        .map((v, idx) => (v !== 0 ? v : null))
+        .filter((v) => v != null);
+
+    const humanCovered = coveredFromArray(snap.round.humanBoard);
+    const compCovered = coveredFromArray(snap.round.computerBoard);
+
+    const lines = [];
+    lines.push(`Current: ${session.getPlayerDisplayName(snap.currentPlayerId)}`);
+    lines.push(`Phase: ${snap.phase}`);
+    lines.push(
+      `Scores H/C: ${snap.tournament.humanScore} / ${snap.tournament.computerScore}`
+    );
+    lines.push(
+      `Human covered: ${humanCovered.length ? humanCovered.join(", ") : "(none)"}`
+    );
+    lines.push(
+      `Computer covered: ${compCovered.length ? compCovered.join(", ") : "(none)"}`
+    );
+    view.renderRewindBoards(snap.round.humanBoard, snap.round.computerBoard);
+    return lines.join(" | ");
+  }
+}
+
+/**
+ * End screen actions: restart setup or quit tournament.
+ */
+function wireEnd() {
+  const btnPlayAgain = document.getElementById("btn-end-play-again");
+  const btnEndQuit = document.getElementById("btn-end-quit");
+
+  btnPlayAgain.addEventListener("click", () => {
+    view.showScreen("setup");
+    view.setRolloffText(DEFAULT_FIRST_PLAYER_TEXT, false);
+    resetComputerReason();
+    const btnStartRound = document.getElementById("btn-start-round");
+    const firstPlayerRadios = document.querySelectorAll('input[name="first-player"]');
+    if (btnStartRound) {
+      btnStartRound.style.display = "none";
+      btnStartRound.dataset.firstPlayerId = "";
+    }
+    firstPlayerRadios.forEach((r) => (r.checked = false));
+  });
+
+  btnEndQuit.addEventListener("click", () => {
+    const result = session.getTournamentResult();
+    alert(
+      `Tournament over!\n` +
+        `Winner: ${
+          result.winnerId === "DRAW"
+            ? "Draw"
+            : result.winnerId === "HUMAN"
+            ? "Human"
+            : "Computer"
+        }\n` +
+        `Human total: ${result.humanScore}\n` +
+        `Computer total: ${result.computerScore}`
+    );
+    view.showScreen("welcome");
+  });
+}
