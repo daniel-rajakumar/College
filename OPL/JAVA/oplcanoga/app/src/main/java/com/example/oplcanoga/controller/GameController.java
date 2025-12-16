@@ -226,9 +226,10 @@ public class GameController {
     }
 
     /**
-     * Handles the dice outcome for the current player.
+     * Handles the dice roll for the current player, updating the view and
+     * delegating to the appropriate player logic (human or computer).
      *
-     * @param dice The values of the rolled dice.
+     * @param dice The array of dice values rolled.
      */
     private void handleDiceForCurrentPlayer(int[] dice) {
         PlayerId current = currentRound.getCurrentPlayerId();
@@ -244,8 +245,8 @@ public class GameController {
     }
 
     /**
-     * Processes the dice roll outcome for the human player.
-     * Determines legal moves and updates the view.
+     * Processes the outcome of a human player's dice roll.
+     * Determines legal moves and prompts the user or ends the turn if no moves are available.
      */
     private void handleHumanDiceOutcome() {
         lastHumanCoverMoves =
@@ -266,8 +267,8 @@ public class GameController {
     }
 
     /**
-     * Processes the dice roll outcome for the computer player.
-     * Determines legal moves and performs the best move automatically.
+     * Processes the outcome of a computer player's dice roll.
+     * The computer automatically selects and applies a move, or skips its turn if no moves are possible.
      */
     private void handleComputerDiceOutcome() {
         List<Move> coverMoves =
@@ -294,7 +295,8 @@ public class GameController {
 
         view.showMessage("Computer " + chosen.getType() +
                 "s squares " + chosen.getSquares() +
-                " (total " + chosen.getDiceTotal() + ")");
+                " (total " + chosen.getDiceTotal() + ").\n" +
+                computer.getLastMoveReason());
 
         currentRound.applyMove(chosen);
         updateBoardInView();
@@ -364,50 +366,16 @@ public class GameController {
             return;
         }
 
-        Move suggestion = new ComputerPlayer(currentRound.getBoardSize()).chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
+        ComputerPlayer tempAi = new ComputerPlayer(currentRound.getBoardSize());
+        Move suggestion = tempAi.chooseMove(lastHumanCoverMoves, lastHumanUncoverMoves, tournament.getHuman(), tournament.getComputer());
 
         if (suggestion == null) {
             view.showMessage("No good move available.");
         } else {
-            StringBuilder reason = new StringBuilder();
-
-            if (suggestion.getType() == MoveType.COVER) {
-                int humanUncoveredCount = 0;
-                Player human = tournament.getHuman();
-                for (int i = 1; i <= human.getBoardSize(); i++) {
-                    if (!human.isCovered(i)) humanUncoveredCount++;
-                }
-                if (suggestion.getSquareCount() == humanUncoveredCount) {
-                    reason.append(" This move will let you win the round immediately!");
-                } else {
-                    reason.append("I chose a COVER move because covering more of your own squares ")
-                            .append("reduces your opponent's chances to score at the end.");
-                }
-
-            } else if (suggestion.getType() == MoveType.UNCOVER) {
-                int computerCoveredCount = 0;
-                Player comp = tournament.getComputer();
-                for (int i = 1; i <= comp.getBoardSize(); i++) {
-                    if (comp.isCovered(i)) computerCoveredCount++;
-                }
-                if (suggestion.getSquareCount() == computerCoveredCount) {
-                    reason.append(" This move will let you win the round immediately!");
-                } else {
-                    reason.append("I chose an UNCOVER move because removing your opponent's covered squares ")
-                            .append("makes it harder for them to win by covering all of theirs.");
-                }
-            }
-
-            if (reason.length() == 0) {
-                reason.append(" This move uses ").append(suggestion.getSquares().size())
-                        .append(" square(s), and I prefer moves that use more squares and higher numbers ")
-                        .append("to maximize impact from this roll.");
-            }
-
             view.showMessage("Suggestion: " + suggestion.getType() +
                     " squares " + suggestion.getSquares() +
-                    " (total " + suggestion.getDiceTotal() + "). " +
-                    reason.toString());
+                    " (total " + suggestion.getDiceTotal() + ").\n" +
+                    tempAi.getLastMoveReason());
         }
 
     }
@@ -552,7 +520,9 @@ public class GameController {
 
             view.showMessage("Computer " + chosen.getType() +
                     "s squares " + chosen.getSquares() +
-                    " (total " + chosen.getDiceTotal() + ")");
+                    " (total " + chosen.getDiceTotal() + ").\n" +
+                    computer.getLastMoveReason());
+
             currentRound.applyMove(chosen);
             updateBoardInView();
         }

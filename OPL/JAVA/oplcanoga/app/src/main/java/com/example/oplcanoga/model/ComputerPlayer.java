@@ -9,6 +9,9 @@ import java.util.List;
  */
 public class ComputerPlayer extends Player {
 
+    // Helper field to store the reason for the last decision
+    private String lastMoveReason = "";
+
     /**
      * Constructs a ComputerPlayer with the specified board size.
      *
@@ -30,6 +33,15 @@ public class ComputerPlayer extends Player {
     }
 
     /**
+     * Retrieves the explanation for the last chosen move.
+     *
+     * @return A string explaining the strategy behind the last move.
+     */
+    public String getLastMoveReason() {
+        return lastMoveReason;
+    }
+
+    /**
      * Chooses the best move from the available legal moves.
      * <p>
      * Strategy:
@@ -45,7 +57,8 @@ public class ComputerPlayer extends Player {
      * @return The chosen Move object, or null if no moves are available.
      */
     public Move chooseMove(List<Move> coverMoves, List<Move> uncoverMoves, Player me, Player opponent) {
-        
+        lastMoveReason = ""; // Reset reason
+
         // 1. Check for immediate win by covering
         int myUncoveredCount = 0;
         for (int i = 1; i <= me.getBoardSize(); i++) {
@@ -53,6 +66,7 @@ public class ComputerPlayer extends Player {
         }
         for (Move m : coverMoves) {
             if (m.getSquareCount() == myUncoveredCount) {
+                lastMoveReason = "I can win immediately by covering all my remaining squares!";
                 return m;
             }
         }
@@ -64,26 +78,42 @@ public class ComputerPlayer extends Player {
         }
         for (Move m : uncoverMoves) {
             if (m.getSquareCount() == oppCoveredCount) {
+                lastMoveReason = "I can win immediately by uncovering all of your covered squares!";
                 return m;
             }
         }
 
         // 3. Default strategy: Prefer covering, then maximizing count/value
         List<Move> candidates;
-        if (!coverMoves.isEmpty()) {
+        boolean preferCover = !coverMoves.isEmpty();
+        
+        if (preferCover) {
             candidates = coverMoves;
         } else {
             candidates = uncoverMoves;
         }
 
         if (candidates.isEmpty()) {
+            lastMoveReason = "No legal moves available.";
             return null;
         }
 
-        return candidates.stream()
+        Move bestMove = candidates.stream()
                 .max(Comparator
                         .comparingInt(Move::getSquareCount)
                         .thenComparingInt(Move::getHighestSquare))
                 .orElse(null);
+        
+        if (bestMove != null) {
+            if (preferCover) {
+                lastMoveReason = "Strategy: Covering my squares (" + bestMove.getSquares() + ") reduces your potential score. " +
+                        "This option covers the most squares or highest values among available moves.";
+            } else {
+                lastMoveReason = "Strategy: Uncovering your squares (" + bestMove.getSquares() + ") makes it harder for you to win. " +
+                        "This option affects the most squares or highest values.";
+            }
+        }
+        
+        return bestMove;
     }
 }
