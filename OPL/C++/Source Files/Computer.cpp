@@ -235,6 +235,59 @@ namespace {
         return false;
     }
 
+    /**
+     * @brief Print a neat, human-readable explanation for the chosen StrategyResult.
+     * This consolidates the small inline explanation blocks so every computer move
+     * has a consistent, easy-to-read explanation for the user.
+     */
+    void printComputerExplanation(const StrategyResult& best, bool isWinning, const Board& myBoard, const Board& oppBoard, bool oppProtected) {
+        using std::cout;
+        section("Computer Explanation");
+
+        // Action and squares
+        cout << c(GREEN);
+        if (best.action == StrategyResult::Action::Cover) cout << "Action: COVER";
+        else if (best.action == StrategyResult::Action::Uncover) cout << "Action: UNCOVER";
+        else cout << "Action: NONE";
+        cout << c(RESET) << ": ";
+        if (!best.combo.empty()) {
+            bool first = true;
+            for (int v : best.combo) {
+                if (!first) cout << ", ";
+                cout << v;
+                first = false;
+            }
+        } else {
+            cout << "(no squares)";
+        }
+        cout << "\n";
+
+        // Why explanation
+        if (isWinning) {
+            cout << c(YELLOW) << "Why: This move immediately wins the round." << c(RESET) << "\n";
+        } else {
+            int chosenCount = static_cast<int>(best.combo.size());
+            int chosenSum = sumOf(best.combo);
+
+            if (best.action == StrategyResult::Action::Cover) {
+                cout << "Why: Chosen to advance the computer's position by covering " << chosenCount
+                     << " square" << (chosenCount==1?"":"s") << " (total value " << chosenSum << ")" << ".\n";
+                cout << "      Heuristic: prefers combinations with more squares, then higher highest-square.\n";
+            } else if (best.action == StrategyResult::Action::Uncover) {
+                cout << "Why: Chosen to hinder the opponent by uncovering " << chosenCount
+                     << " square" << (chosenCount==1?"":"s") << " (total value " << chosenSum << ").\n";
+                if (oppProtected) {
+                    cout << "      Note: The opponent's advantage square is protected, so the AI avoided combinations that would touch it.\n";
+                }
+                cout << "      Heuristic: prefers combinations that reduce opponent coverage and prefers larger combinations / higher values.\n";
+            } else {
+                cout << "Why: No legal move available for this roll. The computer passes.\n";
+            }
+        }
+
+        hr();
+    }
+
 } // anonymous namespace
 
 // =====================================================================
@@ -325,20 +378,8 @@ bool Computer::takeTurn() {
             // Build a human-friendly explanation for the chosen move
             bool isWinning = isComboWinning(best, board, humanBoard);
 
-            cout << c(GREEN)
-                 << (best.action == StrategyResult::Action::Cover ? "Computer chooses to COVER: " : "Computer chooses to UNCOVER: ")
-                 << c(RESET);
-            for (int v : best.combo) cout << v << " ";
-            cout << "\n";
-
-            int chosenCount = static_cast<int>(best.combo.size());
-            int chosenSum = sumOf(best.combo);
-            if (isWinning) {
-                cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
-            } else {
-                cout << "Reason: Chosen as the strongest option \u2014 affects " << chosenCount
-                     << " squares (total value " << chosenSum << ").\n";
-            }
+            // Print a concise, formatted explanation for the player
+            printComputerExplanation(best, isWinning, board, humanBoard, oppProtected);
 
             if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
             else applyUncover(humanBoard, best.combo);
@@ -408,20 +449,8 @@ bool Computer::takeTurn() {
 
              bool isWinningA = isComboWinning(best, board, humanBoard);
 
-             cout << c(GREEN)
-                  << (best.action == StrategyResult::Action::Cover ? "Computer decides to COVER: " : "Computer decides to UNCOVER: ")
-                  << c(RESET);
-             for (int v : best.combo) cout << v << " ";
-             cout << "\n";
-
-             int chosenCount = static_cast<int>(best.combo.size());
-             int chosenSum = sumOf(best.combo);
-             if (isWinningA) {
-                 cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
-             } else {
-                 cout << "Reason: Chosen as the strongest option \u2014 affects " << chosenCount
-                      << " squares (total value " << chosenSum << ").\n";
-             }
+             // Print a concise, formatted explanation for the player
+             printComputerExplanation(best, isWinningA, board, humanBoard, oppProtected);
 
              if (best.action == StrategyResult::Action::Cover) applyCover(board, best.combo);
              else applyUncover(humanBoard, best.combo);
