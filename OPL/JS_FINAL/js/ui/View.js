@@ -1,8 +1,5 @@
-// js/ui/View.js
-
 export class View {
   constructor() {
-    // Screens
     this.screens = {
       welcome: document.getElementById("screen-welcome"),
       setup: document.getElementById("screen-setup"),
@@ -10,13 +7,11 @@ export class View {
       end: document.getElementById("screen-end"),
     };
 
-    // Setup screen
     this.rolloffResultEl = document.getElementById("rolloff-result");
     this.btnStartRound = document.getElementById("btn-start-round");
     this.firstPlayerHumanLabel = document.getElementById("label-first-human");
     this.firstPlayerComputerLabel = document.getElementById("label-first-computer");
 
-    // Game header
     this.lblRoundNumber = document.getElementById("lbl-round-number");
     this.lblMode = document.getElementById("lbl-mode");
     this.lblFirstPlayer = document.getElementById("lbl-first-player");
@@ -41,23 +36,18 @@ export class View {
     this.btnRollManual = document.getElementById("btn-roll-manual");
     this.btnRewind = document.getElementById("btn-rewind");
 
-// Manual dice modal
-this.manualDiceModal = document.getElementById("manual-dice-modal");
-this.manualDiceHelp = document.getElementById("manual-dice-help");
-this.manualDiceConfirm = document.getElementById("manual-dice-confirm");
-this.manualDiceCancel = document.getElementById("manual-dice-cancel");
-this.manualDiceCountRadios = document.querySelectorAll(
-  'input[name="manual-dice-count"]'
-);
-this.manualDiceRows = document.querySelectorAll(".manual-dice-row");
-this.manualDieButtons = document.querySelectorAll(".manual-die");
-
+    this.manualDiceModal = document.getElementById("manual-dice-modal");
+    this.manualDiceHelp = document.getElementById("manual-dice-help");
+    this.manualDiceConfirm = document.getElementById("manual-dice-confirm");
+    this.manualDiceCancel = document.getElementById("manual-dice-cancel");
+    this.manualDiceCountRadios = document.querySelectorAll('input[name="manual-dice-count"]');
+    this.manualDiceRows = document.querySelectorAll(".manual-dice-row");
+    this.manualDieButtons = document.querySelectorAll(".manual-die");
 
     this.btnRoll1 = document.getElementById("btn-roll-1");
     this.btnRoll2 = document.getElementById("btn-roll-2");
     this.btnQueueDice = document.getElementById("btn-queue-dice");
 
-    // Move modal elements
     this.moveModal = document.getElementById("move-modal");
     this.modalDiceSum = document.getElementById("modal-dice-sum");
     this.modalMoveCover = document.getElementById("modal-move-cover");
@@ -65,7 +55,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.modalMoveOptions = document.getElementById("modal-move-options");
     this.modalHelpText = document.getElementById("modal-help-text");
 
-    // End screen
     this.lblRoundResult = document.getElementById("lbl-round-result");
     this.lblRoundWinner = document.getElementById("lbl-round-winner");
     this.lblRoundWinType = document.getElementById("lbl-round-win-type");
@@ -82,13 +71,11 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.rewindPreviewText = document.getElementById("rewind-preview-text");
     this.rewindConfirm = document.getElementById("rewind-confirm");
     this.rewindCancel = document.getElementById("rewind-cancel");
-    // Queue dice modal
     this.queueDiceModal = document.getElementById("queue-dice-modal");
     this.queueDiceInput = document.getElementById("queue-dice-input");
     this.queueDiceConfirm = document.getElementById("queue-dice-confirm");
     this.queueDiceCancel = document.getElementById("queue-dice-cancel");
 
-    // Headings for players (score + boards)
     const scoreHeadings = document.querySelectorAll(".scores h3");
     this.scoreHumanHeading = scoreHeadings[0] || null;
     this.scoreComputerHeading = scoreHeadings[1] || null;
@@ -104,14 +91,10 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     });
   }
 
-  // ----- SETUP -----
-
   setRolloffText(text, canStart) {
     this.rolloffResultEl.textContent = text;
     this.btnStartRound.disabled = !canStart;
   }
-
-  // ----- GAME HEADER / STATE -----
 
   setRoundHeader({ roundNumber, modeLabel, firstPlayerLabel, advantageText }) {
     this.lblRoundNumber.textContent = roundNumber;
@@ -146,8 +129,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     if (this.firstPlayerHumanLabel) this.firstPlayerHumanLabel.textContent = humanLabel;
     if (this.firstPlayerComputerLabel) this.firstPlayerComputerLabel.textContent = computerLabel;
   }
-
-  /* ---------- REWIND MODAL ---------- */
 
   openRewindModal(entries) {
     if (!this.rewindModal || !this.rewindList) return;
@@ -199,8 +180,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     render(computerBoardArr, this.rewindPreviewComputer);
   }
 
-  /* ---------- QUEUE DICE MODAL ---------- */
-
   openQueueDiceModal() {
     if (!this.queueDiceModal) return;
     if (this.queueDiceInput) this.queueDiceInput.value = "";
@@ -241,24 +220,14 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.lblTurnStatus.textContent = text;
   }
 
-  /**
-   * Show/hide roll buttons for the human player.
-   * - canRoll1: boolean (Roll 1 Die visible only when allowed).
-   * Roll 2 button remains visible for human turns.
-   */
   setRollButtonsVisibility({ canRoll1, enableRollButtons }) {
-  // 1-die button visible only when allowed
-  this.btnRoll1.style.display = canRoll1 ? "inline-block" : "none";
-  this.btnRoll1.disabled = !enableRollButtons;
-
-  // 2-dice always visible when it's a human-controlled turn, but disabled when not allowed
-  this.btnRoll2.disabled = !enableRollButtons;
-
-  // Manual button uses same enable flag; always visible
-  if (this.btnRollManual) {
-    this.btnRollManual.disabled = !enableRollButtons;
+    this.btnRoll1.style.display = canRoll1 ? "inline-block" : "none";
+    this.btnRoll1.disabled = !enableRollButtons;
+    this.btnRoll2.disabled = !enableRollButtons;
+    if (this.btnRollManual) {
+      this.btnRollManual.disabled = !enableRollButtons;
+    }
   }
-}
 
   clearLog() {
     this.logEl.innerHTML = "";
@@ -289,10 +258,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.logEl.scrollTop = this.logEl.scrollHeight;
   }
 
-  /**
-   * Render both boards.
-   * Pure display of covered/uncovered numbers.
-   */
   renderBoards(round, { humanAdvantage = null, computerAdvantage = null } = {}) {
     this._renderBoard(round.human.board, this.boardHuman, humanAdvantage);
     this._renderBoard(round.computer.board, this.boardComputer, computerAdvantage);
@@ -316,19 +281,10 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     }
   }
 
-  // ----- MOVE MODAL -----
-
-  /**
-   * Configure and show move modal.
-   * @param {number} diceSum
-   * @param {number[][]} coverOptions
-   * @param {number[][]} uncoverOptions
-   */
   openMoveModal(diceSum, coverOptions, uncoverOptions) {
     this.modalDiceSum.textContent = String(diceSum);
     this.modalHelpText.textContent = "";
 
-    // enable/disable move-type radios based on available options
     this.modalMoveCover.disabled = coverOptions.length === 0;
     this.modalMoveUncover.disabled = uncoverOptions.length === 0;
 
@@ -353,19 +309,10 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.moveModal.classList.add("hidden");
   }
 
-  /**
-   * Update options when user switches Cover/Uncover radio.
-   */
   updateMoveModalOptions(moveType, options) {
     this._fillOptionsSelect(options);
   }
 
-  /**
-   * Programmatically select move type and option in the modal.
-   * @param {"cover"|"uncover"} moveType
-   * @param {number[][]} options
-   * @param {number[]} squares
-   */
   setMoveSelection(moveType, options, squares) {
     if (moveType === "cover") {
       this.modalMoveCover.checked = true;
@@ -377,7 +324,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
 
     this._fillOptionsSelect(options);
 
-    // pick the option matching the suggested squares (order-insensitive)
     const target = [...(squares || [])].sort((a, b) => a - b);
     let matchIndex = 0;
     options.forEach((opt, idx) => {
@@ -399,12 +345,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     });
   }
 
-  /**
-   * Read current selection from modal.
-   * @param {number[][]} coverOptions
-   * @param {number[][]} uncoverOptions
-   * @returns {{ moveType: "cover"|"uncover", squares: number[] } | null}
-   */
   getMoveModalSelection(coverOptions, uncoverOptions) {
     const type = this.modalMoveCover.checked ? "cover" : "uncover";
     const idx = Number(this.modalMoveOptions.value);
@@ -420,17 +360,12 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     this.modalHelpText.textContent = text || "";
   }
 
-    // ----- MANUAL DICE MODAL -----
-
   initManualDiceListeners() {
-    // Called once by controller to wire basic behavior (hide/show 2nd row & select buttons)
     if (!this.manualDieButtons || this.manualDieButtons.length === 0) return;
 
-    // Toggle selected state when clicking a die
     this.manualDieButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         const dieIndex = btn.getAttribute("data-die");
-        // Clear previous selection for this die
         this.manualDieButtons.forEach((b) => {
           if (b.getAttribute("data-die") === dieIndex) {
             b.classList.remove("selected");
@@ -440,7 +375,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
       });
     });
 
-    // Handle 1 vs 2 dice (show/hide die 2 row)
     if (this.manualDiceCountRadios && this.manualDiceRows) {
       this.manualDiceCountRadios.forEach((radio) => {
         radio.addEventListener("change", () => {
@@ -462,7 +396,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
   openManualDiceModal() {
     if (!this.manualDiceModal) return;
 
-    // Default to 1 die
     if (this.manualDiceCountRadios && this.manualDiceCountRadios.length > 0) {
       const alreadyChecked = Array.from(this.manualDiceCountRadios).some(
         (r) => r.checked
@@ -474,12 +407,10 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
       }
     }
 
-    // Clear previous selections
     if (this.manualDieButtons) {
       this.manualDieButtons.forEach((btn) => btn.classList.remove("selected"));
     }
 
-    // Hide die2 row by default
     if (this.manualDiceRows) {
       const count = Number(
         document.querySelector('input[name="manual-dice-count"]:checked')
@@ -510,9 +441,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     }
   }
 
-  /**
-   * @returns {{ numDice: 1|2, values: number[] } | null}
-   */
   getManualDiceSelection() {
     if (!this.manualDiceCountRadios) return null;
 
@@ -556,15 +484,11 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     };
   }
 
-  /**
-   * Helper to pre-select number of dice (1 or 2) before opening modal.
-   */
   setManualDiceCount(count) {
     if (!this.manualDiceCountRadios) return;
     this.manualDiceCountRadios.forEach((r) => {
       r.checked = Number(r.value) === count;
     });
-    // trigger show/hide for die 2 row
     if (this.manualDiceRows) {
       this.manualDiceRows.forEach((row) => {
         const dieIndex = row.getAttribute("data-die");
@@ -575,8 +499,6 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
     }
   }
 
-
-  // ----- END SCREEN -----
 
   setEndScreen({
     roundWinnerId,
@@ -607,7 +529,4 @@ this.manualDieButtons = document.querySelectorAll(".manual-die");
       this.lblFinalAdvantage.textContent = `${who} gets advantage square ${advantageForNext.digitSum}`;
     }
   }
-
-
-  // ui/View.js (inside export class View { ... })
 }

@@ -1,4 +1,3 @@
-// js/main.js
 import { View } from "./ui/View.js";
 import { GameSession } from "./model/GameSession.js";
 
@@ -8,7 +7,6 @@ const session = new GameSession();
 const DEFAULT_FIRST_PLAYER_TEXT =
   'Choose who goes first or click "Roll Dice" to decide randomly.';
 
-// purely UI-side pending options (for the move modal)
 let uiPendingOptions = null;
 let lastShownRoll = null;
 
@@ -91,12 +89,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   resetComputerReason();
 
-  // initial roll button state
   updateRollButtonsFromSession();
   view.initManualDiceListeners();
 });
-
-/* ---------- HELPERS (controller-only) ---------- */
 
 function updateRollButtonsFromSession() {
   const state = session.getRollButtonState();
@@ -125,7 +120,6 @@ function updateTurnInfoStatus(textIfAny, diceOverride = null) {
 }
 
 function handleRoundFinished(summary) {
-  // summary comes from GameSession
   view.setScores(summary.humanScore, summary.computerScore);
   view.setEndScreen(summary);
   resetComputerReason();
@@ -134,8 +128,6 @@ function handleRoundFinished(summary) {
     `Round over. Winner: ${summary.roundWinnerId} | Type: ${summary.winType} | Round score: ${summary.roundScore}`
   );
 }
-
-/* ---------- WELCOME SCREEN ---------- */
 
 function wireWelcome() {
   const btnStartSetup = document.getElementById("btn-start-setup");
@@ -165,7 +157,6 @@ function wireWelcome() {
     log("Tournament reset.");
   });
 
-  // Trigger hidden file input
   btnUpload.addEventListener("click", () => {
     if (fileInput) {
       fileInput.value = "";
@@ -173,7 +164,6 @@ function wireWelcome() {
     }
   });
 
-  // Handle file selection for loading a saved game
   if (fileInput) {
     fileInput.addEventListener("change", (event) => {
       const file = event.target.files && event.target.files[0];
@@ -192,7 +182,6 @@ function wireWelcome() {
           const text = String(reader.result || "");
           const state = session.loadSnapshotFromText(text);
 
-          // Switch to game screen & render from session state
           view.showScreen("game");
           view.clearLog();
           state.logLines.forEach((line) => log(line));
@@ -226,8 +215,6 @@ function wireWelcome() {
   }
 }
 
-/* ---------- SETUP SCREEN ---------- */
-
 function wireSetup() {
   const selectBoardSize = document.getElementById("select-board-size");
   const modeRadios = document.querySelectorAll('input[name="mode"]');
@@ -252,7 +239,6 @@ function wireSetup() {
     view.setRolloffText(reasonText, true);
   };
 
-  // Update mode (no logic here, we just forward)
   modeRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
       const mode = document.querySelector('input[name="mode"]:checked').value;
@@ -264,10 +250,8 @@ function wireSetup() {
       clearFirstPlayerSelection();
     });
   });
-  // ensure default selection is Human vs Computer
   const defaultMode = document.querySelector('input[name="mode"][value="HvsC"]');
   if (defaultMode) defaultMode.checked = true;
-  // sync player labels for first-player chooser
   view.setPlayerNames(
     session.getPlayerDisplayName("HUMAN"),
     session.getPlayerDisplayName("COMPUTER")
@@ -333,8 +317,6 @@ function wireSetup() {
   });
 }
 
-/* ---------- GAME SCREEN: ROLL / MODAL / QUIT ---------- */
-
 function wireGame() {
   const btnRoll1 = document.getElementById("btn-roll-1");
   const btnRoll2 = document.getElementById("btn-roll-2");
@@ -358,7 +340,6 @@ function wireGame() {
   const queueDiceConfirm = document.getElementById("queue-dice-confirm");
   const queueDiceCancel = document.getElementById("queue-dice-cancel");
 
-  // Helper: open manual dice modal if rolling is allowed for the *current* player
   function openManualDice() {
     const diceState = session.getRollButtonState();
     if (!diceState.enableRollButtons) return;
@@ -367,17 +348,14 @@ function wireGame() {
     view.openManualDiceModal();
   }
 
-  // Helper: process roll outcome (manual or random)
   function processRollOutcome(res, playerLabel, sourceLabel) {
     if (res.error) {
       log(res.error);
       return;
     }
 
-    // Always sync current player label on any roll handling
     view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
 
-    // Show dice
     if (res.roll) {
       view.setDiceText(res.roll);
       lastShownRoll = res.roll;
@@ -401,7 +379,6 @@ function wireGame() {
       resetComputerReason();
     }
 
-    // No moves available and no auto move
     if (!res.canMove && !res.autoMoveDone) {
       log(`${playerLabel}: no moves available for this roll. Turn ends.`);
       const endRes = session.endTurn();
@@ -415,7 +392,6 @@ function wireGame() {
       return;
     }
 
-    // Human needs to pick a move
     if (res.coverOptions && res.uncoverOptions && res.canMove) {
       uiPendingOptions = {
         coverOptions: res.coverOptions,
@@ -431,7 +407,6 @@ function wireGame() {
       return;
     }
 
-    // AI already moved
     refreshBoardsAndScores();
 
     if (res.roundOver) {
@@ -443,7 +418,6 @@ function wireGame() {
     updateRollButtonsFromSession();
   }
 
-  // Roll buttons: random roll for current player
   if (btnRoll1) {
     btnRoll1.addEventListener("click", () => {
       const res = session.handleRandomRoll(1);
@@ -462,12 +436,10 @@ function wireGame() {
     btnRollManual.addEventListener("click", openManualDice);
   }
 
-  // Queue dice sequence
   if (btnQueueDice) {
     btnQueueDice.addEventListener("click", () => view.openQueueDiceModal());
   }
 
-  // Rewind (UI only, placeholder)
   if (btnRewind) {
     btnRewind.addEventListener("click", () => {
       const entries = session.getHistoryEntries();
@@ -475,10 +447,8 @@ function wireGame() {
         view.appendLog("No moves to rewind.");
         return;
       }
-      // show newest first
       view.openRewindModal(entries.slice().reverse());
 
-      // attach hover/select listeners
       const items = rewindListEl ? rewindListEl.querySelectorAll(".rewind-item") : [];
       items.forEach((item) => {
         item.addEventListener("mouseenter", () => {
@@ -495,7 +465,6 @@ function wireGame() {
     });
   }
 
-  // Modal: switch type (cover / uncover)
   modalMoveCover.addEventListener("change", () => {
     if (!uiPendingOptions || !modalMoveCover.checked) return;
     view.updateMoveModalOptions("cover", uiPendingOptions.coverOptions || []);
@@ -506,7 +475,6 @@ function wireGame() {
     view.updateMoveModalOptions("uncover", uiPendingOptions.uncoverOptions || []);
   });
 
-  // Modal: Help (delegates to model)
   modalBtnHelp.addEventListener("click", () => {
     const suggestion = session.getHelpSuggestion();
     if (!suggestion) return;
@@ -516,7 +484,6 @@ function wireGame() {
       )}] – ${suggestion.reason}`
     );
 
-    // Auto-select suggested move type and combo in the modal
     if (!uiPendingOptions) return;
     const moveType = suggestion.action === "uncover" ? "uncover" : "cover";
     const options =
@@ -526,7 +493,6 @@ function wireGame() {
     }
   });
 
-  // Modal: Confirm move (human-selected move)
   modalBtnConfirm.addEventListener("click", () => {
     if (!uiPendingOptions) {
       view.closeMoveModal();
@@ -572,19 +538,16 @@ function wireGame() {
       return;
     }
 
-    // Same player rolls again
     updateTurnInfoStatus("Move completed. Roll again.", lastShownRoll);
     updateRollButtonsFromSession();
   });
 
-  // Modal: Cancel = skip move, end turn
   modalBtnCancel.addEventListener("click", () => {
     if (!uiPendingOptions) {
       view.closeMoveModal();
       return;
     }
 
-    // If options exist, player must pick one (cannot skip)
     if (
       (uiPendingOptions.coverOptions && uiPendingOptions.coverOptions.length) ||
       (uiPendingOptions.uncoverOptions && uiPendingOptions.uncoverOptions.length)
@@ -597,7 +560,6 @@ function wireGame() {
     view.closeMoveModal();
   });
 
-  // Quit tournament mid-round
   btnQuitRound.addEventListener("click", () => {
     const result = session.getTournamentResult();
     const summary = {
@@ -607,14 +569,12 @@ function wireGame() {
       humanScore: result.humanScore,
       computerScore: result.computerScore,
       advantageForNext: null,
-      // also used by View.setEndScreen:
       roundResultText: "",
     };
     view.setEndScreen(summary);
     view.showScreen("end");
   });
 
-  // Manual dice modal: Confirm
   if (manualDiceConfirm) {
     manualDiceConfirm.addEventListener("click", () => {
       const selection = view.getManualDiceSelection();
@@ -623,28 +583,24 @@ function wireGame() {
         return;
       }
 
-      // This now handles the CURRENT player (human or computer)
       const res = session.handleManualRoll(selection.numDice, selection.values);
       if (res.error) {
         view.setManualDiceHelp(res.error);
         return;
       }
 
-      // Close manual modal, then process result
       view.closeManualDiceModal();
       const playerLabel = session.getCurrentPlayerLabel();
       processRollOutcome(res, playerLabel, "(manual) chose");
     });
   }
 
-  // Manual dice modal: Cancel
   if (manualDiceCancel) {
     manualDiceCancel.addEventListener("click", () => {
       view.closeManualDiceModal();
     });
   }
 
-  // Save snapshot to .txt
   if (btnSaveSnapshot) {
     btnSaveSnapshot.addEventListener("click", () => {
       try {
@@ -661,7 +617,6 @@ function wireGame() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         log("Game snapshot saved. Quitting game.");
-        // Reset/quit after saving
         session.resetTournament();
         uiPendingOptions = null;
         lastShownRoll = null;
@@ -677,7 +632,6 @@ function wireGame() {
     });
   }
 
-  // Rewind modal buttons
   if (rewindCancel) {
     rewindCancel.addEventListener("click", () => view.closeRewindModal());
   }
@@ -695,7 +649,6 @@ function wireGame() {
         return;
       }
 
-      // Update UI based on restored state
       uiPendingOptions = null;
       lastShownRoll = null;
       const round = session.getCurrentRound();
@@ -712,7 +665,6 @@ function wireGame() {
       setLastPlayFromAction(res.lastAction);
       updateComputerReasonFromAction(res.lastAction);
       view.setCurrentPlayerLabel(session.getCurrentPlayerLabel());
-      // If rewound into awaitingMove and human-controlled, reopen modal
       if (
         res.phase === "awaitingMove" &&
         session.isPlayerHumanControlled(session.getCurrentPlayerId())
@@ -737,7 +689,6 @@ function wireGame() {
     });
   }
 
-  // Queue dice modal buttons
   if (queueDiceCancel) {
     queueDiceCancel.addEventListener("click", () => view.closeQueueDiceModal());
   }
@@ -805,13 +756,10 @@ function wireGame() {
     lines.push(
       `Computer covered: ${compCovered.length ? compCovered.join(", ") : "(none)"}`
     );
-    // Render board previews
     view.renderRewindBoards(snap.round.humanBoard, snap.round.computerBoard);
     return lines.join(" | ");
   }
 }
-
-/* ---------- END SCREEN ---------- */
 
 function wireEnd() {
   const btnPlayAgain = document.getElementById("btn-end-play-again");
