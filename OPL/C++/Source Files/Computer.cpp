@@ -1,3 +1,10 @@
+/**
+ * @file Computer.cpp
+ * @brief Implementation of the Computer (AI) player. Contains the strategy
+ *        engine and helpers used to select moves (cover/uncover) and to
+ *        provide help to the human player.
+ */
+
 #include "../Header Files/Computer.h"
 #include <iostream>
 #include <string>
@@ -12,29 +19,38 @@ using namespace std;
 using namespace ui;
 
 // =====================================================================
-// Shared Strategy Engine  (NOW JAVA-LIKE)
+// Shared Strategy Engine (internal helpers)
 // =====================================================================
 namespace {
 
+    /**
+     * @brief Result of strategy computation describing action and chosen combo.
+     */
     struct StrategyResult {
         enum class Action { None, Cover, Uncover };
         Action action;
         std::set<int> combo;
     };
 
+    /** @brief Compute sum of values in a set. */
     int sumOf(const std::set<int>& s) {
         int total = 0;
         for (int v : s) total += v;
         return total;
     }
 
+    /** @brief Return the highest element in the set or 0 if empty. */
     int highestSquareOf(const std::set<int>& s) {
         int hi = 0;
         for (int v : s) if (v > hi) hi = v;
         return hi;
     }
 
-    // Java-style "best": max (count), then max (highestSquare)
+    /**
+     * @brief Choose the best combination by preferring larger count, then higher max value.
+     * @param combos Candidate combinations
+     * @return The chosen combination
+     */
     std::set<int> chooseBestComboJava(const std::set<std::set<int>>& combos) {
         std::set<int> best;
         int bestCount = -1;
@@ -53,7 +69,7 @@ namespace {
         return best;
     }
 
-    // Helper utilities (avoid lambdas as requested)
+    /** @brief Read 'y'/'n' input from stdin; forces lowercase. */
     char readYN_input() {
         char c;
         while (true) {
@@ -67,6 +83,11 @@ namespace {
         }
     }
 
+    /**
+     * @brief Prompt the user to enter a die value (1..6) with the given prompt.
+     * @param prompt Text prompt shown to the user
+     * @return Valid die value in range [1..6]
+     */
     int readDie_input(const char* prompt) {
         int v;
         while (true) {
@@ -78,12 +99,14 @@ namespace {
         }
     }
 
+    /** @brief Highest uncovered square on a board or 0 if none. */
     int highestUncoveredFunc(const Board& b) {
         for (int v = b.getSize(); v >= 1; --v)
             if (!b.isSquareCovered(v)) return v;
         return 0;
     }
 
+    /** @brief Count of uncovered squares on a board. */
     int remainingCountFunc(const Board& b) {
         int c = 0;
         for (int v = 1; v <= b.getSize(); ++v)
@@ -91,6 +114,7 @@ namespace {
         return c;
     }
 
+    /** @brief Print candidate combinations for display. */
     void printCombosFunc(const std::set<std::set<int>>& combos) {
         int i = 1;
         for (const auto& c : combos) {
@@ -100,6 +124,7 @@ namespace {
         }
     }
 
+    /** @brief Apply cover operation and print values as they are covered. */
     void applyCover(Board& b, const std::set<int>& combo) {
         for (int v : combo) {
             std::cout << v << " ";
@@ -107,6 +132,7 @@ namespace {
         }
     }
 
+    /** @brief Apply uncover operation and print values as they are uncovered. */
     void applyUncover(Board& hb, const std::set<int>& combo) {
         for (int v : combo) {
             std::cout << v << " ";
@@ -115,13 +141,7 @@ namespace {
     }
 
     // -----------------------------------------------------------------
-    // computeBestMove (JAVA-LIKE VERSION)
-    //
-    // Matches your Java chooseMove() logic:
-    //  1) If any cover combo size == myUncoveredCount => cover it
-    //  2) Else if any uncover combo size == oppCoveredCount => uncover it
-    //  3) Else candidates = cover if any cover exists else uncover
-    //  4) Choose best by: max(count), then max(highestSquare)
+    // computeBestMove - Java-like strategy
     // -----------------------------------------------------------------
     StrategyResult computeBestMove(int sum,
                                    const Board& myBoard,
@@ -195,9 +215,13 @@ namespace {
         return res;
     }
 
-    // Helper to check whether applying the combo in 'res' would immediately
-    // win for the acting player (cover all own squares) or for the opponent
-    // (uncover all opponent squares).
+    /**
+     * @brief Check whether applying the candidate combo would immediately win the round.
+     * @param res Strategy result containing action and combo
+     * @param myBoard Board of the acting player (simulated)
+     * @param oppBoard Board of the opponent (simulated)
+     * @return true if the combo results in an immediate win
+     */
     inline bool isComboWinning(const StrategyResult& res, const Board& myBoard, const Board& oppBoard) {
         if (res.action == StrategyResult::Action::Cover) {
             Board sim = myBoard;
@@ -217,15 +241,20 @@ namespace {
 // Computer methods
 // =====================================================================
 
+/**
+ * @brief Construct a Computer player bound to its board and the human board.
+ */
 Computer::Computer(Board& b, Board& humanBoard)
     : Player(b, false),
       boardView(b, "Computer"),
       humanBoardView(humanBoard, "Human"),
       humanBoard(humanBoard) {}
 
-// ---------------------------------------------------------------------
-// Computer::takeTurn
-// ---------------------------------------------------------------------
+/**
+ * @brief Execute the computer's turn: roll dice (manual or auto), evaluate moves
+ *        using the strategy engine, and apply chosen moves until no legal moves remain.
+ * @return true when the computer's turn ends
+ */
 bool Computer::takeTurn() {
     using std::cout; using std::cin; using std::endl;
 
@@ -307,7 +336,7 @@ bool Computer::takeTurn() {
             if (isWinning) {
                 cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
             } else {
-                cout << "Reason: Chosen as the strongest option — affects " << chosenCount
+                cout << "Reason: Chosen as the strongest option \u2014 affects " << chosenCount
                      << " squares (total value " << chosenSum << ").\n";
             }
 
@@ -390,7 +419,7 @@ bool Computer::takeTurn() {
              if (isWinningA) {
                  cout << c(YELLOW) << "Reason: This move immediately wins the round." << c(RESET) << "\n";
              } else {
-                 cout << "Reason: Chosen as the strongest option — affects " << chosenCount
+                 cout << "Reason: Chosen as the strongest option \u2014 affects " << chosenCount
                       << " squares (total value " << chosenSum << ").\n";
              }
 
@@ -429,9 +458,11 @@ bool Computer::takeTurn() {
     return true;
 }
 
-// ---------------------------------------------------------------------
-// shouldCover: kept for compatibility, uses shared brain (NOW JAVA-LIKE)
-// ---------------------------------------------------------------------
+/**
+ * @brief Decide heuristically whether the computer should cover given a dice sum.
+ * @param sum Dice sum
+ * @return true when the best action determined by the strategy engine is to cover
+ */
 bool Computer::shouldCover(const int sum) const {
     bool oppProtected =
         Tournament::getAdvantageApplied() &&
@@ -444,9 +475,11 @@ bool Computer::shouldCover(const int sum) const {
     return result;
 }
 
-// ---------------------------------------------------------------------
-// coverSquares: kept for compatibility (not used by AI anymore)
-// ---------------------------------------------------------------------
+/**
+ * @brief Cover squares on the computer's board based on the provided sum.
+ *        This function preserves legacy behavior and prints the chosen move.
+ * @param sum Dice sum
+ */
 void Computer::coverSquares(const int sum) const {
     const std::set<std::set<int>> validCombinations =
         board.findValidCombinations(sum, true);
@@ -493,9 +526,11 @@ void Computer::coverSquares(const int sum) const {
     for (const int square : selectedCombination) board.coverSquare(square);
 }
 
-// ---------------------------------------------------------------------
-// uncoverSquares: kept for compatibility (not used by AI anymore)
-// ---------------------------------------------------------------------
+/**
+ * @brief Uncover squares on the human opponent's board based on the provided sum.
+ *        Preserves legacy behavior and prints the chosen move.
+ * @param sum Dice sum
+ */
 void Computer::uncoverSquares(const int sum) const {
     std::set<std::set<int>> validCombinations =
         humanBoard.findValidCombinations(sum, false);
@@ -561,9 +596,13 @@ void Computer::uncoverSquares(const int sum) const {
         humanBoard.uncoverSquare(square);
 }
 
-// ---------------------------------------------------------------------
-// provideHelp: uses EXACTLY the same strategy engine as the AI
-// ---------------------------------------------------------------------
+/**
+ * @brief Provide help information to the human player for the given dice sum.
+ *        Prints possible cover/uncover options and a recommended move.
+ * @param diceSum Dice sum to evaluate
+ * @param humanBoard Reference to the human's board (to consider cover options)
+ * @param computerBoard Reference to the computer's board (to consider uncover options)
+ */
 void Computer::provideHelp(const int diceSum,
                            const Board& humanBoard,
                            const Board& computerBoard) const
@@ -641,7 +680,7 @@ void Computer::provideHelp(const int diceSum,
     if (isComboWinning(best, humanBoard, computerBoard)) {
         std::cout << c(DIM) << "Why: This move immediately wins the round." << c(RESET) << "\n";
     } else {
-        std::cout << c(DIM) << "Why: Chosen as the strongest option — affects " << chosenCount
+        std::cout << c(DIM) << "Why: Chosen as the strongest option \u2014 affects " << chosenCount
                   << " squares (value " << chosenSum << ")." << c(RESET) << "\n";
     }
 

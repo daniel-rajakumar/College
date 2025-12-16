@@ -5,6 +5,10 @@
 
 using namespace std;
 
+/**
+ * The main entry point for the game application.
+ * @return Exit code.
+ */
 int main() {
     srand(static_cast<unsigned int>(time(nullptr)));
     Board human(11);

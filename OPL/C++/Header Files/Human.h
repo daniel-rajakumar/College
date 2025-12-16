@@ -2,6 +2,11 @@
 // Created by Daniel Rajakumar on 2/10/25.
 //
 
+/**
+ * @file Human.h
+ * @brief Declaration of the Human player class (player-controlled input).
+ */
+
 #ifndef HUMAN_H
 #define HUMAN_H
 #include "BoardView.h"

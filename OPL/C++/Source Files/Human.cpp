@@ -1,3 +1,8 @@
+/**
+ * @file Human.cpp
+ * @brief Implementation of the Human player: interactive input and move selection.
+ */
+
 #include "../Header Files/Human.h"
 #include <iostream>
 #include "../Header Files/Computer.h"
@@ -7,7 +12,10 @@
 #include <limits>
 
 namespace {
-    // ASCII-only helpers (avoid lambdas)
+    /**
+     * @brief Read a 'y'/'n' response from stdin for human prompts.
+     * @return Lowercase 'y' or 'n'
+     */
     char readYN_input_human() {
         char c;
         while (true) {
@@ -21,6 +29,11 @@ namespace {
         }
     }
 
+    /**
+     * @brief Prompt the human to enter a die value between 1 and 6.
+     * @param prompt Text prompt shown to the user
+     * @return Valid die value
+     */
     int readDie_input_human(const char* prompt) {
         int v;
         while (true) {
@@ -32,6 +45,10 @@ namespace {
         }
     }
 
+    /**
+     * @brief Print combinations for the human to choose from.
+     * @param combos Set of combinations (each combination is a set of ints)
+     */
     void printCombosFunc_human(const std::set<std::set<int>>& combos) {
         int idx = 1;
         for (const auto& c : combos) {
@@ -45,21 +62,19 @@ namespace {
 using namespace std;
 using namespace ui;
 
-// *********************************************************************
-// Function Name: Human
-// Purpose: Constructor for Human player.
-// Parameters:
-//   b - Reference to the player's board.
-//   computerBoard - Reference to the opponent's (computer) board.
-// *********************************************************************
+/**
+ * @brief Construct a Human player bound to their board and the opponent board.
+ * @param b Reference to the human's board
+ * @param computerBoard Reference to the computer's board
+ */
 Human::Human(Board& b, Board& computerBoard)
     : Player(b, true), boardView(b, "Human"), computerBoardView(computerBoard, "Computer"), computerBoard(computerBoard) {}
 
-// *********************************************************************
-// Function Name: takeTurn
-// Purpose: Handles the interactive turn for the human player.
-// Returns: true if the turn completes successfully.
-// *********************************************************************
+/**
+ * @brief Handle the interactive human turn: roll dice (manual or random),
+ *        optionally request help, and choose cover/uncover moves.
+ * @return true if the human's turn ends normally
+ */
 bool Human::takeTurn() {
     using namespace ui;
     using std::cout; using std::cin;
@@ -166,11 +181,10 @@ bool Human::takeTurn() {
     }
 }
 
-// *********************************************************************
-// Function Name: coverSquares
-// Purpose: Allows the human user to select a combination to cover.
-// Parameters: sum - The dice sum.
-// *********************************************************************
+/**
+ * @brief Display valid cover options and prompt the human for a selection.
+ * @param sum Dice sum used to compute valid cover combinations
+ */
 void Human::coverSquares(const int sum) const {
     using namespace ui;
 
@@ -209,11 +223,10 @@ void Human::coverSquares(const int sum) const {
     std::cout << "\n";
 }
 
-// *********************************************************************
-// Function Name: uncoverSquares
-// Purpose: Allows the human user to select a combination to uncover.
-// Parameters: sum - The dice sum.
-// *********************************************************************
+/**
+ * @brief Display valid uncover options (filtering advantage protections) and prompt the human for a selection.
+ * @param sum Dice sum used to compute valid uncover combinations
+ */
 void Human::uncoverSquares(const int sum) const {
     // Step 1: Find options
     set<set<int>> validCombinations = computerBoard.findValidCombinations(sum, false);
@@ -274,3 +287,4 @@ void Human::uncoverSquares(const int sum) const {
     }
     cout << endl;
 }
+

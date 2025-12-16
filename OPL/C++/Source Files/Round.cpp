@@ -1,3 +1,8 @@
+/**
+ * @file Round.cpp
+ * @brief Coordinates a single round of play between two players.
+ */
+
 #include "../Header Files/Round.h"
 #include <iostream>
 #include <stdlib.h>
@@ -12,23 +17,20 @@
 using namespace std;
 using namespace ui;
 
-// *********************************************************************
-// Function Name: Round
-// Purpose: Constructor for the Round class.
-// Parameters:
-//   p1 - Reference to the first player (usually Human).
-//   p2 - Reference to the second player (usually Computer).
-//   tournament - Reference to the main tournament object.
-//   isANewGame - Flag indicating if this is the start of a new game/match.
-// *********************************************************************
+/**
+ * @brief Construct a Round controller.
+ * @param p1 Reference to player 1
+ * @param p2 Reference to player 2
+ * @param tournament Reference to tournament state
+ * @param isANewGame True when this round is part of a fresh game setup
+ */
 Round::Round(Player& p1, Player& p2, Tournament& tournament, const bool isANewGame)
     : player1(p1), player2(p2), isOver(false), tournament(tournament), isANewGame(isANewGame) {}
 
-// *********************************************************************
-// Function Name: determineFirstPlayer
-// Purpose: Decides who goes first by rolling dice until there is a winner.
-// Returns: Reference to the Player who won the toss.
-// *********************************************************************
+/**
+ * @brief Decide who goes first by rolling two dice until a non-tie occurs.
+ * @return Reference to the Player who won the toss (goes first)
+ */
 Player& Round::determineFirstPlayer() const {
     int player1Roll, player2Roll;
 
@@ -53,10 +55,9 @@ Player& Round::determineFirstPlayer() const {
     return player1;
 }
 
-// *********************************************************************
-// Function Name: play
-// Purpose: Main game loop for the round. Handles turns, saving, and checking for win conditions.
-// *********************************************************************
+/**
+ * @brief Main loop to execute the round, handling setup, turns, and save/load prompts.
+ */
 void Round::play() const {
     Player* currentPlayer;
     if (tournament.getIsHumanTurn())
@@ -149,30 +150,6 @@ void Round::play() const {
             }
         }
 
-        // Immediate win detection: if the player who just moved caused a win
-        // (they covered all their own squares OR they uncovered all the opponent's squares),
-        // declare the winner immediately. This ensures an uncovering win is handled
-        // the instant it happens.
-        // if (isRoundOver()) {
-        //     // Determine who the winner is (same logic as declareWinner)
-        //     bool winnerIsHuman = false;
-        //     if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
-        //         winnerIsHuman = true;
-        //     } else if (player2.getBoard().allCovered() || player1.getBoard().allUncovered()) {
-        //         winnerIsHuman = false;
-        //     }
-        //
-        //     // If the winner matches the player who just moved, declare immediately.
-        //     if (winnerIsHuman == currentPlayer->getIsHuman()) {
-        //         const Player* winnerPtr = winnerIsHuman ? static_cast<const Player*>(&player1)
-        //                                                 : static_cast<const Player*>(&player2);
-        //         bool winnerWasFirst = (tournament.getFirstPlayerIsHuman() == winnerIsHuman);
-        //         declareWinner(winnerPtr, winnerWasFirst);
-        //         return;
-        //     }
-        //     // Otherwise, fall through; periodic checks will handle it later.
-        // }
-
         movesSinceLastCheck++;
 
         // Step 3: Check for Win Condition (Optimized check frequency)
@@ -197,11 +174,6 @@ void Round::play() const {
         tournament.setIsHumanTurn(currentPlayer->getIsHuman());
 
         // Step 5: Final Win Check (run BEFORE prompting to save)
-        // If this is a freshly started game (isANewGame == true), avoid declaring a winner
-        // until both players have taken at least one turn (i.e., only allow this final
-        // check when movesSinceLastCheck is even). For loaded/serialized games allow the
-        // check immediately. Doing this now ensures we don't prompt the user to save
-        // after the round is already over.
         if (((!isANewGame) || (movesSinceLastCheck % 2 == 0)) && isRoundOver()) {
             bool winnerIsHuman = false;
             if (player1.getBoard().allCovered() || player2.getBoard().allUncovered()) {
@@ -230,23 +202,20 @@ void Round::play() const {
     }
 }
 
-// *********************************************************************
-// Function Name: isRoundOver
-// Purpose: Checks if any win condition has been met for the round.
-// Returns: true if the round is over.
-// *********************************************************************
+/**
+ * @brief Checks whether any of the win conditions for the round are met.
+ * @return true if the round is over
+ */
 bool Round::isRoundOver() const {
     return player1.getBoard().allCovered() || player2.getBoard().allCovered() ||
            player1.getBoard().allUncovered() || player2.getBoard().allUncovered();
 }
 
-// *********************************************************************
-// Function Name: declareWinner
-// Purpose: Announces the winner, calculates score, and updates tournament state.
-// Parameters:
-//   currentPlayer - Pointer to the winning player.
-//   winnerWasFirstPlayer - Boolean indicating if the winner went first (for handicap).
-// *********************************************************************
+/**
+ * @brief Determine which side won and update the tournament accordingly; also display messages.
+ * @param currentPlayer Pointer to the player that most recently moved
+ * @param winnerWasFirstPlayer True if the winner had been the first player this round
+ */
 void Round::declareWinner(const Player* currentPlayer, const bool winnerWasFirstPlayer) const {
 
     cout << "\n\n~~~~~~~~~~~~[Round Over]~~~~~~~~~~~~" << endl;

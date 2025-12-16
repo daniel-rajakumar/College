@@ -1,11 +1,26 @@
+/**
+ * @file Player.cpp
+ * @brief Core Player utilities: constructor, die rolling, and accessors.
+ */
 
 #include "../Header Files/Player.h"
 #include <iostream>
 
 using namespace std;
 
+/**
+ * @brief Construct a Player with an associated board and human flag.
+ * @param b Reference to the player's board
+ * @param human true when the player is human
+ */
 Player::Player(Board& b, const bool human) : board(b), isHuman(human) {}
 
+/**
+ * @brief Roll a die (or two) with optional manual entry for testing.
+ *        When the player is human and the one-die rule applies, the user
+ *        may choose to roll 1 or 2 dice.
+ * @return Sum of the rolled die/dice
+ */
 int Player::rollDie() const {
     int diceSum = 0;
     char choice, isManual;
@@ -59,10 +74,18 @@ int Player::rollDie() const {
     return diceSum;
 }
 
+/**
+ * @brief Get a const reference to the player's board.
+ * @return const Board&
+ */
 const Board& Player::getBoard() const {
     return board;
 }
 
+/**
+ * @brief Returns whether the one-die rule is currently applicable.
+ * @return true when the one-die rule applies
+ */
 bool Player::canThrowOneDie() const {
     for (int i = 7; i <= board.getSize(); ++i) {
         if (!board.isSquareCovered(i)) {
@@ -72,6 +95,10 @@ bool Player::canThrowOneDie() const {
     return true;
 }
 
+/**
+ * @brief Returns whether this Player is a human.
+ * @return true if the player is human
+ */
 bool Player::getIsHuman() const {
     return isHuman;
 }
