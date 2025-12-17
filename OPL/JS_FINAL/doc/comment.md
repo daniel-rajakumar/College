@@ -2,11 +2,16 @@
 
 There isn’t one big loop running turns. The round keeps going because the player keeps clicking buttons (roll -> maybe pick a move -> apply it -> the screen updates).
 
-## 2) When you ask for help 
+## 2) When you ask for help
 
-When you click Help, the game looks at the dice sum and both boards, then uses the same “computer strategy” to pick the best move right now. It shows you the recommendation (cover or uncover + which squares) and auto-selects the matching option in the modal so you can just hit Confirm. If you want the more technical side, the full function call order is right below.
+When you click Help, the game looks at the dice sum and both boards, then uses the same “computer strategy” to pick the best move right now. It shows you the recommendation (cover or uncover + which squares) and auto-selects the matching option in the modal so you can just hit Confirm.
 
-Full function call order (An example):
+#### Help strategy: 
+> it checks if any move wins right away (cover all your remaining squares, or uncover all of the opponent’s covered squares). If there’s no instant win, it prefers COVER over UNCOVER, and picks the “best” combo by choosing more squares first (and if tied, the combo with the bigger total).
+
+### If you want the more technical side, the full function call order is right below.
+
+Full function call order (An example: Help button):
 
 1. `wireGame()` (**main.js**) registers the `#modal-btn-help` click handler.
 2. Click handler calls `getHelpSuggestion()` (**GameSession.js**).
