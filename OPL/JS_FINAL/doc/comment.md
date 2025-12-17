@@ -1,5 +1,35 @@
-1. Round loop: the round advances in event driven (button clicks) steps instead of a loop when taking turns. The UI buttons call handleRandomRoll/handleManualRoll to set dice and get valid moves, then applyHumanMove (or auto AI move) applies a cover/uncover and checks roundOver. If a player has no moves, endTurn switches to the other player; otherwise the same player rolls again.
+## 1) Round loop
 
-2. The View just draws stuff to the screen... it never decides the game or has any game logic. The controller (main.js) listens to user clicks, talks to the Model, then tells the View what to show. Example: you click “Roll 2 Dice,” controller gets a roll from the Model, then calls view.setDiceText(...) and view.openMoveModal(...) if you need to pick a move.
+- There is no single loop for turns. The “loop” is the user repeatedly clicking buttons (roll → maybe choose move → apply → update UI).
 
-3. When the user clicks on help, it uses the logic that computer uses to suggest a move. It has the same logic and reasoning, therefore user can always ask help, which would result in a best possible move to make.
+## 2) When you ask for help
+
+When you click Help, the game looks at the current dice sum and the current boards and figures out the best move you can make right now. It then shows you that recommendation (cover or uncover, plus which squares) and auto-selects the matching option in the modal so you can confirm it quickly. For more into the technical side of how this works, there is a full function call of that button action. 
+
+## 2.1) An example of how data flow in an MCV model (Example is when user clicks the help button)
+
+Full function call order:
+1. `wireGame()` (**main.js**) registers the `#modal-btn-help` click handler.
+2. Click handler calls `getHelpSuggestion()` (**GameSession.js**).
+3. `getHelpSuggestion()` (**GameSession.js**) calls `getHelpSuggestion(round, currentPlayerId, diceSum)` (**ComputerPlayer.js**).
+4. `getHelpSuggestion(...)` (**ComputerPlayer.js**) calls `decideMove(...)` (**ComputerPlayer.js**).
+5. `decideMove(...)` (**ComputerPlayer.js**) builds legal options by calling:
+   - `getCoverOptions(...)` (**GameRound.js**) → `getCoverCombos(...)` (**Board.js**) → `_getCombosForSum(...)` (**Board.js**)
+   - `getUncoverOptions(...)` (**GameRound.js**) → `getUncoverCombos(...)` (**Board.js**) → `_getCombosForSum(...)` (**Board.js**)
+6. `decideMove(...)` (**ComputerPlayer.js**) returns `{ action, squares, reason, ... }` to the click handler.
+7. controller updates the modal (View calls from **main.js**):
+   - `setMoveHelpText(...)` (**View.js**)
+   - `setMoveSelection(...)` (**View.js**) → `_fillOptionsSelect(...)` (**View.js**)
+
+## 3) How the View is updated from the Model
+
+The View never reads the model directly. The controller always pulls data from `GameSession/GameRound` and then calls `View` methods.
+
+An example (this order happens inside `refreshBoardsAndScores()` (**main.js**)):
+
+1. `getCurrentRound()` (**GameSession.js**)
+2. `getLockedAdvantageSquare("HUMAN")` (**GameRound.js**)
+3. `getLockedAdvantageSquare("COMPUTER")` (**GameRound.js**)
+4. `renderBoards(round, { ... })` (**View.js**)
+5. `getScores()` (**GameSession.js**)
+6. `setScores(humanScore, computerScore)` (**View.js**)
