@@ -1,14 +1,13 @@
 ## 1) Round loop
 
-- There is no single loop for turns. The “loop” is the user repeatedly clicking buttons (roll → maybe choose move → apply → update UI).
+There isn’t one big loop running turns. The round keeps going because the player keeps clicking buttons (roll -> maybe pick a move -> apply it -> the screen updates).
 
-## 2) When you ask for help
+## 2) When you ask for help 
 
-When you click Help, the game looks at the current dice sum and the current boards and figures out the best move you can make right now. It then shows you that recommendation (cover or uncover, plus which squares) and auto-selects the matching option in the modal so you can confirm it quickly. For more into the technical side of how this works, there is a full function call of that button action. 
+When you click Help, the game looks at the dice sum and both boards, then uses the same “computer strategy” to pick the best move right now. It shows you the recommendation (cover or uncover + which squares) and auto-selects the matching option in the modal so you can just hit Confirm. If you want the more technical side, the full function call order is right below.
 
-## 2.1) An example of how data flow in an MCV model (Example is when user clicks the help button)
+Full function call order (An example):
 
-Full function call order:
 1. `wireGame()` (**main.js**) registers the `#modal-btn-help` click handler.
 2. Click handler calls `getHelpSuggestion()` (**GameSession.js**).
 3. `getHelpSuggestion()` (**GameSession.js**) calls `getHelpSuggestion(round, currentPlayerId, diceSum)` (**ComputerPlayer.js**).
@@ -23,9 +22,9 @@ Full function call order:
 
 ## 3) How the View is updated from the Model
 
-The View never reads the model directly. The controller always pulls data from `GameSession/GameRound` and then calls `View` methods.
+The View doesn’t “figure out” the game on its own. The controller grabs info from the model (`GameSession/GameRound`) and then tells the View what to show by calling `View` methods.
 
-An example (this order happens inside `refreshBoardsAndScores()` (**main.js**)):
+Example (this order happens inside `refreshBoardsAndScores()` (**main.js**)):
 
 1. `getCurrentRound()` (**GameSession.js**)
 2. `getLockedAdvantageSquare("HUMAN")` (**GameRound.js**)
