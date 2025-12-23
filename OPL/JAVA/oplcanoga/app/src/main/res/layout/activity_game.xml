@@ -1,187 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/game_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_screen"
     android:padding="16dp">
 
-    <!-- Title -->
-    <TextView
-        android:id="@+id/tvGameTitle"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Canoga — Round"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textAlignment="center"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <!-- Scores -->
-    <TextView
-        android:id="@+id/tvScores"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvGameTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Canoga — Round"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.Oplcanoga.Title"
+                android:textColor="@color/canoga_on_surface" />
+
+            <TextView
+                android:id="@+id/tvScores"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Human: 0  |  Computer: 0"
+                android:textAppearance="@style/TextAppearance.Oplcanoga.Body"
+                android:textColor="@color/canoga_on_surface" />
+
+            <TextView
+                android:id="@+id/tvDice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Dice: -"
+                android:textAppearance="@style/TextAppearance.Oplcanoga.BodySmall"
+                android:textColor="@color/canoga_on_surface_variant" />
+
+            <TextView
+                android:id="@+id/tvGameStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Welcome to Canoga!"
+                android:textAppearance="@style/TextAppearance.Oplcanoga.BodySmall"
+                android:textColor="@color/canoga_on_surface_variant" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBoard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Human: 0  |  Computer: 0"
-        android:textSize="16sp"
-        android:paddingTop="4dp"
-        app:layout_constraintTop_toBottomOf="@id/tvGameTitle"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:padding="0dp"
+        app:cardBackgroundColor="@color/canoga_surface"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/cardHeader">
 
-    <!-- Dice result -->
-    <TextView
-        android:id="@+id/tvDice"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Dice: -"
-        android:textSize="16sp"
-        android:paddingTop="2dp"
-        app:layout_constraintTop_toBottomOf="@id/tvScores"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <com.example.oplcanoga.view.BoardView
+            android:id="@+id/boardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/canoga_surface_variant" />
+    </com.google.android.material.card.MaterialCardView>
 
-    <!-- Status line -->
-    <TextView
-        android:id="@+id/tvGameStatus"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Welcome to Canoga!"
-        android:textSize="16sp"
-        android:paddingTop="4dp"
-        app:layout_constraintTop_toBottomOf="@id/tvDice"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- BOARD AREA (this will stretch) -->
-    <com.example.oplcanoga.view.BoardView
-        android:id="@+id/boardView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:background="#FFEFEFEF"
-        app:layout_constraintTop_toBottomOf="@id/tvGameStatus"
-        app:layout_constraintBottom_toTopOf="@id/layoutControls"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Controls + move selection -->
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/layoutControls"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingTop="8dp"
-        app:layout_constraintBottom_toTopOf="@id/layoutLog"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/cardBoard">
 
-        <!-- Dice buttons -->
-        <!-- Dice buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="12dp">
 
-            <Button
-                android:id="@+id/btnRollOneDie"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Roll 1 Die" />
-
-            <Button
-                android:id="@+id/btnRollDie"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Roll 2 Dice" />
-
-            <Button
-                android:id="@+id/btnInputDie"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Input Die" />
-
-            <Button
-                android:id="@+id/btnSaveGame"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Save Game" />
-        </LinearLayout>
-
-
-        <!-- Move selection -->
-        <TextView
-            android:id="@+id/tvMoveLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Choose a legal move:"
-            android:paddingTop="8dp" />
-
-        <Spinner
-            android:id="@+id/spinnerMoves"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <!-- Confirm / Help -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="4dp">
-
-            <Button
-                android:id="@+id/btnConfirmMove"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Confirm" />
-
-            <Button
-                android:id="@+id/btnHelp"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Help" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Log area (fixed small height at bottom) -->
-    <LinearLayout
-        android:id="@+id/layoutLog"
-        android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:orientation="vertical"
-        android:paddingTop="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/tvLogTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Game Log"
-            android:textStyle="bold" />
-
-        <ScrollView
-            android:id="@+id/scrollLog"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-            <TextView
-                android:id="@+id/tvLog"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:padding="4dp" />
-        </ScrollView>
-    </LinearLayout>
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRollOneDie"
+                        style="@style/Widget.Oplcanoga.Button.Tonal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:text="Roll 1 Die" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRollDie"
+                        style="@style/Widget.Oplcanoga.Button.Tonal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Roll 2 Dice" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnInputDie"
+                        style="@style/Widget.Oplcanoga.Button.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:text="Input Die" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSaveGame"
+                        style="@style/Widget.Oplcanoga.Button.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Save Game" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvMoveLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Choose a legal move"
+                android:textAppearance="@style/TextAppearance.Oplcanoga.Label"
+                android:textColor="@color/canoga_on_surface" />
+
+            <Spinner
+                android:id="@+id/spinnerMoves"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnConfirmMove"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="Confirm" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnHelp"
+                    style="@style/Widget.Oplcanoga.Button.Text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Help" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/layoutLog"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutControls">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/tvLogTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Game Log"
+                android:textAppearance="@style/TextAppearance.Oplcanoga.Label"
+                android:textColor="@color/canoga_on_surface" />
+
+            <ScrollView
+                android:id="@+id/scrollLog"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="6dp"
+                android:layout_weight="1"
+                android:overScrollMode="ifContentScrolls">
+
+                <TextView
+                    android:id="@+id/tvLog"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:text=""
+                    android:textAppearance="@style/TextAppearance.Oplcanoga.BodySmall"
+                    android:textColor="@color/canoga_on_surface_variant" />
+            </ScrollView>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

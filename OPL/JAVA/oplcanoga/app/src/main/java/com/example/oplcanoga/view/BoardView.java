@@ -7,8 +7,11 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.core.content.ContextCompat;
+
 import com.example.oplcanoga.controller.BoardState;
 import com.example.oplcanoga.model.PlayerId;
+import com.example.oplcanoga.R;
 
 /**
  * Custom View responsible for rendering the Canoga game board.
@@ -17,7 +20,17 @@ import com.example.oplcanoga.model.PlayerId;
  */
 public class BoardView extends View {
 
+    private static final int DEFAULT_BOARD_SIZE = 9;
+    private static final float H_PADDING_DP = 10f;
+    private static final float V_PADDING_DP = 4f;
+    private static final float LABEL_SPACING_DP = 2f;
+    private static final float MIN_ROW_GAP_DP = 8f;
+    private static final float RADIUS_RATIO = 0.42f;
+    private static final float LABEL_SIZE_RATIO = 0.7f;
+    private static final float TEXT_SIZE_RATIO = 0.9f;
+
     private BoardState state;
+    private int lastBoardSize = DEFAULT_BOARD_SIZE;
 
     private final Paint uncoveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint coveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -64,24 +77,24 @@ public class BoardView extends View {
      */
     private void init() {
         uncoveredPaint.setStyle(Paint.Style.FILL);
-        uncoveredPaint.setColor(0xFFE0F7FA);
+        uncoveredPaint.setColor(ContextCompat.getColor(getContext(), R.color.canoga_board_uncovered));
 
         coveredPaint.setStyle(Paint.Style.FILL);
-        coveredPaint.setColor(0xFF00796B);
+        coveredPaint.setColor(ContextCompat.getColor(getContext(), R.color.canoga_board_covered));
 
         lockedPaint.setStyle(Paint.Style.FILL);
-        lockedPaint.setColor(0xFFFFFF00);
+        lockedPaint.setColor(ContextCompat.getColor(getContext(), R.color.canoga_board_locked));
 
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(3f);
-        borderPaint.setColor(0xFF004D40);
+        borderPaint.setColor(ContextCompat.getColor(getContext(), R.color.canoga_board_border));
 
-        textPaint.setColor(0xFF000000);
+        textPaint.setColor(ContextCompat.getColor(getContext(), R.color.canoga_board_text));
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setTextSize(32f);
 
-        labelPaint.setColor(0xFF555555);
-        labelPaint.setTextAlign(Paint.Align.LEFT);
+        labelPaint.setColor(ContextCompat.getColor(getContext(), R.color.canoga_board_label));
+        labelPaint.setTextAlign(Paint.Align.CENTER);
         labelPaint.setTextSize(28f);
     }
 
@@ -92,7 +105,45 @@ public class BoardView extends View {
      */
     public void setBoardState(BoardState state) {
         this.state = state;
+        if (state != null && state.boardSize > 0 && state.boardSize != lastBoardSize) {
+            lastBoardSize = state.boardSize;
+            requestLayout();
+        }
         invalidate();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+
+        if (widthMode == MeasureSpec.UNSPECIFIED) {
+            widthSize = (int) dp(280f);
+        }
+
+        float horizontalPadding = dp(H_PADDING_DP);
+        float availableWidth = Math.max(0f, widthSize - 2f * horizontalPadding);
+        float radius = getRadius(availableWidth, lastBoardSize);
+
+        float desiredHeight;
+        if (radius <= 0f) {
+            desiredHeight = dp(120f);
+        } else {
+            updatePaintSizes(radius);
+            Paint.FontMetrics labelMetrics = labelPaint.getFontMetrics();
+            float labelHeight = labelMetrics.bottom - labelMetrics.top;
+            float labelSpacing = dp(LABEL_SPACING_DP);
+            float rowDiameter = radius * 2f;
+            float minRowGap = Math.max(dp(MIN_ROW_GAP_DP), rowDiameter * 0.35f);
+            float verticalPadding = dp(V_PADDING_DP);
+
+            desiredHeight = (verticalPadding * 2f) + (labelHeight * 2f)
+                    + (labelSpacing * 2f) + (rowDiameter * 2f) + minRowGap;
+        }
+
+        int measuredWidth = resolveSize(widthSize, widthMeasureSpec);
+        int measuredHeight = resolveSize((int) Math.ceil(desiredHeight), heightMeasureSpec);
+        setMeasuredDimension(measuredWidth, measuredHeight);
     }
 
     @Override
@@ -112,17 +163,52 @@ public class BoardView extends View {
         float w = getWidth();
         float h = getHeight();
 
-        float padding = 24f;
+        float horizontalPadding = dp(H_PADDING_DP);
+        float verticalPadding = dp(V_PADDING_DP);
 
-        float availableWidth = w - 2 * padding;
+        float availableWidth = w - 2f * horizontalPadding;
+        if (availableWidth <= 0f) {
+            return;
+        }
+
         float cellWidth = availableWidth / boardSize;
-        float radius = cellWidth * 0.4f;
+        float radius = cellWidth * RADIUS_RATIO;
+        if (radius <= 0f) {
+            return;
+        }
 
-        float topRowY = padding + radius + 8f;
-        float bottomRowY = h - padding - radius - 8f;
+        updatePaintSizes(radius);
+
+        Paint.FontMetrics labelMetrics = labelPaint.getFontMetrics();
+        float labelHeight = labelMetrics.bottom - labelMetrics.top;
+        float labelSpacing = dp(LABEL_SPACING_DP);
+        float rowDiameter = radius * 2f;
+        float minRowGap = Math.max(dp(MIN_ROW_GAP_DP), rowDiameter * 0.35f);
+
+        float topLabelBaseline = verticalPadding - labelMetrics.top;
+        float bottomLabelBaseline = h - verticalPadding - labelMetrics.bottom;
+
+        float topRowY = topLabelBaseline + labelMetrics.bottom + labelSpacing + radius;
+        float bottomRowY = bottomLabelBaseline + labelMetrics.top - labelSpacing - radius;
+
+        if (bottomRowY - topRowY < rowDiameter + minRowGap) {
+            float minContentHeight = (labelHeight * 2f) + (labelSpacing * 2f)
+                    + (rowDiameter * 2f) + minRowGap;
+            float contentTop = Math.max(verticalPadding, (h - minContentHeight) / 2f);
+
+            topLabelBaseline = contentTop - labelMetrics.top;
+            topRowY = topLabelBaseline + labelMetrics.bottom + labelSpacing + radius;
+            bottomRowY = topRowY + rowDiameter + minRowGap;
+            bottomLabelBaseline = bottomRowY + radius + labelSpacing - labelMetrics.top;
+        }
+
+        Paint.FontMetrics textMetrics = textPaint.getFontMetrics();
+        float textBaselineOffset = (textMetrics.ascent + textMetrics.descent) / 2f;
+
+        float labelX = horizontalPadding + (availableWidth / 2f);
 
         for (int i = 1; i <= boardSize; i++) {
-            float cx = padding + (i - 0.5f) * cellWidth;
+            float cx = horizontalPadding + (i - 0.5f) * cellWidth;
             boolean covered = computerSquares[i] == 0;
 
             boolean isLockedSquare =
@@ -144,17 +230,17 @@ public class BoardView extends View {
 
             canvas.drawText(String.valueOf(i),
                     cx,
-                    topRowY + textPaint.getTextSize() / 3f,
+                    topRowY - textBaselineOffset,
                     textPaint);
         }
 
         canvas.drawText("COMPUTER",
-                padding,
-                topRowY - radius - 12f,
+                labelX,
+                topLabelBaseline,
                 labelPaint);
 
         for (int i = 1; i <= boardSize; i++) {
-            float cx = padding + (i - 0.5f) * cellWidth;
+            float cx = horizontalPadding + (i - 0.5f) * cellWidth;
             boolean covered = humanSquares[i] == 0;
 
             boolean isLockedSquare =
@@ -176,13 +262,29 @@ public class BoardView extends View {
 
             canvas.drawText(String.valueOf(i),
                     cx,
-                    bottomRowY + textPaint.getTextSize() / 3f,
+                    bottomRowY - textBaselineOffset,
                     textPaint);
         }
 
         canvas.drawText("HUMAN",
-                padding,
-                bottomRowY + radius + labelPaint.getTextSize(),
+                labelX,
+                bottomLabelBaseline,
                 labelPaint);
+    }
+
+    private float dp(float value) {
+        return value * getResources().getDisplayMetrics().density;
+    }
+
+    private float getRadius(float availableWidth, int boardSize) {
+        if (boardSize <= 0 || availableWidth <= 0f) {
+            return 0f;
+        }
+        return (availableWidth / boardSize) * RADIUS_RATIO;
+    }
+
+    private void updatePaintSizes(float radius) {
+        textPaint.setTextSize(radius * TEXT_SIZE_RATIO);
+        labelPaint.setTextSize(Math.max(dp(12f), radius * LABEL_SIZE_RATIO));
     }
 }

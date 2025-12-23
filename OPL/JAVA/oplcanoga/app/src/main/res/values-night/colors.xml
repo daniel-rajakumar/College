@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="canoga_primary">#6FC2A3</color>
+    <color name="canoga_on_primary">#0E2E24</color>
+    <color name="canoga_primary_container">#245142</color>
+    <color name="canoga_on_primary_container">#BFE7D8</color>
+    <color name="canoga_secondary">#F0B28C</color>
+    <color name="canoga_on_secondary">#4A2A1C</color>
+    <color name="canoga_secondary_container">#6B3F2A</color>
+    <color name="canoga_on_secondary_container">#F6D5C3</color>
+    <color name="canoga_tertiary">#7FA8D8</color>
+    <color name="canoga_on_tertiary">#0F2A44</color>
+    <color name="canoga_tertiary_container">#2A415C</color>
+    <color name="canoga_on_tertiary_container">#CFE0F2</color>
+    <color name="canoga_surface">#171614</color>
+    <color name="canoga_on_surface">#E9E3DA</color>
+    <color name="canoga_surface_variant">#302A25</color>
+    <color name="canoga_on_surface_variant">#D2C7BB</color>
+    <color name="canoga_background">#121110</color>
+    <color name="canoga_on_background">#E9E3DA</color>
+    <color name="canoga_outline">#74695E</color>
+    <color name="canoga_board_uncovered">#2F3B3A</color>
+    <color name="canoga_board_covered">#6FC2A3</color>
+    <color name="canoga_board_locked">#F0B28C</color>
+    <color name="canoga_board_border">#20302C</color>
+    <color name="canoga_board_text">#F5F1EA</color>
+    <color name="canoga_board_label">#C0B7AD</color>
+</resources>
