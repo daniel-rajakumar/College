@@ -17,6 +17,7 @@ void PressEnterToContinue() {
 
 int main( int argc, char *argv[] )
 {
+    for (int i = 0; i < 10; ++i) cout << endl;
     Assembler assem( argc, argv );
 
     // Establish the location of the labels:
@@ -40,6 +41,7 @@ int main( int argc, char *argv[] )
    
     // Terminate indicating all is well.  If there is an unrecoverable error, the 
     // program will terminate at the point that it occurred with an exit(1) call.
+    for (int i = 0; i < 10; ++i) cout << endl;
     return 0;
 }
 

@@ -5,20 +5,23 @@
 
 #pragma once
 
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#include <stdio.h>
 #include <tchar.h>
-
-
+#include <windows.h>
+#endif
 
 // TODO: reference additional headers your program requires here
 // Standard include files.
 #include <stdio.h>
-#include <iostream>
 #include <stdlib.h>
+#include <iostream>
 #include <string>
-#include <windows.h>
 #include <map>
-#include<istream>
+#include <istream>
+#include <limits>
+#include <set>
+#include <cctype>
+#include <cstring>
 
 using namespace std;

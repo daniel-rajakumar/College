@@ -4,6 +4,11 @@
 #ifndef _EMULATOR_H      // A previous way of preventing multiple inclusions.
 #define _EMULATOR_H
 
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <string>
+
 class emulator {
 
 public:
@@ -13,6 +18,30 @@ public:
 	{
         memset( m_memory, 0, MEMSZ * sizeof(int) );
         m_accum = 0;
+		m_readCount = 0;
+		m_writeCount = 0;
+		m_readValues[0] = 0;
+		m_readValues[1] = 0;
+		m_friendlyDiff = false;
+		m_friendlyFib = false;
+		const char *env = std::getenv("ASSEM_FRIENDLY_IO");
+		if (env && env[0] != '\0' && env[0] != '0') {
+			m_friendlyIo = true;
+			std::string mode(env);
+			for (char &ch : mode) {
+				ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+			}
+			m_friendlySum = (mode == "sum");
+			m_friendlyFactorial = (mode == "factorial");
+			m_friendlyDiff = (mode == "diff");
+			m_friendlyFib = (mode == "fib" || mode == "fibonacci");
+		} else {
+			m_friendlyIo = false;
+			m_friendlySum = false;
+			m_friendlyFactorial = false;
+			m_friendlyDiff = false;
+			m_friendlyFib = false;
+		}
     }
     // Records instructions and data into VC370 memory.
 	bool insertMemory(int a_location, int a_contents)
@@ -32,7 +61,7 @@ public:
     // Runs the VC370 program recorded in memory.
 	bool runProgram()
 	{
-		cout << "Results from emulating program:" << endl;
+		cout << "Start of emulation." << endl;
 		int loc = 100;
 		while (true)
 		{
@@ -70,12 +99,48 @@ public:
 					break;
 
 				case 7: // READ: Read input and store up to 6 digits into memory at address.
-					cout << "? ";
+					if (m_friendlyIo) {
+						if (m_friendlySum || m_friendlyDiff) {
+							if (m_readCount == 0) cout << "input first number: ";
+							else if (m_readCount == 1) cout << "input second number: ";
+							else cout << "input value: ";
+						} else if (m_friendlyFactorial || m_friendlyFib) {
+							if (m_readCount == 0) cout << "input number: ";
+							else cout << "input value: ";
+						} else {
+							cout << "input value: ";
+						}
+					} else {
+						cout << "? ";
+					}
 					cin >> m_memory[address];
+					if (m_readCount < 2) {
+						m_readValues[m_readCount] = m_memory[address];
+					}
+					m_readCount++;
 					break;
 
 				case 8: // WRITE: Display value stored at memory address.
-					cout << m_memory[address] << endl;
+					if (m_friendlyIo) {
+						if (m_friendlySum && m_readCount >= 2 && m_writeCount == 0) {
+							cout << "the sum of " << m_readValues[0] << " + "
+								 << m_readValues[1] << " is " << m_memory[address] << endl;
+						} else if (m_friendlyDiff && m_readCount >= 2 && m_writeCount == 0) {
+							cout << "the absolute difference of " << m_readValues[0] << " and "
+								 << m_readValues[1] << " is " << m_memory[address] << endl;
+						} else if (m_friendlyFactorial && m_readCount >= 1 && m_writeCount == 0) {
+							cout << "the factorial of " << m_readValues[0] << " is "
+								 << m_memory[address] << endl;
+						} else if (m_friendlyFib && m_readCount >= 1 && m_writeCount == 0) {
+							cout << "the fibonacci number of " << m_readValues[0] << " is "
+								 << m_memory[address] << endl;
+						} else {
+							cout << "output: " << m_memory[address] << endl;
+						}
+					} else {
+						cout << m_memory[address] << endl;
+					}
+					m_writeCount++;
 					break;
 
 				case 9: // BRANCH: Unconditional branch to address.
@@ -114,6 +179,14 @@ private:
     int m_memory[MEMSZ];    // The memory of the VC370.  Would have to make it
     						// a vector if it was much larger.
     int m_accum;		    	// The accumulator for the VC370
+	int m_readCount;
+	int m_writeCount;
+	int m_readValues[2];
+	bool m_friendlyIo;
+	bool m_friendlySum;
+	bool m_friendlyFactorial;
+	bool m_friendlyDiff;
+	bool m_friendlyFib;
 };
 
 #endif

@@ -41,7 +41,7 @@ public:
 		a_buff = RemoveComment(a_buff);
 
         // Handle blank lines or comments.
-		if (a_buff.empty() || a_buff[0] == ';') {
+		if (a_buff.empty() || a_buff.find_first_not_of(" \t\r\n") == string::npos) {
 			m_type = ST_Comment;
 			return m_type;
 		}
