@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="40dp">
 
             <TextView
                 android:id="@+id/tvGameTitle"
@@ -35,7 +35,7 @@
                 android:id="@+id/tvScores"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="32dp"
                 android:text="Human: 0  |  Computer: 0"
                 android:textAppearance="@style/TextAppearance.Oplcanoga.Body"
                 android:textColor="@color/canoga_on_surface" />
@@ -44,7 +44,7 @@
                 android:id="@+id/tvDice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="22dp"
                 android:text="Dice: -"
                 android:textAppearance="@style/TextAppearance.Oplcanoga.BodySmall"
                 android:textColor="@color/canoga_on_surface_variant" />
@@ -53,7 +53,8 @@
                 android:id="@+id/tvGameStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="22dp"
+                android:lineSpacingExtra="10dp"
                 android:text="Welcome to Canoga!"
                 android:textAppearance="@style/TextAppearance.Oplcanoga.BodySmall"
                 android:textColor="@color/canoga_on_surface_variant" />
@@ -64,9 +65,13 @@
         android:id="@+id/cardBoard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="32dp"
         android:padding="0dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="22dp"
+        android:paddingBottom="22dp"
         app:cardBackgroundColor="@color/canoga_surface"
         app:cardPreventCornerOverlap="false"
         app:cardUseCompatPadding="false"
@@ -78,13 +83,15 @@
             android:id="@+id/boardView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/canoga_surface_variant" />
+            android:background="@color/canoga_surface_variant"
+            android:paddingVertical="20dp" />
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/layoutControls"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardBoard">
@@ -93,7 +100,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:paddingStart="24dp"
+            android:paddingTop="32dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="32dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
