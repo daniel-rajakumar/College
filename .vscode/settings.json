@@ -1,7 +1,6 @@
 {
-  "python.testing.pytestArgs": [
-    "Machine Learning"
-  ],
+  "python.testing.pytestArgs": ["Machine Learning"],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "liveServer.settings.port": 5501
 }

@@ -1,0 +1,196 @@
+/* Use Raleway (already imported via Google Fonts in HTML) */
+body {
+  font-family: 'Raleway', sans-serif;
+  background: #fdf7f0;
+  color: #333;
+}
+
+/* Hero Section */
+.hero {
+  /* Gradient from dark blue (#002E7A) to a golden yellow (#FFD800). */
+  /* background: linear-gradient(to bottom, #002E7A, #FFD800); */
+  background: #666;
+  color: #fff;
+  padding: 75px 20px;
+  text-align: center;
+  position: relative;
+  background: url('https://raw.githubusercontent.com/RCNJ-Computer-Science-Club/ISFF25/1451fd33a0032e6874294ea9a337caa0eb37dee4/res/img/bebd641805f000ba0763d167020e1262%20(1).jpg') center center/cover no-repeat;
+}
+
+/* The semi-transparent overlay */
+.hero::after {
+  content: "";
+  background-color: rgba(0, 0, 0, 0.7);
+  position: absolute;
+  top: 0; 
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Logo in hero */
+.hero-logo {
+  position: relative;
+  z-index: 1;
+  max-width: 400px; /* Increased size */
+  min-width: 240px;
+  border-radius: 0%;
+  padding: 10px;
+}
+
+/* Hero text layering above overlay */
+.hero h1,
+.hero p {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 1.25rem;
+}
+
+/* Generic section title styling */
+.section-title {
+  font-weight: 700;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #EC1C24;  /* A bold red accent */
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+/* Agenda items with a red left border for emphasis */
+.agenda-item {
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-left: 5px solid #EC1C24;  /* Matches the .section-title accent color */
+}
+
+.agenda-item h5 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.agenda-item p {
+  margin: 0;
+  color: #666;
+}
+
+/* Main event section padding */
+.event-section {
+  padding: 60px 20px;
+}
+
+/* Sponsor logos */
+.sponsor-logo {
+  max-width: 120px;
+  margin: 10px;
+}
+
+/* Media query for mobile adjustments */
+@media (max-width: 576px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+  .hero p {
+    font-size: 1rem;
+  }
+  .hero-logo {
+    max-width: 150px;
+  }
+}
+
+h1 {
+  color: #eee;
+}
+
+
+nav.container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+
+
+
+
+
+
+#web-builder__tmpl-cont {
+  display: none;
+}
+
+.section-cont {
+  display: none;
+}
+
+
+
+#event-flyer img {
+  transition: transform 0.3s ease;
+}
+#event-flyer img:hover {
+  transform: scale(1.02);
+}
+
+
+
+.countdown-timer {
+  color: #FFD800; /* Golden highlight */
+  font-size: 1.75rem;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.5); /* Subtle overlay */
+  padding: 10px 20px;
+  display: inline-block;
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 2px solid #FFD800;
+  box-shadow: 0 0 10px rgba(255, 216, 0, 0.4);
+}
+
+#countdown {
+  padding: 6px 12px;
+  border: 1px solid #FFD800;
+  border-radius: 8px;
+  background-color: rgba(255, 216, 0, 0.1);
+  box-shadow: 0 0 6px rgba(255, 216, 0, 0.4);
+  white-space: nowrap;
+}
+
+
+
+#check-in .btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+  font-size: 1.2rem;
+  border-radius: 10px;
+}
+#check-in .btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+#check-in .card-title {
+  color: #EC1C24;
+  font-weight: 700;
+}
+
+#check-in .card {
+  border-left: 4px solid #EC1C24;
+  border-radius: 12px;
+}
+
+h5:not(:last-child), .h5:not(:last-child) {
+    margin-bottom: 0;
+}
+
+div.col-md-4:not(:last-child) {
+    margin-bottom: 1.8rem;
+}
