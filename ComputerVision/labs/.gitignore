@@ -1,0 +1,8 @@
+# Computer Vision Labs Ignore
+.venv/
+__pycache__/
+*.npz
+*.h5
+*.keras
+.DS_Store
+project two/dataset/preprocessed.npz
