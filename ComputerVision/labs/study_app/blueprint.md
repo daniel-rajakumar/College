@@ -16,7 +16,7 @@ def show(title, image):  # Define a helper that displays grayscale and color ima
         plt.imshow(image, cmap="gray")  # Display single-channel images using a grayscale colormap.
     else:  # Handle the color-image display path.
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # Convert BGR to RGB before displaying a color image.
-    plt.title(title)  # Perform this step in the image-processing pipeline.
+    plt.title(title)  # Set the figure title to describe the displayed image.
     plt.axis("off")  # Hide axes so only the image is visible.
     plt.show()  # Render the current figure to the screen.
 ```
@@ -266,7 +266,7 @@ show("Gamma Corrected", gamma_corrected)  # Display this intermediate or final r
 ### Gamma Function
 
 ```python
-def gamma_correction(image, gamma):  # Perform this step in the image-processing pipeline.
+def gamma_correction(image, gamma):  # Define a reusable helper for gamma correction.
     normalized = image / 255.0  # Scale pixel values from 0-255 into the 0-1 range.
     corrected = np.power(normalized, gamma)  # Apply gamma to the normalized image values.
     return np.uint8(corrected * 255)  # Return the corrected image as displayable 8-bit pixels.
@@ -712,7 +712,7 @@ show("Closing", closed)  # Display the gap-filled closing result.
 | Erosion   | Shrinks white regions | Remove white noise |
 | Dilation  | Expands white regions | Fill gaps          |
 | Opening   | Erode then dilate     | Remove small noise |
-| Closing   | Dilate then erosion   | Fill holes         |
+| Closing   | Dilate then erode     | Fill holes         |
 
 ## 10. Binary Image
 
@@ -758,11 +758,11 @@ Automatically chooses threshold.
 
 ```python
 _, otsu = cv2.threshold(  # Ask Otsu thresholding to choose the cutoff automatically.
-    gray,  # Pass this argument into the multi-line call.
-    0,  # Pass this argument into the multi-line call.
-    255,  # Pass this argument into the multi-line call.
-    cv2.THRESH_BINARY + cv2.THRESH_OTSU  # Perform this step in the image-processing pipeline.
-)  # Close the multi-line call or data structure.
+    gray,  # Use the grayscale image as the threshold input.
+    0,  # Provide a placeholder threshold because Otsu chooses it automatically.
+    255,  # Set selected pixels to white.
+    cv2.THRESH_BINARY + cv2.THRESH_OTSU  # Combine binary thresholding with automatic Otsu selection.
+)  # Finish the threshold call.
 
 show("Otsu Binary", otsu)  # Display the automatically thresholded Otsu result.
 ```
@@ -773,13 +773,13 @@ Good for uneven lighting.
 
 ```python
 adaptive = cv2.adaptiveThreshold(  # Compute local thresholds for uneven lighting conditions.
-    gray,  # Pass this argument into the multi-line call.
-    255,  # Pass this argument into the multi-line call.
-    cv2.ADAPTIVE_THRESH_GAUSSIAN_C,  # Pass this argument into the multi-line call.
-    cv2.THRESH_BINARY,  # Pass this argument into the multi-line call.
-    11,  # Pass this argument into the multi-line call.
-    2  # Use a line thickness of 2 pixels.
-)  # Close the multi-line call or data structure.
+    gray,  # Use the grayscale image as the adaptive-threshold input.
+    255,  # Set selected pixels to white.
+    cv2.ADAPTIVE_THRESH_GAUSSIAN_C,  # Use a weighted local neighborhood threshold.
+    cv2.THRESH_BINARY,  # Produce a normal black-background, white-foreground binary image.
+    11,  # Use an 11-by-11 neighborhood window.
+    2  # Subtract this constant from the local mean or weighted mean.
+)  # Finish the adaptive-threshold call.
 
 show("Adaptive Threshold", adaptive)  # Display the locally thresholded result.
 ```
@@ -808,10 +808,10 @@ gray = cv2.imread("image.jpg", 0)  # Read the image directly as grayscale.
 _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)  # Convert grayscale pixels into black or white values.
 
 contours, hierarchy = cv2.findContours(  # Extract contours from connected white regions in the binary image.
-    binary,  # Pass this argument into the multi-line call.
-    cv2.RETR_EXTERNAL,  # Pass this argument into the multi-line call.
-    cv2.CHAIN_APPROX_SIMPLE  # Perform this step in the image-processing pipeline.
-)  # Close the multi-line call or data structure.
+    binary,  # Search the binary image for white connected components.
+    cv2.RETR_EXTERNAL,  # Retrieve only outermost contours.
+    cv2.CHAIN_APPROX_SIMPLE  # Compress straight contour segments to fewer points.
+)  # Finish the contour-finding call.
 
 print("Number of contours:", len(contours))  # Print how many connected white-region boundaries were found.
 ```
@@ -923,11 +923,11 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Convert BGR color pixels into on
 
 # Step 1: Threshold
 _, thresh = cv2.threshold(  # Create a binary image with Otsu thresholding for watershed.
-    gray,  # Pass this argument into the multi-line call.
-    0,  # Pass this argument into the multi-line call.
-    255,  # Pass this argument into the multi-line call.
-    cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU  # Perform this step in the image-processing pipeline.
-)  # Close the multi-line call or data structure.
+    gray,  # Use the grayscale image as the watershed threshold input.
+    0,  # Provide a placeholder threshold because Otsu chooses it automatically.
+    255,  # Set selected foreground pixels to white.
+    cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU  # Invert the binary result and choose the cutoff automatically.
+)  # Finish the watershed threshold call.
 
 # Step 2: Remove noise
 kernel = np.ones((3, 3), np.uint8)  # Create a square structuring element for morphology.
@@ -940,11 +940,11 @@ sure_bg = cv2.dilate(opening, kernel, iterations=3)  # Dilate objects to get pix
 dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)  # Compute distance from each foreground pixel to the nearest background.
 
 _, sure_fg = cv2.threshold(  # Keep only central object pixels as sure foreground.
-    dist_transform,  # Pass this argument into the multi-line call.
-    0.7 * dist_transform.max(),  # Pass this argument into the multi-line call.
-    255,  # Pass this argument into the multi-line call.
-    0  # Perform this step in the image-processing pipeline.
-)  # Close the multi-line call or data structure.
+    dist_transform,  # Threshold the distance-transform image.
+    0.7 * dist_transform.max(),  # Keep pixels at least 70 percent of the maximum distance.
+    255,  # Set sure-foreground pixels to white.
+    0  # Use the default binary threshold type for this call.
+)  # Finish the sure-foreground threshold call.
 
 sure_fg = np.uint8(sure_fg)  # Convert sure foreground back into an 8-bit mask.
 
@@ -1053,25 +1053,25 @@ from tensorflow.keras import layers, models  # Import Keras layer and model buil
 from tensorflow.keras.applications import MobileNetV2  # Import the pretrained MobileNetV2 CNN architecture.
 
 base_model = MobileNetV2(  # Create a MobileNetV2 feature extractor for transfer learning.
-    weights="imagenet",  # Pass this argument into the multi-line call.
-    include_top=False,  # Pass this argument into the multi-line call.
-    input_shape=(224, 224, 3)  # Perform this step in the image-processing pipeline.
-)  # Close the multi-line call or data structure.
+    weights="imagenet",  # Start from features learned on the ImageNet dataset.
+    include_top=False,  # Remove the original ImageNet classifier head.
+    input_shape=(224, 224, 3)  # Match the expected height, width, and RGB channel count.
+)  # Finish creating the pretrained base model.
 
 base_model.trainable = False  # Freeze pretrained layers so only new classifier layers train.
 
 model = models.Sequential([  # Build a sequential classifier on top of the pretrained base.
-    base_model,  # Pass this argument into the multi-line call.
+    base_model,  # Reuse pretrained convolutional features as the first stage.
     layers.GlobalAveragePooling2D(),  # Collapse spatial feature maps into one feature vector.
     layers.Dense(128, activation="relu"),  # Add a trainable hidden layer for the new task.
     layers.Dense(2, activation="softmax")  # Output probabilities for two classes.
-])  # Perform this step in the image-processing pipeline.
+])  # Finish the transfer-learning classifier stack.
 
 model.compile(  # Configure optimizer, loss, and metrics before training.
-    optimizer="adam",  # Use Adam as the optimizer. 
+    optimizer="adam",  # Use Adam as the optimizer.
     loss="sparse_categorical_crossentropy",  # Use sparse categorical cross-entropy for integer class labels.
     metrics=["accuracy"]  # Track accuracy while training and evaluating.
-)  # Close the multi-line call or data structure.
+)  # Finish compiling the model.
 
 model.summary()  # Print the model architecture and parameter counts.
 ```
@@ -1123,13 +1123,13 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Convert BGR color pixels into on
 
 face_cascade = cv2.CascadeClassifier(  # Create a Haar cascade face detector.
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"  # Use OpenCV's built-in frontal-face cascade file.
-)  # Close the multi-line call or data structure.
+)  # Finish loading the Haar cascade detector.
 
 faces = face_cascade.detectMultiScale(  # Detect face bounding boxes in the grayscale image.
-    gray,  # Pass this argument into the multi-line call.
+    gray,  # Search for faces in the grayscale image.
     scaleFactor=1.1,  # Search smaller image scales gradually for faces.
     minNeighbors=5  # Require enough neighboring detections to reduce false positives.
-)  # Close the multi-line call or data structure.
+)  # Finish the face-detection call.
 
 for (x, y, w, h) in faces:  # Loop through each detected face rectangle.
     cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)  # Draw the bounding box on the image.
@@ -1178,14 +1178,14 @@ for (x, y, w, h) in faces:  # Loop through each detected face rectangle.
 
     cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)  # Draw the bounding box on the image.
     cv2.putText(  # Draw the predicted class label on the image.
-        img,  # Pass this argument into the multi-line call.
-        label,  # Pass this argument into the multi-line call.
-        (x, y-10),  # Pass this argument into the multi-line call.
+        img,  # Draw the label on the original image.
+        label,  # Use the predicted class and confidence text.
+        (x, y-10),  # Place the label slightly above the face box.
         cv2.FONT_HERSHEY_SIMPLEX,  # Use OpenCV's built-in simple font.
         0.8,  # Set the label text scale.
         (0, 255, 0),  # Use green text or boxes in BGR format.
         2  # Use a line thickness of 2 pixels.
-    )  # Close the multi-line call or data structure.
+    )  # Finish drawing the face label.
 
 show("Face Classification", img)  # Display this intermediate or final result.
 ```
@@ -1246,10 +1246,10 @@ closed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)  # Run dilation then 
 
 ```python
 contours, hierarchy = cv2.findContours(  # Extract contours from connected white regions in the binary image.
-    binary,  # Pass this argument into the multi-line call.
-    cv2.RETR_EXTERNAL,  # Pass this argument into the multi-line call.
-    cv2.CHAIN_APPROX_SIMPLE  # Perform this step in the image-processing pipeline.
-)  # Close the multi-line call or data structure.
+    binary,  # Search the binary image for white connected components.
+    cv2.RETR_EXTERNAL,  # Retrieve only outermost contours.
+    cv2.CHAIN_APPROX_SIMPLE  # Compress straight contour segments to fewer points.
+)  # Finish the contour-finding call.
 
 for cnt in contours:  # Loop through each detected contour.
     area = cv2.contourArea(cnt)  # Measure the area enclosed by the current contour.
