@@ -1,4 +1,5 @@
 import { topics, examSamples } from './content.js';
+import blueprintMarkdown from './blueprint.md?raw';
 
 const navLinks = document.getElementById('nav-links');
 const mainContent = document.getElementById('main-content');
@@ -17,6 +18,15 @@ csLink.onclick = (e) => {
     renderCheatSheet();
 };
 navLinks.appendChild(csLink);
+
+const blueprintLink = document.createElement('a');
+blueprintLink.href = "#blueprint";
+blueprintLink.textContent = "Blueprint";
+blueprintLink.onclick = (e) => {
+    e.preventDefault();
+    renderBlueprint();
+};
+navLinks.appendChild(blueprintLink);
 
 topics.forEach(t => {
     const a = document.createElement('a');
@@ -37,6 +47,24 @@ function renderCheatSheet() {
     document.querySelectorAll('#nav-links a').forEach(a => {
         a.classList.toggle('active', a.getAttribute('href') === '#cheatsheet');
     });
+}
+
+function renderBlueprint() {
+    document.getElementById('cheatsheet-section').style.display = 'none';
+
+    document.querySelectorAll('#nav-links a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#blueprint');
+    });
+
+    mainContent.innerHTML = `
+        <section class="blueprint-page">
+            ${renderMarkdown(blueprintMarkdown)}
+        </section>
+    `;
+
+    if (window.Prism) {
+        Prism.highlightAll();
+    }
 }
 
 // ── Render single lab/project tab ──
@@ -432,6 +460,111 @@ function escapeHtml(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function formatInline(str) {
+    return escapeHtml(str)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
+function renderMarkdown(markdown) {
+    const lines = markdown.split('\n');
+    const html = [];
+    let paragraph = [];
+    let inCode = false;
+    let codeLang = '';
+    let codeLines = [];
+
+    const flushParagraph = () => {
+        if (!paragraph.length) return;
+        html.push(`<p>${formatInline(paragraph.join(' '))}</p>`);
+        paragraph = [];
+    };
+
+    const renderTable = (startIndex) => {
+        const rows = [];
+        let i = startIndex;
+
+        while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) {
+            rows.push(lines[i]);
+            i += 1;
+        }
+
+        const cleanCells = row => row
+            .trim()
+            .replace(/^\|/, '')
+            .replace(/\|$/, '')
+            .split('|')
+            .map(cell => formatInline(cell.trim()));
+
+        const header = cleanCells(rows[0]);
+        const bodyRows = rows.slice(2).map(cleanCells);
+
+        html.push(`
+            <div class="blueprint-table-wrap">
+                <table class="blueprint-table">
+                    <thead><tr>${header.map(cell => `<th>${cell}</th>`).join('')}</tr></thead>
+                    <tbody>${bodyRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>
+                </table>
+            </div>
+        `);
+
+        return i;
+    };
+
+    for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i];
+        const fence = line.match(/^```(\w+)?/);
+
+        if (fence) {
+            if (inCode) {
+                html.push(`
+                    <div class="code-block blueprint-code">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-${codeLang || 'text'}">${escapeHtml(codeLines.join('\n'))}</code></pre>
+                    </div>
+                `);
+                inCode = false;
+                codeLang = '';
+                codeLines = [];
+            } else {
+                flushParagraph();
+                inCode = true;
+                codeLang = fence[1] || 'text';
+            }
+            continue;
+        }
+
+        if (inCode) {
+            codeLines.push(line);
+            continue;
+        }
+
+        if (!line.trim()) {
+            flushParagraph();
+            continue;
+        }
+
+        const heading = line.match(/^(#{1,3})\s+(.+)$/);
+        if (heading) {
+            flushParagraph();
+            const level = heading[1].length;
+            html.push(`<h${level}>${formatInline(heading[2])}</h${level}>`);
+            continue;
+        }
+
+        if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1])) {
+            flushParagraph();
+            i = renderTable(i) - 1;
+            continue;
+        }
+
+        paragraph.push(line.trim());
+    }
+
+    flushParagraph();
+    return html.join('');
+}
+
 // ── Copy button ──
 window.copyCode = function(btn) {
     const code = btn.nextElementSibling.textContent;
@@ -471,6 +604,13 @@ searchInput.addEventListener('input', () => {
     if (!q) { searchResults.innerHTML = ''; return; }
 
     const hits = [];
+    const blueprintIdx = blueprintMarkdown.toLowerCase().indexOf(q);
+    if (blueprintIdx >= 0) {
+        const start = Math.max(0, blueprintIdx - 30);
+        const snippet = blueprintMarkdown.substring(start, start + 80);
+        hits.push({ id: 'blueprint', badge: 'Blueprint', title: 'Computer Vision Final Exam Notes', snippet, idx: blueprintIdx });
+    }
+
     topics.forEach(t => {
         const exam = examSamples[t.id];
         const examText = exam ? [exam.question, exam.code, exam.output].join(' ') : '';
@@ -485,7 +625,7 @@ searchInput.addEventListener('input', () => {
 
     searchResults.innerHTML = hits.length
         ? hits.map(h => `
-            <a class="search-result-item" href="#${h.id}" onclick="renderTab('${h.id}'); document.getElementById('search-bar').classList.remove('open');">
+            <a class="search-result-item" href="#${h.id}" onclick="${h.id === 'blueprint' ? 'renderBlueprint()' : `renderTab('${h.id}')`}; document.getElementById('search-bar').classList.remove('open');">
                 <div class="sr-title">${h.badge}: ${h.title}</div>
                 <div class="sr-match">...${h.snippet.replace(new RegExp(`(${searchInput.value})`, 'gi'), '<mark>$1</mark>')}...</div>
             </a>
@@ -496,4 +636,5 @@ searchInput.addEventListener('input', () => {
 // ── Init ──
 window.renderTab = renderTab; // Expose for inline onclick handlers in search
 window.renderCheatSheet = renderCheatSheet;
+window.renderBlueprint = renderBlueprint;
 renderCheatSheet(); // Open Cheat Sheet by default
