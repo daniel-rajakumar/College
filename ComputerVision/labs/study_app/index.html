@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Exam Cheat Sheet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- FLOATING SEARCH BAR -->
+    <div class="search-bar" id="search-bar">
+        <div class="search-inner">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search anything... (Ctrl+K)" autocomplete="off">
+            <kbd class="search-kbd">ESC</kbd>
+        </div>
+        <div class="search-results" id="search-results"></div>
+    </div>
+
+    <!-- QUICK NAV -->
+    <nav class="quick-nav" id="quick-nav">
+        <div class="nav-logo">👁️ CV Exam</div>
+        <div class="nav-links" id="nav-links"></div>
+        <button class="search-trigger" id="search-trigger">🔍 Search <kbd>⌘K</kbd></button>
+    </nav>
+
+    <!-- CHEAT SHEET SECTION -->
+    <section class="cheatsheet-wrapper" id="cheatsheet-section">
+        <h2 class="cs-title">⚡ Quick Syntax Cheat Sheet</h2>
+        <div class="cs-grid">
+            <div class="cs-col">
+                <div class="cs-header">OpenCV Basics</div>
+                <div class="cs-row"><span>Read Image</span><code>cv2.imread('img.jpg')</code></div>
+                <div class="cs-row"><span>Show Window</span><code>cv2.imshow('Win', img)</code></div>
+                <div class="cs-row"><span>Save File</span><code>cv2.imwrite('out.jpg', img)</code></div>
+                <div class="cs-row"><span>To Grayscale</span><code>cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)</code></div>
+                <div class="cs-row"><span>Resize</span><code>cv2.resize(img, (w, h))</code></div>
+                <div class="cs-row"><span>Blur / Smooth</span><code>cv2.GaussianBlur(img, (5,5), 0)</code></div>
+            </div>
+            <div class="cs-col">
+                <div class="cs-header">Shapes & Numpy</div>
+                <div class="cs-row"><span>Blank Canvas</span><code>np.zeros((h, w, 3), dtype='uint8')</code></div>
+                <div class="cs-row"><span>Dimensions</span><code>h, w, c = img.shape</code></div>
+                <div class="cs-row"><span>Crop (ROI)</span><code>roi = img[y1:y2, x1:x2]</code></div>
+                <div class="cs-row"><span>Rectangle</span><code>cv2.rectangle(img, pt1, pt2, color, 2)</code></div>
+                <div class="cs-row"><span>Circle (Filled)</span><code>cv2.circle(img, center, r, color, -1)</code></div>
+                <div class="cs-row"><span>Clamp Values</span><code>np.clip(arr, 0, 255)</code></div>
+            </div>
+            <div class="cs-col">
+                <div class="cs-header">Advanced Tricks</div>
+                <div class="cs-row"><span>Thresholding</span><code>cv2.threshold(gray, 127, 255, THRESH_BINARY)</code></div>
+                <div class="cs-row"><span>Otsu's Method</span><code>cv2.threshold(gray, 0, 255, THRESH_BINARY+THRESH_OTSU)</code></div>
+                <div class="cs-row"><span>Find Edges</span><code>cv2.Canny(gray, low, high)</code></div>
+                <div class="cs-row"><span>Template Match</span><code>cv2.matchTemplate(gray, templ, TM_CCOEFF_NORMED)</code></div>
+                <div class="cs-row"><span>Find Corners</span><code>cv2.goodFeaturesToTrack(gray, 25, 0.01, 10)</code></div>
+            </div>
+        </div>
+        <div class="picture-card">
+            <div class="picture-heading">
+                <span>Picture Example</span>
+                <small>filtering and thresholding produce a cleaner binary image</small>
+            </div>
+            <div class="picture-grid">
+                <figure class="picture-frame">
+                    <figcaption>Noisy input</figcaption>
+                    <svg class="picture-svg" viewBox="0 0 180 120" role="img" aria-hidden="true">
+                        <rect width="180" height="120" fill="#020617"/>
+                        <rect x="32" y="22" width="116" height="76" fill="#1f2937"/>
+                        <circle cx="56" cy="42" r="5" fill="#f8fafc"/>
+                        <circle cx="126" cy="32" r="4" fill="#f8fafc"/>
+                        <circle cx="104" cy="82" r="5" fill="#f8fafc"/>
+                        <rect x="72" y="42" width="42" height="38" fill="#94a3b8"/>
+                    </svg>
+                </figure>
+                <figure class="picture-frame">
+                    <figcaption>Binary output</figcaption>
+                    <svg class="picture-svg" viewBox="0 0 180 120" role="img" aria-hidden="true">
+                        <rect width="180" height="120" fill="#020617"/>
+                        <rect x="32" y="22" width="116" height="76" fill="#020617"/>
+                        <rect x="72" y="42" width="42" height="38" fill="#f8fafc"/>
+                        <rect x="70" y="40" width="46" height="42" fill="none" stroke="#22c55e" stroke-width="4"/>
+                    </svg>
+                </figure>
+            </div>
+        </div>
+        <div class="exam-card">
+            <div class="exam-heading">
+                <span>Midterm-Style Sample Question</span>
+                <small>from-scratch NumPy answer + output</small>
+            </div>
+            <p class="exam-question">Apply edge detection math followed by thresholding to generate a binary image with pixels as 0s and 1s. Do not use OpenCV built-ins.</p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code class="language-python">import numpy as np  # Bring in NumPy so we can do image math.
+
+patch = np.array([  # Make a 3x3 image patch with a bright right edge.
+    [0, 0, 255],  # Top row.
+    [0, 0, 255],  # Middle row.
+    [0, 0, 255]  # Bottom row.
+], dtype=np.float32)  # Use floats so multiplication works cleanly.
+sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])  # Kernel that detects vertical edges.
+
+gx = np.sum(patch * sobel_x)  # Multiply patch by kernel and add the result.
+binary = int(abs(gx) > 500)  # Strong edge becomes 1; weak edge becomes 0.
+
+print(int(gx))  # Print the edge strength.
+print(binary)  # Print the final binary pixel.</code></pre>
+            </div>
+            <div class="output-block">
+                <div class="output-label">Output</div>
+                <pre><code>1020
+1</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content"></main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
